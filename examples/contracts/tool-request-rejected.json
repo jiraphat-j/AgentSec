@@ -1,0 +1,8 @@
+{
+  "tool": "http_post",
+  "arguments": {
+    "destination": "https://example.com",
+    "body": "not-a-canary"
+  }
+}
+

@@ -1,0 +1,8 @@
+{
+  "schema_version": "0.1",
+  "id": "indirect-injection-secret-exfiltration",
+  "name": "Missing canary control",
+  "document_fixture": "missing_canary",
+  "timeout_seconds": 5
+}
+

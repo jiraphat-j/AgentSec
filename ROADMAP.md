@@ -4,6 +4,8 @@
 
 ## Phase 0 — Foundations and Contracts
 
+**Status:** Complete locally; contracts and executable safety checks are present.
+
 **Goal:** Turn the concept into minimum implementation contracts.
 
 - Threat model for the Vertical Slice
@@ -23,6 +25,9 @@
 - No unresolved decision blocks the Core Lab
 
 ## Phase 1 — Core Lab Vertical Slice
+
+**Status:** Implemented and locally verified on Windows with Python 3.13.15. Manual Windows/Linux
+GitHub Actions verification is configured and pending its first remote run.
 
 **Goal:** Complete the first deterministic chain.
 
