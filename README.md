@@ -1,6 +1,6 @@
 # AgentSec Lab
 
-> **Status: Concept and MVP definition**
+> **Status: Phase 1 Core Lab Vertical Slice implemented and locally verified**
 
 AgentSec Lab is a planned open-source detection-engineering lab for tracing AI-agent attacks from prompt injection and tool abuse to security alerts and incident investigation.
 
@@ -52,9 +52,39 @@ The deterministic MVP validates the attack-to-incident pipeline, telemetry, dete
 
 ## Current Scope
 
-The repository is currently in the concept, architecture, and MVP-definition stage. There is no implementation setup or runnable command yet.
+The repository contains the Phase 1 deterministic Vertical Slice implementation and test suite.
+The security-sensitive implementation received human review approval and passed local
+verification on Windows with Python 3.13.15. The manual GitHub Actions workflow is configured
+for Windows and Linux but has not yet run on GitHub.
 
 [MVP_SCOPE.md](MVP_SCOPE.md) is the source of truth for MVP scope. Any broader item in the architecture draft is a proposal or backlog item unless the decision register says otherwise.
+
+## Usage
+
+Use Python 3.13 to install and verify the package:
+
+```powershell
+python -m venv .venv
+.venv\Scripts\python -m pip install -e ".[dev]"
+.venv\Scripts\python -m pytest
+```
+
+Run the Vertical Slice:
+
+```powershell
+.venv\Scripts\agentsec run indirect-injection-secret-exfiltration --output-dir artifacts
+```
+
+Each successful run creates a new directory containing canonical `events.sqlite3`, required
+`report.json`, and required `report.md`. The generated reports contain only redacted canary
+evidence.
+
+See the [example incident report](examples/reports/example-report.md) for the expected human
+output.
+
+The detailed implementation sequence and acceptance mapping are in
+[docs/PHASE_1_IMPLEMENTATION_PLAN.md](docs/PHASE_1_IMPLEMENTATION_PLAN.md). Executable contract
+details are in [docs/CONTRACTS.md](docs/CONTRACTS.md).
 
 ## Safety
 
@@ -83,4 +113,5 @@ See [ROADMAP.md](ROADMAP.md) for the exit criteria of each phase.
 
 ## Contributing
 
-Contribution guidelines, a security policy, an approved open-source license, and implementation setup will be added when the Core Lab scaffold begins. Before proposing a feature, check `MVP_SCOPE.md` and `DECISIONS.md` for its current scope and status.
+See [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md). An approved open-source
+license has not yet been selected, so the project remains described as planned open source.

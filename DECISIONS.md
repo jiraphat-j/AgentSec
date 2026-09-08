@@ -1,6 +1,6 @@
 # AgentSec Lab — Decision Register
 
-> Last updated: 2026-07-24
+> Last updated: 2026-09-08
 > This register separates current decisions from ideas in the architecture draft. It does not replace Architecture Decision Records (ADRs). Long-lived implementation decisions should receive an ADR when development begins.
 
 The non-negotiable MVP security boundary is defined in [THREAT_MODEL.md](THREAT_MODEL.md).
@@ -32,6 +32,13 @@ The non-negotiable MVP security boundary is defined in [THREAT_MODEL.md](THREAT_
 | D-014 | The MVP emits only `tool.requested` for the proposed tool action; `actor.type: ai_agent` identifies its origin | Avoids ambiguity between `agent.tool.requested` and `tool.requested` |
 | D-015 | Use Python 3.13 as the core runtime baseline with compatibility `>=3.13,<3.14`; do not pin a patch version | Establishes a stable baseline while accepting compatible security and bug-fix patches |
 | D-016 | SQLite is the canonical event store; JSONL is an optional export/replay artifact; JSON and Markdown are required report formats | Gives each artifact one unambiguous role and keeps SQLite as the source of truth |
+| D-017 | The Phase 1 package, validation, fixture, CLI, and initial detection choices are defined by ADR-004 | Converts the accepted architecture into a small executable contract without adding an API or general rule language |
+| D-018 | The exact fake-file resource key is `workspace/.env`, a virtual dictionary key rather than an operating-system path | Removes the ambiguity between the draft absolute example and the prohibition on host absolute paths |
+| D-019 | Events use a trusted per-run integer sequence as their causal ordering key; timestamps remain descriptive evidence | Gives deterministic ordering when timestamps are equal or injected in tests |
+| D-020 | Default runs omit raw-value debug mode; raw canaries may exist only in packaged test fixtures and ephemeral adapter state | Reduces leakage surfaces in the first implementation |
+| D-021 | Phase 1 detection is one versioned Python rule, `ASL-CORR-001`; a general rule DSL remains post-MVP research | Implements the required correlation without prematurely fixing an authoring format |
+| D-022 | Phase 1 scenario resources are strict packaged JSON identified by a closed fixture name | Prevents scenario data from selecting arbitrary host files or executable components |
+| D-023 | The CLI uses exit 0 for a completed run, 2 for invalid user input, and 1 for runtime or artifact failure; detection outcome is reported separately | Keeps process success distinct from security outcome |
 
 ## Proposed
 
@@ -89,3 +96,4 @@ Until answered, strict-policy comparison remains post-MVP.
 - [ADR-001: Core Language and Runtime](docs/adr/ADR-001-core-language-and-runtime.md) — **Accepted**
 - [ADR-002: MVP Event Persistence](docs/adr/ADR-002-mvp-event-persistence.md) — **Accepted**
 - [ADR-003: MVP Isolation and No-Egress Strategy](docs/adr/ADR-003-mvp-isolation-and-no-egress.md) — **Accepted**
+- [ADR-004: Phase 1 Package and Contract Implementation](docs/adr/ADR-004-phase-1-package-and-contracts.md) — **Accepted**
