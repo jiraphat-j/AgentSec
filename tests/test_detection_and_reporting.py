@@ -8,6 +8,7 @@ from agentsec.constants import CANARY_ID, MAX_REPORT_BYTES
 from agentsec.detection import CorrelationDetector
 from agentsec.events import EventCollector, EventStore
 from agentsec.models import DetectionResult, DocumentFixture, Event, Scenario
+from agentsec.outcomes import derive_impact, derive_prevention
 from agentsec.reporting import (
     ReportWriteError,
     build_report,
@@ -162,3 +163,128 @@ def test_report_writer_refuses_overwrite_and_oversized_output(tmp_path: Path) ->
     oversized = normal.model_copy(update={"timeline": (huge_event,)})
     with pytest.raises(ReportWriteError, match="size"):
         write_reports(oversized, tmp_path)
+
+
+def test_safety_denial_and_benign_run_are_not_prevention(tmp_path: Path) -> None:
+    store = EventStore(tmp_path / "events.sqlite3")
+    collector = EventCollector(store, "run_1", "trace_1", id_factory=sequential_ids())
+    collector.emit("agent.context.document_added", "controller", {"trust": "untrusted"})
+    collector.emit(
+        "tool.requested",
+        "tool-gateway",
+        {"tool": "http_post"},
+        tool_call_id="call_1",
+    )
+    collector.emit(
+        "policy.evaluated",
+        "runtime-policy",
+        {"tool": "http_post", "enforcement_layer": "safety"},
+        tool_call_id="call_1",
+    )
+    collector.emit(
+        "policy.denied",
+        "runtime-policy",
+        {
+            "tool": "http_post",
+            "enforcement_layer": "safety",
+            "reason": "external_destination",
+        },
+        tool_call_id="call_1",
+    )
+    events = store.events("run_1")
+    store.close()
+
+    assert not derive_prevention(events).blocked
+    assert not derive_impact(events).reached
+    assert not derive_prevention([]).blocked
+
+
+def test_prevention_requires_ordered_policy_evidence_and_no_effect(tmp_path: Path) -> None:
+    store = EventStore(tmp_path / "events.sqlite3")
+    collector = EventCollector(store, "run_1", "trace_1", id_factory=sequential_ids())
+    collector.emit("agent.context.document_added", "controller", {"trust": "untrusted"})
+    collector.emit(
+        "tool.requested",
+        "tool-gateway",
+        {"tool": "read_file"},
+        tool_call_id="call_1",
+    )
+    collector.emit(
+        "policy.evaluated",
+        "runtime-policy",
+        {
+            "tool": "read_file",
+            "profile": "strict",
+            "policy_id": "ASL-POLICY",
+            "policy_version": "policy-v1",
+            "decision": "deny",
+            "enforcement_layer": "defense",
+            "rule_id": "POL-FILE-001",
+            "reason": "secret_read_blocked",
+        },
+        tool_call_id="call_1",
+    )
+    collector.emit(
+        "policy.denied",
+        "runtime-policy",
+        {
+            "tool": "read_file",
+            "profile": "strict",
+            "policy_id": "ASL-POLICY",
+            "policy_version": "policy-v1",
+            "decision": "deny",
+            "enforcement_layer": "defense",
+            "rule_id": "POL-FILE-001",
+            "reason": "secret_read_blocked",
+        },
+        tool_call_id="call_1",
+    )
+    events = store.events("run_1")
+    prevention = derive_prevention(events)
+    for field, value in (
+        ("tool", "http_post"),
+        ("decision", "allow"),
+        ("enforcement_layer", "safety"),
+        ("rule_id", "POL-DIFFERENT"),
+    ):
+        inconsistent = list(events)
+        evaluated = inconsistent[2]
+        inconsistent[2] = evaluated.model_copy(
+            update={"payload": {**evaluated.payload, field: value}}
+        )
+        assert not derive_prevention(inconsistent).blocked
+    store.close()
+
+    assert prevention.blocked
+    assert prevention.stage == "secret_access"
+    assert len(prevention.evidence_event_ids) == 4
+    for sequence, (event_type, source, payload) in enumerate(
+        (
+            (
+                "policy.allowed",
+                "runtime-policy",
+                {"tool": "read_file", "decision": "allow"},
+            ),
+            (
+                "tool.executed",
+                "tool-gateway",
+                {"tool": "read_file", "status": "dispatched"},
+            ),
+            (
+                "file.read",
+                "fake-file-adapter",
+                {"classification": "secret"},
+            ),
+        ),
+        start=5,
+    ):
+        contradiction = events[-1].model_copy(
+            update={
+                "event_id": f"event_{sequence}",
+                "sequence": sequence,
+                "event_type": event_type,
+                "source_component": source,
+                "payload": payload,
+            }
+        )
+        assert not derive_prevention([*events, contradiction]).blocked

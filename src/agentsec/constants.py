@@ -1,6 +1,11 @@
-"""Fixed MVP contracts and safety ceilings."""
+"""Fixed lab contracts and safety ceilings."""
 
-SCHEMA_VERSION = "0.1"
+SCENARIO_SCHEMA_VERSION = "0.1"
+LEGACY_EVENT_SCHEMA_VERSION = "0.1"
+SCHEMA_VERSION = "0.2"
+POLICY_ID = "ASL-POLICY"
+POLICY_VERSION = "policy-v1"
+RISK_VERSION = "risk-v1"
 SCENARIO_ID = "indirect-injection-secret-exfiltration"
 VIRTUAL_SECRET_PATH = "workspace/.env"
 LAB_SINK_DESTINATION = "lab://exfiltration-sink"

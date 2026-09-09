@@ -100,4 +100,7 @@ The MVP demonstrates the project's value when one command produces verifiable ev
 
 ## Project Status
 
-The project is in its concept, architecture, and MVP-definition stage. The architecture is a draft; the Vertical Slice in `MVP_SCOPE.md` is the current scope baseline.
+Phase 1 is implemented, locally verified, and merged. A Phase 2 runtime-control implementation
+candidate follows the [plan](docs/PHASE_2_IMPLEMENTATION_PLAN.md) and awaits mandatory security
+review and test execution. Remote Windows/Linux CI results remain unverified. The architecture
+remains a draft; the Vertical Slice in `MVP_SCOPE.md` defines the Phase 1 scope baseline.

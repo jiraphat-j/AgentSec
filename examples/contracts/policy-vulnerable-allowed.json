@@ -1,0 +1,18 @@
+{
+  "policy_id": "ASL-POLICY",
+  "policy_version": "policy-v1",
+  "profile": "vulnerable",
+  "action": "allow",
+  "reason": "vulnerable_baseline_allow",
+  "rule_id": "POL-VULN-001",
+  "enforcement_layer": "defense",
+  "risk": {
+    "version": "risk-v1",
+    "score": 80,
+    "band": "high",
+    "factors": [
+      {"code": "untrusted_document", "weight": 20},
+      {"code": "classified_secret_access", "weight": 60}
+    ]
+  }
+}

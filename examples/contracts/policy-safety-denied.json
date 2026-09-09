@@ -1,0 +1,10 @@
+{
+  "policy_id": "ASL-POLICY",
+  "policy_version": "policy-v1",
+  "profile": "strict",
+  "action": "deny",
+  "reason": "external_destination",
+  "rule_id": "SAFETY-BOUNDARY-001",
+  "enforcement_layer": "safety",
+  "risk": null
+}

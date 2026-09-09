@@ -1,6 +1,6 @@
 # AgentSec Lab
 
-> **Status: Phase 1 Core Lab Vertical Slice implemented and locally verified**
+> **Status: Phase 1 merged; Phase 2 implementation candidate awaiting security review and tests**
 
 AgentSec Lab is a planned open-source detection-engineering lab for tracing AI-agent attacks from prompt injection and tool abuse to security alerts and incident investigation.
 
@@ -54,8 +54,16 @@ The deterministic MVP validates the attack-to-incident pipeline, telemetry, dete
 
 The repository contains the Phase 1 deterministic Vertical Slice implementation and test suite.
 The security-sensitive implementation received human review approval and passed local
-verification on Windows with Python 3.13.15. The manual GitHub Actions workflow is configured
-for Windows and Linux but has not yet run on GitHub.
+verification on Windows with Python 3.13.15. Phase 1 was merged through
+[PR #1](https://github.com/jiraphat-j/AgentSec/pull/1). The manual GitHub Actions workflow is
+configured for Windows and Linux; its remote results could not be verified during Phase 2 planning.
+
+The [Phase 2 implementation plan](docs/PHASE_2_IMPLEMENTATION_PLAN.md) now has an implementation
+candidate on its feature branch. Because it changes the Tool Gateway and policy enforcement, it
+must receive mandatory human security review before its tests or demo are executed. The commands
+below describe the candidate and are not yet claimed as verified.
+
+Review the [Phase 2 security checklist](docs/PHASE_2_SECURITY_REVIEW.md) before verification.
 
 [MVP_SCOPE.md](MVP_SCOPE.md) is the source of truth for MVP scope. Any broader item in the architecture draft is a proposal or backlog item unless the decision register says otherwise.
 
@@ -75,12 +83,25 @@ Run the Vertical Slice:
 .venv\Scripts\agentsec run indirect-injection-secret-exfiltration --output-dir artifacts
 ```
 
+Select the strict policy or compare the same attack under both profiles:
+
+```powershell
+.venv\Scripts\agentsec run indirect-injection-secret-exfiltration --profile strict --output-dir artifacts
+.venv\Scripts\agentsec compare indirect-injection-secret-exfiltration --output-dir artifacts
+```
+
+The default remains `vulnerable` for Phase 1 compatibility. Strict mode blocks the classified
+fake-secret read before adapter dispatch. The comparison command creates isolated child runs and
+adds `comparison.json` and `comparison.md`. Risk scores are deterministic educational heuristics,
+and approval behavior is synchronous simulation rather than actual human authorization.
+
 Each successful run creates a new directory containing canonical `events.sqlite3`, required
 `report.json`, and required `report.md`. The generated reports contain only redacted canary
 evidence.
 
 See the [example incident report](examples/reports/example-report.md) for the expected human
-output.
+output and the [example defense comparison](examples/reports/example-comparison.md) for the
+Phase 2 summary format.
 
 The detailed implementation sequence and acceptance mapping are in
 [docs/PHASE_1_IMPLEMENTATION_PLAN.md](docs/PHASE_1_IMPLEMENTATION_PLAN.md). Executable contract

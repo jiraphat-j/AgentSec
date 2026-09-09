@@ -10,7 +10,7 @@ from pathlib import Path
 from uuid import uuid4
 
 from .constants import MAX_EVENT_PAYLOAD_BYTES, MAX_EVENTS, MAX_OPERATIONAL_EVENTS
-from .models import Event
+from .models import Event, EventSchemaVersion
 
 
 class EventLimitExceeded(RuntimeError):
@@ -145,6 +145,7 @@ class EventCollector:
         forbidden_values: Iterable[str] = (),
         id_factory: Callable[[str], str] = default_id_factory,
         clock: Callable[[], datetime] = default_clock,
+        schema_version: EventSchemaVersion = "0.2",
     ) -> None:
         self.store = store
         self.run_id = run_id
@@ -152,6 +153,9 @@ class EventCollector:
         self._forbidden_values = tuple(value for value in forbidden_values if value)
         self._id_factory = id_factory
         self._clock = clock
+        if schema_version not in {"0.1", "0.2"}:
+            raise ValueError("unsupported event schema version")
+        self._schema_version = schema_version
         self._next_sequence = store.max_sequence(run_id) + 1
 
     def emit(
@@ -175,7 +179,7 @@ class EventCollector:
         if any(value in serialized for value in self._forbidden_values):
             raise EvidenceLeakError("raw canary rejected from persisted evidence")
         event = Event(
-            schema_version="0.1",
+            schema_version=self._schema_version,
             event_id=self._id_factory("evt"),
             run_id=self.run_id,
             trace_id=self.trace_id,

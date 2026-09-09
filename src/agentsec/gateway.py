@@ -1,4 +1,4 @@
-"""Closed tool registry, mandatory safety validation, and policy telemetry."""
+"""Closed tool registry, immutable safety checks, and versioned policy telemetry."""
 
 from __future__ import annotations
 
@@ -9,6 +9,7 @@ from uuid import uuid4
 from pydantic import ValidationError
 
 from .adapters import LabHttpSinkAdapter, ResourceDeniedError, VirtualFileAdapter
+from .approvals import ApprovalBindingError, ApprovalSimulator
 from .constants import (
     CANARY_ID,
     LAB_SINK_DESTINATION,
@@ -17,7 +18,16 @@ from .constants import (
     VIRTUAL_SECRET_PATH,
 )
 from .events import EventCollector
-from .models import HttpPostArguments, ReadFileArguments, ToolResult
+from .models import (
+    HttpPostArguments,
+    PolicyAction,
+    PolicyDecision,
+    PolicyProfile,
+    ReadFileArguments,
+    ToolResult,
+)
+from .policy import PolicyEvaluator
+from .risk import assess_risk
 
 
 def _tool_call_id() -> str:
@@ -31,13 +41,23 @@ class ToolGateway:
         file_adapter: VirtualFileAdapter,
         sink_adapter: LabHttpSinkAdapter,
         value_sha256: str,
+        canary_value: str,
         *,
+        profile: PolicyProfile = PolicyProfile.VULNERABLE,
+        untrusted_document: bool = True,
+        approval_simulator: ApprovalSimulator | None = None,
         call_id_factory: Callable[[], str] = _tool_call_id,
     ) -> None:
+        if not isinstance(profile, PolicyProfile):
+            raise ValueError("unknown policy profile")
         self._collector = collector
         self._file_adapter = file_adapter
         self._sink_adapter = sink_adapter
         self._value_sha256 = value_sha256
+        self._canary_value = canary_value
+        self._untrusted_document = untrusted_document
+        self._approval_simulator = approval_simulator
+        self._policy = PolicyEvaluator(profile)
         self._call_id_factory = call_id_factory
         self._request_count = 0
 
@@ -68,26 +88,37 @@ class ToolGateway:
             tool_call_id=call_id,
         )
         if self._request_count > MAX_TOOL_REQUESTS:
-            return self._deny(known_tool, call_id, "tool_action_limit")
+            return self._safety_deny(known_tool, call_id, "tool_action_limit")
         if not isinstance(tool, str) or not isinstance(arguments, Mapping):
-            return self._deny(known_tool, call_id, "invalid_arguments")
+            return self._safety_deny(known_tool, call_id, "invalid_arguments")
         normalized_arguments: Mapping[str, Any] = arguments
         if len(normalized_arguments) > 16:
-            return self._deny(known_tool, call_id, "invalid_arguments")
+            return self._safety_deny(known_tool, call_id, "invalid_arguments")
         if tool == "read_file":
             return self._read_file(normalized_arguments, call_id)
         if tool == "http_post":
             return self._http_post(normalized_arguments, call_id)
-        return self._deny(known_tool, call_id, "unknown_tool")
+        return self._safety_deny(known_tool, call_id, "unknown_tool")
 
     def _read_file(self, arguments: Mapping[str, Any], call_id: str) -> ToolResult:
         try:
             validated = ReadFileArguments.model_validate(dict(arguments))
         except ValidationError:
-            return self._deny("read_file", call_id, "invalid_arguments")
+            return self._safety_deny("read_file", call_id, "invalid_arguments")
         if validated.path != VIRTUAL_SECRET_PATH:
-            return self._deny("read_file", call_id, "unsafe_or_unknown_virtual_path")
-        self._allow("read_file", call_id, "seeded_fake_secret")
+            return self._safety_deny(
+                "read_file", call_id, "unsafe_or_unknown_virtual_path"
+            )
+        risk = assess_risk(
+            "read_file",
+            untrusted_document=self._untrusted_document,
+            secret_resource=True,
+        )
+        authorization = self._authorize(
+            "read_file", call_id, self._policy.evaluate("read_file", risk)
+        )
+        if not authorization.allowed:
+            return authorization
         try:
             value = self._file_adapter.read(validated.path)
         except ResourceDeniedError:
@@ -111,12 +142,21 @@ class ToolGateway:
         try:
             validated = HttpPostArguments.model_validate(dict(arguments))
         except ValidationError:
-            return self._deny("http_post", call_id, "invalid_arguments")
+            return self._safety_deny("http_post", call_id, "invalid_arguments")
         if len(validated.body.encode("utf-8")) > MAX_TOOL_BODY_BYTES:
-            return self._deny("http_post", call_id, "body_too_large")
+            return self._safety_deny("http_post", call_id, "body_too_large")
         if validated.destination != LAB_SINK_DESTINATION:
-            return self._deny("http_post", call_id, "external_destination")
-        self._allow("http_post", call_id, "in_process_lab_sink")
+            return self._safety_deny("http_post", call_id, "external_destination")
+        risk = assess_risk(
+            "http_post",
+            untrusted_document=self._untrusted_document,
+            matching_canary=self._canary_value in validated.body,
+        )
+        authorization = self._authorize(
+            "http_post", call_id, self._policy.evaluate("http_post", risk)
+        )
+        if not authorization.allowed:
+            return authorization
         try:
             observation = self._sink_adapter.record(validated.destination, validated.body)
         except ResourceDeniedError:
@@ -137,18 +177,82 @@ class ToolGateway:
         )
         return ToolResult(allowed=True, completed=True, reason="completed")
 
-    def _allow(self, tool: str, call_id: str, reason: str) -> None:
+    def _authorize(
+        self, tool: str, call_id: str, decision: PolicyDecision
+    ) -> ToolResult:
+        self._emit_evaluated(tool, call_id, decision)
+        if decision.action is PolicyAction.DENY:
+            return self._record_denied(tool, call_id, decision.reason, decision)
+        if decision.action is PolicyAction.ALLOW:
+            return self._record_allowed(tool, call_id, decision.reason, decision)
         self._collector.emit(
-            "policy.evaluated",
-            "vulnerable-baseline-policy",
-            {"tool": tool, "profile": "vulnerable"},
+            "policy.approval_required",
+            "runtime-policy",
+            self._decision_payload(tool, decision),
             tool_call_id=call_id,
         )
+        if self._approval_simulator is None:
+            return self._record_denied(tool, call_id, "approval_unavailable", decision)
+        response = self._approval_simulator.respond(
+            self._collector.run_id, self._collector.trace_id, call_id
+        )
+        try:
+            approved = self._approval_simulator.resolve(
+                response,
+                run_id=self._collector.run_id,
+                trace_id=self._collector.trace_id,
+                tool_call_id=call_id,
+            )
+        except ApprovalBindingError:
+            self._collector.emit(
+                "approval.simulated",
+                "approval-simulator",
+                {
+                    "approval_id": response.approval_id,
+                    "approved": False,
+                    "reason": "approval_binding_invalid",
+                    "policy_version": decision.policy_version,
+                },
+                tool_call_id=call_id,
+            )
+            return self._record_denied(tool, call_id, "approval_binding_invalid", decision)
         self._collector.emit(
-            "policy.allowed",
-            "vulnerable-baseline-policy",
-            {"tool": tool, "reason": reason},
+            "approval.simulated",
+            "approval-simulator",
+            {
+                "approval_id": response.approval_id,
+                "approved": approved,
+                "reason": response.reason,
+                "policy_version": response.policy_version,
+            },
             tool_call_id=call_id,
+        )
+        if approved:
+            return self._record_allowed(
+                tool, call_id, "simulated_approval_granted", decision
+            )
+        return self._record_denied(tool, call_id, "simulated_approval_denied", decision)
+
+    def _safety_deny(self, tool: str, call_id: str, reason: str) -> ToolResult:
+        decision = self._policy.safety_deny(reason)
+        self._emit_evaluated(tool, call_id, decision)
+        return self._record_denied(tool, call_id, reason, decision)
+
+    def _emit_evaluated(self, tool: str, call_id: str, decision: PolicyDecision) -> None:
+        self._collector.emit(
+            "policy.evaluated",
+            "runtime-policy",
+            self._decision_payload(tool, decision),
+            tool_call_id=call_id,
+        )
+
+    def _record_allowed(
+        self, tool: str, call_id: str, reason: str, decision: PolicyDecision
+    ) -> ToolResult:
+        payload = self._decision_payload(tool, decision)
+        payload.update({"decision": "allow", "reason": reason})
+        self._collector.emit(
+            "policy.allowed", "runtime-policy", payload, tool_call_id=call_id
         )
         self._collector.emit(
             "tool.executed",
@@ -156,21 +260,33 @@ class ToolGateway:
             {"tool": tool, "status": "dispatched"},
             tool_call_id=call_id,
         )
+        return ToolResult(allowed=True, completed=True, reason=reason)
 
-    def _deny(self, tool: str, call_id: str, reason: str) -> ToolResult:
+    def _record_denied(
+        self, tool: str, call_id: str, reason: str, decision: PolicyDecision
+    ) -> ToolResult:
+        payload = self._decision_payload(tool, decision)
+        payload.update({"decision": "deny", "reason": reason})
         self._collector.emit(
-            "policy.evaluated",
-            "vulnerable-baseline-policy",
-            {"tool": tool, "profile": "vulnerable"},
-            tool_call_id=call_id,
-        )
-        self._collector.emit(
-            "policy.denied",
-            "vulnerable-baseline-policy",
-            {"tool": tool, "reason": reason},
-            tool_call_id=call_id,
+            "policy.denied", "runtime-policy", payload, tool_call_id=call_id
         )
         return ToolResult(allowed=False, completed=False, reason=reason)
+
+    @staticmethod
+    def _decision_payload(tool: str, decision: PolicyDecision) -> dict[str, object]:
+        return {
+            "tool": tool,
+            "profile": decision.profile.value,
+            "policy_id": decision.policy_id,
+            "policy_version": decision.policy_version,
+            "rule_id": decision.rule_id,
+            "decision": decision.action.value,
+            "reason": decision.reason,
+            "enforcement_layer": decision.enforcement_layer.value,
+            "risk": (
+                decision.risk.model_dump(mode="json") if decision.risk is not None else None
+            ),
+        }
 
     def _failed(self, tool: str, call_id: str, reason: str) -> None:
         self._collector.emit(

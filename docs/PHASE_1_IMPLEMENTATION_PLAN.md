@@ -1,11 +1,13 @@
 # Phase 1 implementation plan — Core Lab Vertical Slice
 
-Status: implemented and locally verified on Windows with Python 3.13.15; GitHub CI run pending.
+Status: implemented, locally verified on Windows with Python 3.13.15, and merged through
+[PR #1](https://github.com/jiraphat-j/AgentSec/pull/1); remote GitHub CI results unverified.
 
 This plan closes the remaining Phase 0 contracts and delivers Phase 1. The implementation
 candidate follows these work packages. Human review was approved and the local verification
-gates passed on 2026-09-08. The manual Windows/Linux GitHub workflow remains to be run after the
-changes are committed and available to GitHub.
+gates passed on 2026-09-08. The code is available on merged `main`. During Phase 2 planning,
+GitHub Actions API reads returned 404, so the manual Windows/Linux workflow results could not
+be confirmed. Record a qualifying run URL and job outcomes before closing remote verification.
 
 ## 1. Read before implementing
 

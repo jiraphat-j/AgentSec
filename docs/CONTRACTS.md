@@ -1,6 +1,6 @@
 # AgentSec Lab MVP contracts
 
-Version: 0.1
+Version: 0.2
 
 These contracts define the first Vertical Slice. Pydantic models are the executable schemas;
 the JSON files under `examples/contracts/` illustrate accepted and rejected inputs.
@@ -76,6 +76,58 @@ the raw canary.
 
 CLI exit codes are 0 for a completed run with required outputs, 2 for invalid user input, and
 1 for runtime, timeout, or artifact failures. Detection outcome remains a report field.
+
+## Phase 2 policy contract
+
+The trusted controller selects exactly `vulnerable` or `strict`; scenario data cannot select or
+forge a profile. Missing or unknown profile and version values fail explicitly. The original run
+command defaults to `vulnerable`.
+
+Mandatory safety checks reject unknown tools, invalid arguments, unsafe virtual paths, external
+destinations, oversized bodies, and exhausted action budgets before defense policy. Their denial
+has `enforcement_layer: safety` and no risk score. Neither profile nor approval can override it.
+
+For a validated request, `risk-v1` adds bounded factors: untrusted document 20, classified-secret
+read 60, lab post 40, and matching-canary transfer 60, clamped to 100. Scores 0–39 are low, 40–79
+elevated, and 80–100 high. The same request and context score identically across profiles.
+
+The vulnerable profile records risk and allows supported safe-lab requests. The strict profile
+denies classified fake-secret reads and matching-canary transfers, denies other high-risk actions,
+requires simulated approval for elevated risk, and allows low risk. Policy evidence records
+`ASL-POLICY`, `policy-v1`, profile, rule, decision, reason, enforcement layer, and risk details.
+
+Approval simulation defaults to denial. Responses are bound to run, trace, tool call, and policy
+version and consumed once. Missing, denied, malformed, mismatched, stale, or reused responses do
+not dispatch the adapter. Approval cannot override a safety or strict hard denial.
+
+## Phase 2 event and outcome contract
+
+New events use schema 0.2. Legacy schema 0.1 events remain readable, and unknown versions fail.
+The scenario schema remains 0.1. Supported decision sequences are:
+
+```text
+tool.requested -> policy.evaluated -> policy.allowed -> tool.executed -> effect
+tool.requested -> policy.evaluated -> policy.denied
+tool.requested -> policy.evaluated -> policy.approval_required
+  -> approval.simulated -> policy.allowed or policy.denied -> optional allowed effect
+```
+
+Reports derive three independent facts from ordered canonical evidence: correlation detection,
+matching-canary simulated impact, and policy prevention. Prevention requires an untrusted document,
+the relevant request/evaluation/defense denial, matching identities and decision fields, and
+absence of an allow, dispatch, or denied effect for that call. A benign run, a safety denial,
+failed run, or `detected: false` is not prevention.
+
+## Comparison contract
+
+`agentsec compare indirect-injection-secret-exfiltration` runs exactly one vulnerable and one
+strict child with the same packaged scenario and fresh identities/adapters. Each child retains its
+SQLite, JSON, and Markdown artifacts. The comparison directory adds `comparison.json` and
+`comparison.md`, derived from those SQLite stores with run-qualified evidence references, policy
+and risk details, outcome, detection, impact, prevention, and the first policy divergence.
+
+The comparison opens no socket and uses no external service. Exit 0 means both child runs and both
+comparison reports completed; a security outcome is data, not process failure.
 
 ## Limits and cleanup
 
