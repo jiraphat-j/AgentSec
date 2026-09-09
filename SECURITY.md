@@ -1,7 +1,7 @@
 # Security policy
 
-AgentSec Lab is intended for education and authorized security testing. The current MVP uses
-only deterministic project code, a virtual fake-file adapter, and an in-process simulated sink.
+AgentSec Lab is intended for education and authorized security testing. The lab uses only
+deterministic project code, a virtual fake-file adapter, and an in-process simulated sink.
 
 ## Supported version
 
@@ -16,16 +16,18 @@ publishing details.
 
 Never include live secrets in a report. Use synthetic reproduction data.
 
-## MVP security boundary
+## Lab security boundary
 
 - Only fake canaries with no privileges are allowed.
 - Scenario code opens no operating-system network socket and performs no DNS lookup.
 - The sink accepts only `lab://exfiltration-sink`.
 - The agent can access only the exact virtual key `workspace/.env` through the Tool Gateway.
 - Host paths, traversal, external destinations, unknown tools, and invalid fields are denied.
+- Runtime profiles and simulated approvals cannot override mandatory safety checks.
+- Strict policy mode blocks classified fake-secret reads and matching-canary transfers before dispatch.
+- Approval simulation is not an authentication, authorization, or human-review mechanism.
 - Reports and persisted telemetry contain canary IDs and SHA-256 digests, never raw canaries.
-- Shell execution, real LLM providers, Docker, RAG, MCP, and third-party tools are outside the MVP.
+- Shell execution, real LLM providers, Docker, RAG, MCP, and third-party tools remain out of scope.
 
 See [THREAT_MODEL.md](THREAT_MODEL.md) and [docs/agents/security.md](docs/agents/security.md)
 for the complete development rules and review boundaries.
-

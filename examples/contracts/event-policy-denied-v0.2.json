@@ -1,0 +1,30 @@
+{
+  "schema_version": "0.2",
+  "event_id": "evt_policy_denied_1",
+  "run_id": "run_1",
+  "trace_id": "trace_1",
+  "sequence": 4,
+  "timestamp": "2026-09-08T12:00:00Z",
+  "event_type": "policy.denied",
+  "source_component": "runtime-policy",
+  "tool_call_id": "call_1",
+  "payload": {
+    "tool": "read_file",
+    "profile": "strict",
+    "policy_id": "ASL-POLICY",
+    "policy_version": "policy-v1",
+    "rule_id": "POL-FILE-001",
+    "decision": "deny",
+    "reason": "secret_read_blocked",
+    "enforcement_layer": "defense",
+    "risk": {
+      "version": "risk-v1",
+      "score": 80,
+      "band": "high",
+      "factors": [
+        {"code": "untrusted_document", "weight": 20},
+        {"code": "classified_secret_access", "weight": 60}
+      ]
+    }
+  }
+}

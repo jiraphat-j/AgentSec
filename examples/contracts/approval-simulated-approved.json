@@ -1,0 +1,10 @@
+{
+  "schema_version": "0.2",
+  "approval_id": "approval_approved_1",
+  "run_id": "run_1",
+  "trace_id": "trace_1",
+  "tool_call_id": "call_1",
+  "policy_version": "policy-v1",
+  "approved": true,
+  "reason": "simulated_approval_granted"
+}

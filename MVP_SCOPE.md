@@ -265,3 +265,7 @@ After the Vertical Slice is stable, consider:
 - Additional single-event detections
 - Web-document delivery
 - Dashboard
+
+The `vulnerable`-versus-`strict` comparison is now the subject of the
+[Phase 2 implementation plan](docs/PHASE_2_IMPLEMENTATION_PLAN.md). It remains outside this
+locked Phase 1 MVP scope and does not retroactively change its acceptance criteria.

@@ -39,6 +39,11 @@ The non-negotiable MVP security boundary is defined in [THREAT_MODEL.md](THREAT_
 | D-021 | Phase 1 detection is one versioned Python rule, `ASL-CORR-001`; a general rule DSL remains post-MVP research | Implements the required correlation without prematurely fixing an authoring format |
 | D-022 | Phase 1 scenario resources are strict packaged JSON identified by a closed fixture name | Prevents scenario data from selecting arbitrary host files or executable components |
 | D-023 | The CLI uses exit 0 for a completed run, 2 for invalid user input, and 1 for runtime or artifact failure; detection outcome is reported separately | Keeps process success distinct from security outcome |
+| D-024 | Phase 2 uses closed `vulnerable` and `strict` profiles with mandatory safety checks evaluated before profile policy | Enables comparison without making host isolation configurable |
+| D-025 | `risk-v1` is a deterministic, explainable educational heuristic; it is not a probability or calibrated risk framework | Makes policy reasoning visible without overstating two fixtures as empirical evidence |
+| D-026 | Approval is synchronous simulation, bound to one run/trace/call/policy version and consumed once; it cannot override safety or strict hard denials | Exercises approval telemetry without external identity, queues, or services |
+| D-027 | New Phase 2 events and reports use schema 0.2; scenario schema stays 0.1 and legacy 0.1 events remain readable | Versions the expanded outcome contract without letting scenario data select policy |
+| D-028 | The comparison command runs isolated vulnerable and strict children and derives reports from each canonical SQLite store | Keeps evidence authoritative and prevents cross-run contamination |
 
 ## Proposed
 
@@ -48,7 +53,6 @@ The non-negotiable MVP security boundary is defined in [THREAT_MODEL.md](THREAT_
 | P-005 | Define scenarios and rules in YAML | Human-readable and version-control friendly | Define schema and versioning |
 | P-006 | Use a Sigma-inspired detection syntax | Familiar to detection engineers | Validate whether useful conversion or reuse is practical |
 | P-007 | Use a monorepo and begin with a small package layout | Minimizes early structural overhead | Confirm package layout |
-| P-008 | Add vulnerable-versus-strict comparison immediately after MVP | Demonstrates prevention and detection in one demo | Decide whether this belongs in the MVP demo |
 | P-009 | Use Docker isolation when process and real-network scenarios arrive | Clear boundaries and repeatable reset | Revisit only when a post-MVP scenario requires OS-level telemetry |
 | P-010 | Select Apache-2.0 as the project license | Explicit patent grant and termination language fit a security tool better than MIT | Formal owner approval before adding `LICENSE` |
 
@@ -83,13 +87,13 @@ The non-negotiable MVP security boundary is defined in [THREAT_MODEL.md](THREAT_
 | F-011 | Grafana and Loki observability stack | Core telemetry contract is stable |
 | F-012 | Production authentication, RBAC, and multi-tenancy | A production-deployment goal exists |
 
-## Immediate Decision Requested
+## Phase 2 Planning Direction
 
-One remaining product-scope choice materially affects the first demonstration:
-
-1. Should the MVP demo show only the vulnerable flow and its detection, or also include a **strict-policy rerun** that proves prevention?
-
-Until answered, strict-policy comparison remains post-MVP.
+The owner requested Phase 2 planning after the Phase 1 merge. Strict-policy comparison remains
+outside the completed MVP and is the next phase's objective. See
+[Phase 2 implementation plan](docs/PHASE_2_IMPLEMENTATION_PLAN.md) for the policy, risk,
+approval, and comparison contracts. Those contracts are recorded in ADR-005. Acceptance of the
+architecture does not establish security review or test execution approval for its implementation.
 
 ## ADR Index
 
@@ -97,3 +101,4 @@ Until answered, strict-policy comparison remains post-MVP.
 - [ADR-002: MVP Event Persistence](docs/adr/ADR-002-mvp-event-persistence.md) — **Accepted**
 - [ADR-003: MVP Isolation and No-Egress Strategy](docs/adr/ADR-003-mvp-isolation-and-no-egress.md) — **Accepted**
 - [ADR-004: Phase 1 Package and Contract Implementation](docs/adr/ADR-004-phase-1-package-and-contracts.md) — **Accepted**
+- [ADR-005: Phase 2 Runtime Policy and Comparison](docs/adr/ADR-005-phase-2-runtime-policy-and-comparison.md) — **Accepted**

@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import sqlite3
 from pathlib import Path
+from typing import cast
 
 import pytest
 from pydantic import ValidationError
@@ -15,7 +16,14 @@ from agentsec.events import (
     EventStore,
     EvidenceLeakError,
 )
-from agentsec.models import Scenario
+from agentsec.models import (
+    ApprovalResponse,
+    Event,
+    EventSchemaVersion,
+    PolicyDecision,
+    Report,
+    Scenario,
+)
 from agentsec.resource_loader import load_document, load_scenario
 
 from .helpers import fixed_clock, sequential_ids
@@ -128,3 +136,86 @@ def test_event_payload_and_count_are_bounded(tmp_path: Path) -> None:
     store.close()
 
     assert final.sequence == MAX_OPERATIONAL_EVENTS + 1
+
+
+def test_legacy_event_version_remains_readable_and_unknown_version_fails() -> None:
+    legacy = {
+        "schema_version": "0.1",
+        "event_id": "evt_1",
+        "run_id": "run_1",
+        "trace_id": "trace_1",
+        "sequence": 1,
+        "timestamp": "2026-09-08T12:00:00Z",
+        "event_type": "run.started",
+        "source_component": "controller",
+        "payload": {},
+    }
+
+    assert Event.model_validate(legacy).schema_version == "0.1"
+    with pytest.raises(ValidationError):
+        Event.model_validate({**legacy, "schema_version": "9.9"})
+
+
+def test_collector_can_explicitly_emit_legacy_but_rejects_unknown_version(
+    tmp_path: Path,
+) -> None:
+    store = EventStore(tmp_path / "events.sqlite3")
+    collector = EventCollector(
+        store,
+        "run_1",
+        "trace_1",
+        schema_version="0.1",
+        id_factory=sequential_ids(),
+    )
+
+    assert collector.emit("run.started", "controller").schema_version == "0.1"
+    with pytest.raises(ValueError, match="unsupported"):
+        EventCollector(
+            store,
+            "run_2",
+            "trace_2",
+            schema_version=cast(EventSchemaVersion, "9.9"),
+        )
+    store.close()
+
+
+def test_phase_2_contract_examples_validate() -> None:
+    root = Path(__file__).parents[1] / "examples" / "contracts"
+
+    legacy = Event.model_validate_json(
+        (root / "event-legacy-v0.1.json").read_text(encoding="utf-8")
+    )
+    vulnerable = PolicyDecision.model_validate_json(
+        (root / "policy-vulnerable-allowed.json").read_text(encoding="utf-8")
+    )
+    strict = PolicyDecision.model_validate_json(
+        (root / "policy-strict-denied.json").read_text(encoding="utf-8")
+    )
+    approval = ApprovalResponse.model_validate_json(
+        (root / "approval-simulated.json").read_text(encoding="utf-8")
+    )
+    approved = ApprovalResponse.model_validate_json(
+        (root / "approval-simulated-approved.json").read_text(encoding="utf-8")
+    )
+    safety = PolicyDecision.model_validate_json(
+        (root / "policy-safety-denied.json").read_text(encoding="utf-8")
+    )
+    unavailable = PolicyDecision.model_validate_json(
+        (root / "policy-approval-unavailable.json").read_text(encoding="utf-8")
+    )
+    phase_2_event = Event.model_validate_json(
+        (root / "event-policy-denied-v0.2.json").read_text(encoding="utf-8")
+    )
+    report = Report.model_validate_json(
+        (root / "report-v0.2-prevented.json").read_text(encoding="utf-8")
+    )
+
+    assert legacy.schema_version == "0.1"
+    assert vulnerable.profile.value == "vulnerable"
+    assert strict.reason == "secret_read_blocked"
+    assert approval.approved is False
+    assert approved.approved is True
+    assert safety.enforcement_layer.value == "safety"
+    assert unavailable.reason == "approval_unavailable"
+    assert phase_2_event.schema_version == "0.2"
+    assert report.outcome == "prevented"

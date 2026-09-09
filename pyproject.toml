@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "agentsec-lab"
-version = "0.1.0"
-description = "A deterministic AI-agent attack-to-incident security lab"
+version = "0.2.0"
+description = "A deterministic AI-agent runtime security and detection lab"
 readme = "README.md"
 requires-python = ">=3.13,<3.14"
 dependencies = [

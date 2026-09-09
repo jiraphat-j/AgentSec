@@ -26,8 +26,9 @@
 
 ## Phase 1 — Core Lab Vertical Slice
 
-**Status:** Implemented and locally verified on Windows with Python 3.13.15. Manual Windows/Linux
-GitHub Actions verification is configured and pending its first remote run.
+**Status:** Merged through [PR #1](https://github.com/jiraphat-j/AgentSec/pull/1) and locally
+verified on Windows with Python 3.13.15. Manual Windows/Linux GitHub Actions verification is
+configured; remote run results remain unverified during Phase 2 planning.
 
 **Goal:** Complete the first deterministic chain.
 
@@ -63,6 +64,10 @@ Indirect Prompt Injection
 - Safety tests deny host paths, external destinations, unknown tools, and invalid arguments
 
 ## Phase 2 — Runtime Security Controls
+
+**Status:** Implementation candidate prepared from the
+[Phase 2 plan](docs/PHASE_2_IMPLEMENTATION_PLAN.md); mandatory security review and all execution
+checks remain pending. Remote Phase 1 CI evidence remains a verification checkpoint.
 
 **Goal:** Compare observability with prevention.
 

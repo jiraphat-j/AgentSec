@@ -1,6 +1,6 @@
-name: Phase 1 verification
+name: AgentSec Lab verification
 
-# Security-sensitive MVP code is executed only after a human starts this workflow.
+# Security-sensitive lab code is executed only after a human starts this workflow.
 on:
   workflow_dispatch:
 
@@ -34,4 +34,3 @@ jobs:
         run: python -m build
       - name: Audit Python dependencies
         run: python -m pip_audit
-

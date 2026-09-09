@@ -1,10 +1,10 @@
 # AgentSec Lab — MVP Vertical Slice Threat Model
 
-> **Scope:** First Vertical Slice only
+> **Scope:** Deterministic Vertical Slice and Phase 2 runtime controls
 >
-> **Status:** Draft security baseline
+> **Status:** Active security baseline
 >
-> **Last updated:** 2026-07-24
+> **Last updated:** 2026-09-08
 
 ## 1. Purpose
 
@@ -203,3 +203,22 @@ Review and version this threat model before adding any of:
 - MCP or third-party tools
 - Persistent memory
 - Multi-agent communication
+
+## 14. Phase 2 runtime-control threats
+
+Phase 2 retains every invariant above and adds policy, risk, approval, and comparison evidence.
+
+| Threat | Required control | Verification |
+|---|---|---|
+| Profile disables safety | Evaluate mandatory validation before profile policy; no override path | Run the complete denial matrix under both profiles |
+| Fail-open policy or telemetry | Do not dispatch until evaluation and required events persist | Inject evaluation/event failures and assert no adapter effect |
+| Forged policy context | Controller owns trust, classification, identities, profile, and versions | Reject scenario/tool fields that attempt to choose them |
+| Approval replay or confusion | Bind response to run, trace, call, and version; consume once | Test stale, mismatched, forged, missing, and reused responses |
+| Hard-denial approval bypass | Never request approval after safety, secret-read, or canary-transfer denial | Exercise approve mode against every hard denial |
+| Raw-body leakage | Match the canary in memory and persist only safe factors and hashes | Scan events, reports, comparison, console, and errors |
+| False prevention claim | Require ordered request/evaluation/defense-denial evidence and no denied effect | Test benign, safety-denied, failed, incomplete, and contradictory evidence |
+| Comparison contamination | Fresh child stores, identities, adapters, and run-qualified references | Resolve every reference and compare isolated runs |
+
+`risk-v1` is an explainable teaching heuristic rather than a calibrated probability. Simulated
+approval is product behavior and never substitutes for repository security review. The strict
+profile proves prevention only inside this fixed socket-free deterministic lab.

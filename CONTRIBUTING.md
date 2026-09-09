@@ -1,8 +1,8 @@
 # Contributing to AgentSec Lab
 
-The project is implementing one deterministic Vertical Slice. Read [MVP_SCOPE.md](MVP_SCOPE.md),
-[DECISIONS.md](DECISIONS.md), [AGENTS.md](AGENTS.md), and the applicable ADRs before proposing
-changes.
+The project has a deterministic Vertical Slice and is adding runtime security controls. Read
+[MVP_SCOPE.md](MVP_SCOPE.md), [DECISIONS.md](DECISIONS.md), [AGENTS.md](AGENTS.md), the relevant
+phase plan, and applicable ADRs before proposing changes.
 
 ## Development setup
 
@@ -26,7 +26,7 @@ Run the quality checks only after satisfying the security review rules below:
 
 ## Change requirements
 
-- Keep changes within the first Vertical Slice unless a decision or ADR changes scope.
+- Keep changes within the active roadmap phase unless a decision or ADR changes scope.
 - Add deterministic positive and negative tests for behavior changes.
 - Do not introduce real credentials, host-resource access, sockets, DNS, subprocesses, or
   dynamic imports.
@@ -39,4 +39,3 @@ boundaries, or Tool Gateway policy enforcement require the mandatory human revie
 [docs/agents/security.md](docs/agents/security.md). Mark the handoff
 `Security Sensitive: Requires Mandatory Human Review` and do not merge or execute it until
 review is confirmed.
-
