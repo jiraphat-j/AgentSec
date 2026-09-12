@@ -1,0 +1,40 @@
+{
+  "schema_version": "1.0",
+  "replay_id": "replay_demo",
+  "status": "completed",
+  "source_file": "events.sqlite3",
+  "source_run_id": "run_demo",
+  "source_status": "completed",
+  "evidence_cutoff_sequence": 12,
+  "input_event_count": 12,
+  "evaluated_event_count": 8,
+  "evaluations": [
+    {
+      "rule_id": "ASL-SEQ-001",
+      "rule_version": 1,
+      "engine_version": "engine-v1",
+      "candidate_count": 2,
+      "duplicate_matches_removed": 0,
+      "matches": [
+        {
+          "dedup_key": "11:ASL-SEQ-0011:18:run_demo10:trace_demo7:evt_doc11:evt_request",
+          "rule_id": "ASL-SEQ-001",
+          "rule_version": 1,
+          "engine_version": "engine-v1",
+          "run_id": "run_demo",
+          "trace_id": "trace_demo",
+          "evidence_event_ids": ["evt_doc", "evt_request"],
+          "severity": "high",
+          "description": "Untrusted document context preceded a fake-secret read request"
+        }
+      ]
+    }
+  ],
+  "total_matches": 1,
+  "duplicate_matches_removed": 0,
+  "local_processing_seconds": 0.001,
+  "safety_and_limitations": [
+    "Replay reads existing evidence without invoking agents or adapters.",
+    "Local processing time is not MTTD or MTTR."
+  ]
+}

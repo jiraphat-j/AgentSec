@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Literal
+
 from .constants import CANARY_ID, POLICY_ID, POLICY_VERSION
 from .models import Event, ImpactResult, PreventionResult
 
@@ -116,7 +118,7 @@ def derive_prevention(events: list[Event]) -> PreventionResult:
             for event in events
         ):
             continue
-        stage = (
+        stage: Literal["secret_access", "outbound_transfer"] = (
             "secret_access" if denied.payload.get("tool") == "read_file" else "outbound_transfer"
         )
         return PreventionResult(

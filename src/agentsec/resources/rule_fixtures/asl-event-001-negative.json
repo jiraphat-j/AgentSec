@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.0",
+  "name": "asl-event-001-negative",
+  "rule_id": "ASL-EVENT-001",
+  "rule_version": 1,
+  "events": [
+    {
+      "schema_version": "0.2",
+      "event_id": "evt_allowed",
+      "run_id": "run_fixture",
+      "trace_id": "trace_fixture",
+      "sequence": 1,
+      "timestamp": "2026-09-09T00:00:00Z",
+      "event_type": "policy.allowed",
+      "source_component": "runtime-policy",
+      "tool_call_id": "call_1",
+      "payload": {"profile": "strict", "enforcement_layer": "defense"}
+    }
+  ],
+  "expected_evidence": []
+}

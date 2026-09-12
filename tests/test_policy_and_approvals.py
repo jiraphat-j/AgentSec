@@ -14,12 +14,8 @@ from agentsec.risk import assess_risk
 
 
 def test_risk_score_is_deterministic_bounded_and_profile_independent() -> None:
-    first = assess_risk(
-        "http_post", untrusted_document=True, matching_canary=True
-    )
-    second = assess_risk(
-        "http_post", untrusted_document=True, matching_canary=True
-    )
+    first = assess_risk("http_post", untrusted_document=True, matching_canary=True)
+    second = assess_risk("http_post", untrusted_document=True, matching_canary=True)
 
     assert first == second
     assert first.score == 100
@@ -29,9 +25,10 @@ def test_risk_score_is_deterministic_bounded_and_profile_independent() -> None:
         "lab_post",
         "matching_canary_transfer",
     ]
-    assert PolicyEvaluator(PolicyProfile.VULNERABLE).evaluate(
-        "http_post", first
-    ).risk == PolicyEvaluator(PolicyProfile.STRICT).evaluate("http_post", first).risk
+    assert (
+        PolicyEvaluator(PolicyProfile.VULNERABLE).evaluate("http_post", first).risk
+        == PolicyEvaluator(PolicyProfile.STRICT).evaluate("http_post", first).risk
+    )
 
 
 @pytest.mark.parametrize(
@@ -50,9 +47,7 @@ def test_strict_risk_bands_choose_expected_action(
     elif score_source == "elevated":
         risk = assess_risk("http_post", untrusted_document=False)
     else:
-        risk = assess_risk(
-            "read_file", untrusted_document=True, secret_resource=True
-        )
+        risk = assess_risk("read_file", untrusted_document=True, secret_resource=True)
 
     decision = PolicyEvaluator(PolicyProfile.STRICT).evaluate("other", risk)
 
@@ -61,55 +56,27 @@ def test_strict_risk_bands_choose_expected_action(
 
 
 def test_approval_response_is_bound_and_single_use() -> None:
-    simulator = ApprovalSimulator(
-        ApprovalSimulation.APPROVE, id_factory=lambda: "approval_1"
-    )
+    simulator = ApprovalSimulator(ApprovalSimulation.APPROVE, id_factory=lambda: "approval_1")
     response = simulator.respond("run_1", "trace_1", "call_1")
 
-    assert simulator.resolve(
-        response, run_id="run_1", trace_id="trace_1", tool_call_id="call_1"
-    )
+    assert simulator.resolve(response, run_id="run_1", trace_id="trace_1", tool_call_id="call_1")
     with pytest.raises(ApprovalBindingError, match="consumed"):
-        simulator.resolve(
-            response, run_id="run_1", trace_id="trace_1", tool_call_id="call_1"
-        )
+        simulator.resolve(response, run_id="run_1", trace_id="trace_1", tool_call_id="call_1")
 
 
 def test_forged_or_stale_approval_response_is_rejected() -> None:
-    simulator = ApprovalSimulator(
-        ApprovalSimulation.APPROVE, id_factory=lambda: "approval_1"
-    )
+    simulator = ApprovalSimulator(ApprovalSimulation.APPROVE, id_factory=lambda: "approval_1")
     response = simulator.respond("run_old", "trace_1", "call_1")
 
     with pytest.raises(ApprovalBindingError, match="match"):
-        simulator.resolve(
-            response, run_id="run_new", trace_id="trace_1", tool_call_id="call_1"
-        )
+        simulator.resolve(response, run_id="run_new", trace_id="trace_1", tool_call_id="call_1")
 
 
 def test_internally_inconsistent_approval_response_is_rejected() -> None:
-    simulator = ApprovalSimulator(
-        ApprovalSimulation.APPROVE, id_factory=lambda: "approval_1"
-    )
+    simulator = ApprovalSimulator(ApprovalSimulation.APPROVE, id_factory=lambda: "approval_1")
     response = simulator.respond("run_1", "trace_1", "call_1").model_copy(
         update={"reason": "simulated_approval_denied"}
     )
 
     with pytest.raises(ApprovalBindingError, match="match"):
-        simulator.resolve(
-            response, run_id="run_1", trace_id="trace_1", tool_call_id="call_1"
-        )
-
-
-def test_internally_inconsistent_approval_response_is_rejected() -> None:
-    simulator = ApprovalSimulator(
-        ApprovalSimulation.APPROVE, id_factory=lambda: "approval_1"
-    )
-    response = simulator.respond("run_1", "trace_1", "call_1").model_copy(
-        update={"reason": "simulated_approval_denied"}
-    )
-
-    with pytest.raises(ApprovalBindingError, match="match"):
-        simulator.resolve(
-            response, run_id="run_1", trace_id="trace_1", tool_call_id="call_1"
-        )
+        simulator.resolve(response, run_id="run_1", trace_id="trace_1", tool_call_id="call_1")

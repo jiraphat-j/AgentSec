@@ -84,8 +84,7 @@ def _child(source: ComparisonEvidence) -> ComparisonChild:
         + tuple(approval.event_id for approval in approvals)
     )
     references = tuple(
-        f"{source.run_id}:{event_id}"
-        for event_id in dict.fromkeys(unqualified_references)
+        f"{source.run_id}:{event_id}" for event_id in dict.fromkeys(unqualified_references)
     )
     relative = Path(source.relative_directory)
     return ComparisonChild(
@@ -137,9 +136,7 @@ def build_comparison(
     )
 
 
-def comparison_conclusion(
-    vulnerable: ComparisonChild, strict: ComparisonChild
-) -> str:
+def comparison_conclusion(vulnerable: ComparisonChild, strict: ComparisonChild) -> str:
     if vulnerable.outcome == "incomplete":
         vulnerable_result = (
             "The vulnerable profile recorded both simulated impact and evidence-backed "
@@ -162,8 +159,7 @@ def comparison_conclusion(
         )
     else:
         vulnerable_result = (
-            "The vulnerable profile established neither simulated impact nor a critical "
-            "detection."
+            "The vulnerable profile established neither simulated impact nor a critical detection."
         )
 
     if strict.outcome == "incomplete":
@@ -183,9 +179,7 @@ def comparison_conclusion(
                 "is incomplete."
             )
     elif strict.prevention.blocked and strict.prevention.stage == "secret_access":
-        strict_result = (
-            "The strict profile prevented the chain before fake-secret access."
-        )
+        strict_result = "The strict profile prevented the chain before fake-secret access."
     elif strict.prevention.blocked and strict.prevention.stage == "outbound_transfer":
         strict_result = "The strict profile blocked the outbound transfer."
     else:
@@ -193,9 +187,7 @@ def comparison_conclusion(
     return f"{vulnerable_result} {strict_result}"
 
 
-def _first_policy_divergence(
-    vulnerable: ComparisonChild, strict: ComparisonChild
-) -> str:
+def _first_policy_divergence(vulnerable: ComparisonChild, strict: ComparisonChild) -> str:
     for vulnerable_decision, strict_decision in zip(
         vulnerable.policy_decisions, strict.policy_decisions, strict=False
     ):
@@ -213,9 +205,7 @@ def _first_policy_divergence(
 
 
 def _verify_recorded_run(source: ComparisonEvidence, scenario: Scenario) -> None:
-    started = next(
-        (event for event in source.events if event.event_type == "run.started"), None
-    )
+    started = next((event for event in source.events if event.event_type == "run.started"), None)
     if started is None:
         raise ValueError("comparison child has no run.started evidence")
     if started.run_id != source.run_id or started.trace_id != source.trace_id:

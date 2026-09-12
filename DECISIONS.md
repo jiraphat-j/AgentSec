@@ -1,6 +1,6 @@
 # AgentSec Lab — Decision Register
 
-> Last updated: 2026-09-08
+> Last updated: 2026-09-09
 > This register separates current decisions from ideas in the architecture draft. It does not replace Architecture Decision Records (ADRs). Long-lived implementation decisions should receive an ADR when development begins.
 
 The non-negotiable MVP security boundary is defined in [THREAT_MODEL.md](THREAT_MODEL.md).
@@ -44,13 +44,15 @@ The non-negotiable MVP security boundary is defined in [THREAT_MODEL.md](THREAT_
 | D-026 | Approval is synchronous simulation, bound to one run/trace/call/policy version and consumed once; it cannot override safety or strict hard denials | Exercises approval telemetry without external identity, queues, or services |
 | D-027 | New Phase 2 events and reports use schema 0.2; scenario schema stays 0.1 and legacy 0.1 events remain readable | Versions the expanded outcome contract without letting scenario data select policy |
 | D-028 | The comparison command runs isolated vulnerable and strict children and derives reports from each canonical SQLite store | Keeps evidence authoritative and prevents cross-run contamination |
+| D-029 | Phase 3 declarative detections use strict bounded JSON schema 1.0; YAML and executable plugins remain deferred | Makes rules reviewable data and resolves the initial authoring-format question narrowly |
+| D-030 | Replay reads one selected run from existing SQLite through a dedicated read-only connection and never invokes the scenario runtime | Preserves canonical evidence and prevents replay from causing tool effects |
+| D-031 | Threshold rules remain deferred until a documented benign baseline exists | Prevents unsupported thresholds and false-positive claims from synthetic examples |
 
 ## Proposed
 
 | ID | Proposal | Why it is attractive | Decision needed |
 |---|---|---|---|
 | P-002 | Use FastAPI and Pydantic for API and schema boundaries | Typed contracts and a path to the dashboard | Decide whether MVP needs an API or begins as a library and CLI |
-| P-005 | Define scenarios and rules in YAML | Human-readable and version-control friendly | Define schema and versioning |
 | P-006 | Use a Sigma-inspired detection syntax | Familiar to detection engineers | Validate whether useful conversion or reuse is practical |
 | P-007 | Use a monorepo and begin with a small package layout | Minimizes early structural overhead | Confirm package layout |
 | P-009 | Use Docker isolation when process and real-network scenarios arrive | Clear boundaries and repeatable reset | Revisit only when a post-MVP scenario requires OS-level telemetry |
@@ -62,7 +64,6 @@ The non-negotiable MVP security boundary is defined in [THREAT_MODEL.md](THREAT_
 |---|---|---|
 | R-002 | How should later phases collect real network telemetry safely? | Container network and controlled-proxy prototype; this does not block the socket-free MVP |
 | R-003 | Should the event schema map to OCSF, ECS, OpenTelemetry, or remain custom? | Mapping spike focused on agent-specific context |
-| R-004 | Should detection rules be custom DSL, Sigma-inspired, or code-first? | Sequence semantics, validation, and authoring prototype |
 | R-005 | How will the project define attack success, attempted impact, and completed impact? | Metric definitions and sample reports |
 | R-006 | What evidence-integrity level is appropriate for a lab? | Evaluate artifact digests, hash chaining, and append-only records |
 | R-007 | Which model output or reasoning metadata can be stored safely? | Privacy, provider terms, and observability requirements; do not require hidden chain-of-thought |
@@ -95,6 +96,13 @@ outside the completed MVP and is the next phase's objective. See
 approval, and comparison contracts. Those contracts are recorded in ADR-005. Acceptance of the
 architecture does not establish security review or test execution approval for its implementation.
 
+## Phase 3 Detection Engineering Direction
+
+Phase 3 adopts bounded JSON rule data, typed single-event, sequence, and correlation evaluation,
+exact positive and negative fixtures, and read-only SQLite replay. Threshold rules remain deferred
+until a benign baseline exists. See the [Phase 3 plan](docs/PHASE_3_IMPLEMENTATION_PLAN.md) and
+ADR-006.
+
 ## ADR Index
 
 - [ADR-001: Core Language and Runtime](docs/adr/ADR-001-core-language-and-runtime.md) — **Accepted**
@@ -102,3 +110,4 @@ architecture does not establish security review or test execution approval for i
 - [ADR-003: MVP Isolation and No-Egress Strategy](docs/adr/ADR-003-mvp-isolation-and-no-egress.md) — **Accepted**
 - [ADR-004: Phase 1 Package and Contract Implementation](docs/adr/ADR-004-phase-1-package-and-contracts.md) — **Accepted**
 - [ADR-005: Phase 2 Runtime Policy and Comparison](docs/adr/ADR-005-phase-2-runtime-policy-and-comparison.md) — **Accepted**
+- [ADR-006: Phase 3 Detection Rules and Offline Replay](docs/adr/ADR-006-phase-3-detection-rules-and-replay.md) — **Accepted**

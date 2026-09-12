@@ -213,21 +213,30 @@ def test_strict_profile_blocks_direct_canary_post_without_approval(tmp_path: Pat
 
 
 @pytest.mark.parametrize(
-    ("mode", "expected_allowed", "expected_reason"),
+    ("mode", "expected_allowed", "expected_result_reason", "expected_policy_reason"),
     [
-        (ApprovalSimulation.DENY, False, "simulated_approval_denied"),
-        (ApprovalSimulation.APPROVE, True, "simulated_approval_granted"),
+        (
+            ApprovalSimulation.DENY,
+            False,
+            "simulated_approval_denied",
+            "simulated_approval_denied",
+        ),
+        (
+            ApprovalSimulation.APPROVE,
+            True,
+            "completed",
+            "simulated_approval_granted",
+        ),
     ],
 )
 def test_strict_safe_post_uses_bound_simulated_approval(
     tmp_path: Path,
     mode: ApprovalSimulation,
     expected_allowed: bool,
-    expected_reason: str,
+    expected_result_reason: str,
+    expected_policy_reason: str,
 ) -> None:
-    gateway, sink, store = make_gateway(
-        tmp_path, profile=PolicyProfile.STRICT, approval=mode
-    )
+    gateway, sink, store = make_gateway(tmp_path, profile=PolicyProfile.STRICT, approval=mode)
 
     result = gateway.invoke(
         "http_post",
@@ -237,7 +246,7 @@ def test_strict_safe_post_uses_bound_simulated_approval(
     store.close()
 
     assert result.allowed is expected_allowed
-    assert result.reason == expected_reason
+    assert result.reason == expected_result_reason
     assert [event.event_type for event in events[:4]] == [
         "tool.requested",
         "policy.evaluated",
@@ -245,6 +254,12 @@ def test_strict_safe_post_uses_bound_simulated_approval(
         "approval.simulated",
     ]
     assert bool(sink.observations) is expected_allowed
+    final_policy = next(
+        event
+        for event in reversed(events)
+        if event.event_type in {"policy.allowed", "policy.denied"}
+    )
+    assert final_policy.payload["reason"] == expected_policy_reason
     if sink.observations:
         assert not sink.observations[0].matched
 
@@ -256,9 +271,7 @@ def test_strict_safety_denial_has_no_risk_or_approval(tmp_path: Path) -> None:
         approval=ApprovalSimulation.APPROVE,
     )
 
-    result = gateway.invoke(
-        "http_post", {"destination": "https://example.com", "body": "safe"}
-    )
+    result = gateway.invoke("http_post", {"destination": "https://example.com", "body": "safe"})
     events = store.events("run_1")
     store.close()
 
@@ -281,9 +294,7 @@ def test_missing_or_mismatched_approval_fails_closed(tmp_path: Path) -> None:
     unavailable_store.close()
 
     class MismatchedApproval(ApprovalSimulator):
-        def respond(
-            self, run_id: str, trace_id: str, tool_call_id: str
-        ) -> ApprovalResponse:
+        def respond(self, run_id: str, trace_id: str, tool_call_id: str) -> ApprovalResponse:
             valid = super().respond(run_id, trace_id, tool_call_id)
             return valid.model_copy(update={"run_id": "forged_run"})
 
@@ -303,9 +314,7 @@ def test_missing_or_mismatched_approval_fails_closed(tmp_path: Path) -> None:
 
     assert unavailable_result.reason == "approval_unavailable"
     assert unavailable_sink.observations == ()
-    assert "approval.simulated" not in {
-        event.event_type for event in unavailable_events
-    }
+    assert "approval.simulated" not in {event.event_type for event in unavailable_events}
     assert mismatched_result.reason == "approval_binding_invalid"
     assert mismatched_sink.observations == ()
     assert any(
@@ -327,9 +336,7 @@ def test_mandatory_safety_matrix_applies_to_every_profile(
 
     results = (
         gateway.invoke("read_file", {"path": "../../host-secret"}),
-        gateway.invoke(
-            "http_post", {"destination": "https://example.com", "body": "safe"}
-        ),
+        gateway.invoke("http_post", {"destination": "https://example.com", "body": "safe"}),
         gateway.invoke("shell", {"command": "whoami"}),
         gateway.invoke("read_file", {"path": VIRTUAL_SECRET_PATH, "extra": True}),
     )
@@ -340,8 +347,7 @@ def test_mandatory_safety_matrix_applies_to_every_profile(
     assert sink.observations == ()
     assert "tool.executed" not in {event.event_type for event in events}
     assert all(
-        event.payload["enforcement_layer"] == "safety"
-        and event.payload["risk"] is None
+        event.payload["enforcement_layer"] == "safety" and event.payload["risk"] is None
         for event in events
         if event.event_type == "policy.evaluated"
     )
@@ -350,9 +356,7 @@ def test_mandatory_safety_matrix_applies_to_every_profile(
 def test_policy_evaluation_or_telemetry_failure_never_dispatches(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    evaluation_gateway, evaluation_sink, evaluation_store = make_gateway(
-        tmp_path / "evaluation"
-    )
+    evaluation_gateway, evaluation_sink, evaluation_store = make_gateway(tmp_path / "evaluation")
 
     def fail_evaluation(_tool: str, _risk: RiskAssessment) -> Never:
         raise RuntimeError("controlled policy evaluation failure")
@@ -365,9 +369,7 @@ def test_policy_evaluation_or_telemetry_failure_never_dispatches(
         )
     evaluation_store.close()
 
-    telemetry_gateway, telemetry_sink, telemetry_store = make_gateway(
-        tmp_path / "telemetry"
-    )
+    telemetry_gateway, telemetry_sink, telemetry_store = make_gateway(tmp_path / "telemetry")
     original_emit = telemetry_gateway._collector.emit
 
     def fail_policy_event(

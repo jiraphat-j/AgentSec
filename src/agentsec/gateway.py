@@ -106,9 +106,7 @@ class ToolGateway:
         except ValidationError:
             return self._safety_deny("read_file", call_id, "invalid_arguments")
         if validated.path != VIRTUAL_SECRET_PATH:
-            return self._safety_deny(
-                "read_file", call_id, "unsafe_or_unknown_virtual_path"
-            )
+            return self._safety_deny("read_file", call_id, "unsafe_or_unknown_virtual_path")
         risk = assess_risk(
             "read_file",
             untrusted_document=self._untrusted_document,
@@ -177,9 +175,7 @@ class ToolGateway:
         )
         return ToolResult(allowed=True, completed=True, reason="completed")
 
-    def _authorize(
-        self, tool: str, call_id: str, decision: PolicyDecision
-    ) -> ToolResult:
+    def _authorize(self, tool: str, call_id: str, decision: PolicyDecision) -> ToolResult:
         self._emit_evaluated(tool, call_id, decision)
         if decision.action is PolicyAction.DENY:
             return self._record_denied(tool, call_id, decision.reason, decision)
@@ -228,9 +224,7 @@ class ToolGateway:
             tool_call_id=call_id,
         )
         if approved:
-            return self._record_allowed(
-                tool, call_id, "simulated_approval_granted", decision
-            )
+            return self._record_allowed(tool, call_id, "simulated_approval_granted", decision)
         return self._record_denied(tool, call_id, "simulated_approval_denied", decision)
 
     def _safety_deny(self, tool: str, call_id: str, reason: str) -> ToolResult:
@@ -251,9 +245,7 @@ class ToolGateway:
     ) -> ToolResult:
         payload = self._decision_payload(tool, decision)
         payload.update({"decision": "allow", "reason": reason})
-        self._collector.emit(
-            "policy.allowed", "runtime-policy", payload, tool_call_id=call_id
-        )
+        self._collector.emit("policy.allowed", "runtime-policy", payload, tool_call_id=call_id)
         self._collector.emit(
             "tool.executed",
             "tool-gateway",
@@ -267,9 +259,7 @@ class ToolGateway:
     ) -> ToolResult:
         payload = self._decision_payload(tool, decision)
         payload.update({"decision": "deny", "reason": reason})
-        self._collector.emit(
-            "policy.denied", "runtime-policy", payload, tool_call_id=call_id
-        )
+        self._collector.emit("policy.denied", "runtime-policy", payload, tool_call_id=call_id)
         return ToolResult(allowed=False, completed=False, reason=reason)
 
     @staticmethod
@@ -283,9 +273,7 @@ class ToolGateway:
             "decision": decision.action.value,
             "reason": decision.reason,
             "enforcement_layer": decision.enforcement_layer.value,
-            "risk": (
-                decision.risk.model_dump(mode="json") if decision.risk is not None else None
-            ),
+            "risk": (decision.risk.model_dump(mode="json") if decision.risk is not None else None),
         }
 
     def _failed(self, tool: str, call_id: str, reason: str) -> None:

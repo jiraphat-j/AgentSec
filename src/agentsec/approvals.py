@@ -53,8 +53,7 @@ class ApprovalSimulator:
             raise ApprovalBindingError("approval response was already consumed")
         if (
             response.schema_version != "0.2"
-            or response.approved
-            != (response.reason == "simulated_approval_granted")
+            or response.approved != (response.reason == "simulated_approval_granted")
             or response.run_id != run_id
             or response.trace_id != trace_id
             or response.tool_call_id != tool_call_id
