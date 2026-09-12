@@ -1,8 +1,11 @@
 # Phase 3 implementation plan — Detection Engineering
 
-Status: proposed, planning only. Phase 2 has an implementation candidate with reviewed fixes;
-its execution checks and remote CI evidence remain pending. This document does not mark Phase 2
-complete or authorize Phase 3 implementation.
+Status: locally verified implementation candidate from merged Phase 2 commit `31156ed`. The
+merged baseline required local formatting, typing, and approval-result test corrections. The
+complete Phase 3 working tree passes Ruff, strict MyPy, all 90 tests with 91% coverage, package
+build, dependency audit, and an isolated installed-CLI demonstration on Windows/Python 3.13.15.
+Human review and remote Windows/Linux CI evidence remain delivery checkpoints. See the
+[verification record](PHASE_3_VERIFICATION.md).
 
 ## 1. Entry gate and decisions
 
@@ -16,9 +19,8 @@ Read repository guidance, [contracts](CONTRACTS.md), [roadmap](../ROADMAP.md), a
 ADR-004, and ADR-005 before implementation. No available specialized skill directly matches this
 local Python planning task; use repository guidance and reassess skills when implementation starts.
 
-Proposed defaults below require an ADR before dependent implementation. In particular, JSON
-rules are a proposal to resolve R-004 and supersede or defer the YAML proposal P-005 in
-[DECISIONS.md](../DECISIONS.md), not an already accepted rule-authoring standard.
+The defaults below are accepted in ADR-006. JSON resolves R-004 for this phase and defers the YAML
+proposal P-005.
 
 ## 2. Intended product workflow
 
@@ -74,7 +76,7 @@ unsupported event versions produce a clear validation failure. Do not rewrite or
 
 ## 4. Replay and CLI
 
-Proposed commands, not yet implemented:
+Implemented commands:
 
 ```text
 agentsec rules validate --rules <directory>

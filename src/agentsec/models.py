@@ -4,16 +4,14 @@ from __future__ import annotations
 
 from datetime import datetime
 from enum import StrEnum
-from typing import Any, Literal, Self, TypeAlias
+from typing import Any, Literal, Self
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from .constants import MAX_TIMEOUT_SECONDS
 
-Outcome: TypeAlias = Literal[
-    "simulated_impact", "prevented", "no_correlated_chain", "incomplete"
-]
-EventSchemaVersion: TypeAlias = Literal["0.1", "0.2"]
+type Outcome = Literal["simulated_impact", "prevented", "no_correlated_chain", "incomplete"]
+type EventSchemaVersion = Literal["0.1", "0.2"]
 
 
 class StrictModel(BaseModel):

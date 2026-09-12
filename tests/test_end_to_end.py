@@ -11,8 +11,8 @@ from agentsec.comparison import comparison_conclusion, write_comparison_reports
 from agentsec.constants import MAX_REPORT_BYTES, SCENARIO_ID
 from agentsec.events import EventStore
 from agentsec.models import ApprovalSimulation, DocumentFixture, PolicyProfile, Scenario
-from agentsec.resource_loader import load_canary, load_scenario
 from agentsec.reporting import ReportWriteError
+from agentsec.resource_loader import load_canary, load_scenario
 from agentsec.runner import RunResult, ScenarioDeadlineExceeded, ScenarioRunner
 
 from .helpers import sequential_ids
@@ -183,9 +183,9 @@ def test_compare_creates_isolated_evidence_backed_reports(tmp_path: Path) -> Non
     comparison_json = json.loads(
         (result.comparison_directory / "comparison.json").read_text(encoding="utf-8")
     )
-    comparison_markdown = (
-        result.comparison_directory / "comparison.md"
-    ).read_text(encoding="utf-8")
+    comparison_markdown = (result.comparison_directory / "comparison.md").read_text(
+        encoding="utf-8"
+    )
 
     assert result.vulnerable.report.outcome == "simulated_impact"
     assert result.strict.report.outcome == "prevented"
@@ -211,11 +211,7 @@ def test_compare_creates_isolated_evidence_backed_reports(tmp_path: Path) -> Non
     for child in result.report.children:
         for reference in child.evidence_references:
             run_id, event_id = reference.split(":", maxsplit=1)
-            run = (
-                result.vulnerable
-                if run_id == result.vulnerable.run_id
-                else result.strict
-            )
+            run = result.vulnerable if run_id == result.vulnerable.run_id else result.strict
             store = EventStore(run.run_directory / "events.sqlite3")
             assert event_id in {event.event_id for event in store.events(run_id)}
             store.close()
@@ -226,11 +222,7 @@ def test_comparison_conclusion_uses_detection_and_prevention_stage(tmp_path: Pat
     vulnerable, strict = result.report.children
     without_detection = vulnerable.model_copy(update={"detected": False})
     outbound_prevention = strict.model_copy(
-        update={
-            "prevention": strict.prevention.model_copy(
-                update={"stage": "outbound_transfer"}
-            )
-        }
+        update={"prevention": strict.prevention.model_copy(update={"stage": "outbound_transfer"})}
     )
     incomplete_strict = strict.model_copy(
         update={
@@ -253,9 +245,7 @@ def test_comparison_conclusion_uses_detection_and_prevention_stage(tmp_path: Pat
     assert "prevented the chain" not in incomplete_conclusion
 
 
-def test_compare_uses_no_socket_or_dns(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_compare_uses_no_socket_or_dns(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     def fail(*_args: object, **_kwargs: object) -> None:
         raise AssertionError("network API called")
 
@@ -282,9 +272,7 @@ def test_cli_supports_strict_and_compare_and_rejects_irrelevant_approval(
         ]
     )
     strict_output = capsys.readouterr()
-    compare_result = main(
-        ["compare", SCENARIO_ID, "--output-dir", str(tmp_path / "compare")]
-    )
+    compare_result = main(["compare", SCENARIO_ID, "--output-dir", str(tmp_path / "compare")])
     compare_output = capsys.readouterr()
     invalid_result = main(
         [
@@ -345,9 +333,7 @@ def test_comparison_failure_preserves_child_evidence_without_success_report(
 
 
 def test_comparison_writer_rejects_oversized_output(tmp_path: Path) -> None:
-    result = ScenarioRunner(id_factory=sequential_ids()).compare(
-        SCENARIO_ID, tmp_path / "source"
-    )
+    result = ScenarioRunner(id_factory=sequential_ids()).compare(SCENARIO_ID, tmp_path / "source")
     oversized = result.report.model_copy(
         update={"safety_and_limitations": ("x" * MAX_REPORT_BYTES,)}
     )

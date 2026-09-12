@@ -1,0 +1,33 @@
+{
+  "schema_version": "1.0",
+  "name": "asl-seq-001-positive",
+  "rule_id": "ASL-SEQ-001",
+  "rule_version": 1,
+  "events": [
+    {
+      "schema_version": "0.2",
+      "event_id": "evt_document",
+      "run_id": "run_fixture",
+      "trace_id": "trace_fixture",
+      "sequence": 1,
+      "timestamp": "2026-09-09T00:00:00Z",
+      "event_type": "agent.context.document_added",
+      "source_component": "scenario-controller",
+      "tool_call_id": null,
+      "payload": {"trust": "untrusted"}
+    },
+    {
+      "schema_version": "0.2",
+      "event_id": "evt_request",
+      "run_id": "run_fixture",
+      "trace_id": "trace_fixture",
+      "sequence": 2,
+      "timestamp": "2026-09-09T00:00:01Z",
+      "event_type": "tool.requested",
+      "source_component": "tool-gateway",
+      "tool_call_id": "call_1",
+      "payload": {"tool": "read_file"}
+    }
+  ],
+  "expected_evidence": [["evt_document", "evt_request"]]
+}

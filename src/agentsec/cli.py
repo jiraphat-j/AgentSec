@@ -11,6 +11,9 @@ from pydantic import ValidationError
 
 from .constants import SCENARIO_ID
 from .models import ApprovalSimulation, PolicyProfile
+from .replay import ReplayService
+from .rule_engine import load_rules
+from .rule_testing import execute_rule_tests
 from .runner import ScenarioRunner
 
 
@@ -41,6 +44,25 @@ def build_parser() -> argparse.ArgumentParser:
     )
     compare_parser.add_argument("scenario", choices=(SCENARIO_ID,))
     _add_output_directory(compare_parser)
+
+    rules_parser = subparsers.add_parser("rules", help="validate or test detection rules")
+    rules_subparsers = rules_parser.add_subparsers(dest="rules_command", required=True)
+    validate_parser = rules_subparsers.add_parser(
+        "validate", help="validate bounded JSON rule files"
+    )
+    validate_parser.add_argument("--rules", type=Path, required=True)
+    test_parser = rules_subparsers.add_parser("test", help="run deterministic rule fixtures")
+    test_parser.add_argument("--rules", type=Path, required=True)
+    test_parser.add_argument("--fixtures", type=Path, required=True)
+    _add_output_directory(test_parser)
+
+    replay_parser = subparsers.add_parser(
+        "replay", help="evaluate rules over one existing SQLite run"
+    )
+    replay_parser.add_argument("--events", type=Path, required=True)
+    replay_parser.add_argument("--run-id", required=True)
+    replay_parser.add_argument("--rules", type=Path, required=True)
+    _add_output_directory(replay_parser)
     return parser
 
 
@@ -57,43 +79,67 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser = build_parser()
     try:
         arguments = parser.parse_args(argv)
-        runner = ScenarioRunner()
         if arguments.command == "run":
+            runner = ScenarioRunner()
             profile = PolicyProfile(arguments.profile)
-            if (
-                profile is PolicyProfile.VULNERABLE
-                and arguments.approval_simulation is not None
-            ):
+            if profile is PolicyProfile.VULNERABLE and arguments.approval_simulation is not None:
                 raise ValueError("approval simulation applies only to the strict profile")
             approval = ApprovalSimulation(
                 arguments.approval_simulation or ApprovalSimulation.DENY.value
             )
-            result = runner.run(
+            run_result = runner.run(
                 arguments.scenario,
                 arguments.output_dir,
                 profile=profile,
                 approval_simulation=approval,
             )
-            print(f"run_id={result.run_id}")
-            print(f"profile={result.report.policy_profile.value}")
-            print(f"outcome={result.report.outcome}")
-            print(f"detected={str(result.detection.detected).lower()}")
-            print(f"prevented={str(result.report.prevention.blocked).lower()}")
-            print(f"artifacts={result.run_directory}")
+            print(f"run_id={run_result.run_id}")
+            print(f"profile={run_result.report.policy_profile.value}")
+            print(f"outcome={run_result.report.outcome}")
+            print(f"detected={str(run_result.detection.detected).lower()}")
+            print(f"prevented={str(run_result.report.prevention.blocked).lower()}")
+            print(f"artifacts={run_result.run_directory}")
             return 0
         if arguments.command == "compare":
-            result = runner.compare(arguments.scenario, arguments.output_dir)
-            print(f"comparison_id={result.comparison_id}")
-            print(f"vulnerable_outcome={result.vulnerable.report.outcome}")
-            print(f"strict_outcome={result.strict.report.outcome}")
-            print(f"artifacts={result.comparison_directory}")
+            runner = ScenarioRunner()
+            comparison_result = runner.compare(arguments.scenario, arguments.output_dir)
+            print(f"comparison_id={comparison_result.comparison_id}")
+            print(f"vulnerable_outcome={comparison_result.vulnerable.report.outcome}")
+            print(f"strict_outcome={comparison_result.strict.report.outcome}")
+            print(f"artifacts={comparison_result.comparison_directory}")
+            return 0
+        if arguments.command == "rules" and arguments.rules_command == "validate":
+            rules = load_rules(arguments.rules)
+            print(f"validated_rules={len(rules)}")
+            return 0
+        if arguments.command == "rules" and arguments.rules_command == "test":
+            test_result = execute_rule_tests(
+                arguments.rules, arguments.fixtures, arguments.output_dir
+            )
+            print(f"status={test_result.report.status}")
+            print(
+                f"rule_coverage={test_result.report.covered_rules}/{test_result.report.total_rules}"
+            )
+            print(f"artifacts={test_result.output_directory}")
+            return 0 if test_result.report.status == "passed" else 2
+        if arguments.command == "replay":
+            replay_result = ReplayService().replay(
+                arguments.events,
+                arguments.run_id,
+                arguments.rules,
+                arguments.output_dir,
+            )
+            print(f"replay_id={replay_result.report.replay_id}")
+            print(f"source_status={replay_result.report.source_status}")
+            print(f"matches={replay_result.report.total_matches}")
+            print(f"artifacts={replay_result.replay_directory}")
             return 0
         parser.error("a command is required")
     except (ValidationError, ValueError) as error:
         print(f"error: invalid input ({type(error).__name__})", file=sys.stderr)
         return 2
     except Exception as error:
-        print(f"error: scenario failed ({type(error).__name__})", file=sys.stderr)
+        print(f"error: operation failed ({type(error).__name__})", file=sys.stderr)
         return 1
     return 1
 

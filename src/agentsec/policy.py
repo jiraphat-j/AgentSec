@@ -63,9 +63,7 @@ class PolicyEvaluator:
             risk=None,
         )
 
-    def _strict_deny(
-        self, reason: str, rule_id: str, risk: RiskAssessment
-    ) -> PolicyDecision:
+    def _strict_deny(self, reason: str, rule_id: str, risk: RiskAssessment) -> PolicyDecision:
         return PolicyDecision(
             profile=self.profile,
             action=PolicyAction.DENY,

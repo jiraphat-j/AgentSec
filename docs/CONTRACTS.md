@@ -1,6 +1,6 @@
 # AgentSec Lab MVP contracts
 
-Version: 0.2
+Version: 0.3
 
 These contracts define the first Vertical Slice. Pydantic models are the executable schemas;
 the JSON files under `examples/contracts/` illustrate accepted and rejected inputs.
@@ -135,3 +135,38 @@ The deterministic mock checks a monotonic deadline at bounded steps. This is a c
 deadline for fixed project code, not an arbitrary-code sandbox. Ephemeral adapter and canary
 state is discarded after each run. Terminal events remain subject to the event ceiling; the
 controller reserves capacity by allowing at most 120 operational events before finalization.
+
+## Phase 3 detection-rule contract
+
+Declarative rules use strict JSON schema 1.0. Each rule records its ID/version, bounded
+description, severity, supported event versions, kind, and ordered named steps. Initial predicates
+support typed scalar equality and membership over an explicit allowlist of envelope and safe
+payload fields. Missing fields do not match and values are never coerced across string, boolean,
+or integer types.
+
+Single-event rules contain one step. Sequence rules contain two to eight steps and require
+strictly increasing trusted sequence values within one run and trace. Correlation rules add typed
+equality joins between earlier and later named steps. Rules contain no Python, SQL, regular
+expressions, imports, templates, shell, or callbacks.
+
+The engine emits deterministic matches containing rule/engine versions, run/trace, severity,
+description, ordered evidence IDs, and a length-prefixed deduplication identity. Candidate or
+match limit exhaustion is a failure, not a partial no-match. The existing `ASL-CORR-001` Python
+rule keeps its first-match behavior; generalized enumeration is `ASL-CORR-002` version 1.
+
+Every packaged declarative rule requires an exact positive and negative fixture. Rule-test output
+reports rules with both fixture classes over total rules, plus passing fixture assertions over all
+assertions. Synthetic fixture coverage is not a real-world accuracy or false-positive rate.
+
+## Phase 3 replay contract
+
+Replay requires an existing SQLite file and explicit run ID. A dedicated read-only/query-only
+connection uses fixed parameterized queries; the source is never created, migrated, or modified.
+Replay validates bounded event envelopes, unique IDs and sequences, supported versions, and
+non-conflicting lifecycle evidence. Existing detection, alert, incident, and report events are
+excluded from rule evaluation to prevent recursive detections.
+
+Replay produces schema 1.0 JSON and Markdown with source status, evidence cutoff, rule results,
+deduplication counts, and local evaluator duration. Failed and incomplete source runs retain their
+status and are not described as successful prevention. Output uses safe metadata and evidence
+references, rejects the known raw canary, and never copies arbitrary payloads.

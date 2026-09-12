@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0",
+  "rule_id": "ASL-EVENT-001",
+  "rule_version": 1,
+  "description": "Strict defense policy denied a tool request",
+  "severity": "medium",
+  "supported_event_versions": ["0.2"],
+  "kind": "single_event",
+  "steps": [
+    {
+      "name": "denial",
+      "predicates": [
+        {"field": "event_type", "operator": "equals", "value": "policy.denied"},
+        {"field": "payload.profile", "operator": "equals", "value": "strict"},
+        {"field": "payload.enforcement_layer", "operator": "equals", "value": "defense"}
+      ]
+    }
+  ]
+}

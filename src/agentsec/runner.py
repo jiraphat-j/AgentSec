@@ -171,9 +171,7 @@ class ScenarioRunner:
             detector = CorrelationDetector()
             detection = detector.evaluate_and_record(store.events(run_id, trace_id), collector)
             evidence = store.events(run_id, trace_id)
-            report = build_report(
-                scenario, run_id, trace_id, evidence, detection, profile
-            )
+            report = build_report(scenario, run_id, trace_id, evidence, detection, profile)
             json_path, markdown_path = write_reports(report, run_directory)
             collector.emit(
                 "report.created",
@@ -251,9 +249,7 @@ class ScenarioRunner:
             ),
         )
         write_comparison_reports(report, comparison_directory)
-        return ComparisonResult(
-            comparison_id, comparison_directory, vulnerable, strict, report
-        )
+        return ComparisonResult(comparison_id, comparison_directory, vulnerable, strict, report)
 
     @staticmethod
     def _read_run_events(result: RunResult) -> list[Event]:

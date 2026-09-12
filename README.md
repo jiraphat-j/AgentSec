@@ -1,6 +1,6 @@
 # AgentSec Lab
 
-> **Status: Phase 1 merged; Phase 2 implementation candidate awaiting security review and tests**
+> **Status: Phase 2 merged; Phase 3 implementation candidate locally verified**
 
 AgentSec Lab is a planned open-source detection-engineering lab for tracing AI-agent attacks from prompt injection and tool abuse to security alerts and incident investigation.
 
@@ -52,18 +52,12 @@ The deterministic MVP validates the attack-to-incident pipeline, telemetry, dete
 
 ## Current Scope
 
-The repository contains the Phase 1 deterministic Vertical Slice implementation and test suite.
-The security-sensitive implementation received human review approval and passed local
-verification on Windows with Python 3.13.15. Phase 1 was merged through
-[PR #1](https://github.com/jiraphat-j/AgentSec/pull/1). The manual GitHub Actions workflow is
-configured for Windows and Linux; its remote results could not be verified during Phase 2 planning.
-
-The [Phase 2 implementation plan](docs/PHASE_2_IMPLEMENTATION_PLAN.md) now has an implementation
-candidate on its feature branch. Because it changes the Tool Gateway and policy enforcement, it
-must receive mandatory human security review before its tests or demo are executed. The commands
-below describe the candidate and are not yet claimed as verified.
-
-Review the [Phase 2 security checklist](docs/PHASE_2_SECURITY_REVIEW.md) before verification.
+The repository contains the Phase 1 Vertical Slice and the merged Phase 2 runtime-control work.
+Phase 2 received human security review, was locally verified, and was merged through
+[PR #2](https://github.com/jiraphat-j/AgentSec/pull/2). Phase 3 adds a bounded declarative rule
+engine, exact rule fixtures, and read-only replay over canonical SQLite evidence. It is currently
+an implementation candidate; local and remote verification facts are recorded separately rather
+than inferred from implementation status.
 
 [MVP_SCOPE.md](MVP_SCOPE.md) is the source of truth for MVP scope. Any broader item in the architecture draft is a proposal or backlog item unless the decision register says otherwise.
 
@@ -95,16 +89,34 @@ fake-secret read before adapter dispatch. The comparison command creates isolate
 adds `comparison.json` and `comparison.md`. Risk scores are deterministic educational heuristics,
 and approval behavior is synchronous simulation rather than actual human authorization.
 
+Validate the packaged Phase 3 rules and run their positive/negative fixtures:
+
+```powershell
+.venv\Scripts\agentsec rules validate --rules src/agentsec/resources/rules
+.venv\Scripts\agentsec rules test --rules src/agentsec/resources/rules --fixtures src/agentsec/resources/rule_fixtures --output-dir artifacts/rule-tests
+```
+
+Replay one existing run without rerunning its agent, gateway, or adapters:
+
+```powershell
+.venv\Scripts\agentsec replay --events <path-to-events.sqlite3> --run-id <run-id> --rules src/agentsec/resources/rules --output-dir artifacts/replays
+```
+
+Replay writes a fresh directory containing `replay.json` and `replay.md`. The local processing
+duration excludes input and report output and is not MTTD or MTTR. Fixture coverage is synthetic
+contract coverage, not a production accuracy or false-positive-rate claim.
+
 Each successful run creates a new directory containing canonical `events.sqlite3`, required
 `report.json`, and required `report.md`. The generated reports contain only redacted canary
 evidence.
 
 See the [example incident report](examples/reports/example-report.md) for the expected human
 output and the [example defense comparison](examples/reports/example-comparison.md) for the
-Phase 2 summary format.
+Phase 2 summary format. The [example replay](examples/reports/example-replay.md) summarizes the
+Phase 3 output contract.
 
 The detailed implementation sequence and acceptance mapping are in
-[docs/PHASE_1_IMPLEMENTATION_PLAN.md](docs/PHASE_1_IMPLEMENTATION_PLAN.md). Executable contract
+[docs/PHASE_3_IMPLEMENTATION_PLAN.md](docs/PHASE_3_IMPLEMENTATION_PLAN.md). Executable contract
 details are in [docs/CONTRACTS.md](docs/CONTRACTS.md).
 
 ## Safety

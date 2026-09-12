@@ -65,9 +65,9 @@ Indirect Prompt Injection
 
 ## Phase 2 — Runtime Security Controls
 
-**Status:** Implementation candidate prepared from the
-[Phase 2 plan](docs/PHASE_2_IMPLEMENTATION_PLAN.md); mandatory security review and all execution
-checks remain pending. Remote Phase 1 CI evidence remains a verification checkpoint.
+**Status:** Security-reviewed, locally verified, and merged through
+[PR #2](https://github.com/jiraphat-j/AgentSec/pull/2). Remote Windows/Linux workflow evidence is
+tracked separately and is not inferred from the merge.
 
 **Goal:** Compare observability with prevention.
 
@@ -87,11 +87,15 @@ checks remain pending. Remote Phase 1 CI evidence remains a verification checkpo
 
 ## Phase 3 — Detection-Engineering Platform
 
+**Status:** Implementation candidate in progress on a feature branch. Declarative event,
+sequence, and correlation rules plus read-only SQLite replay are implemented; final local and
+remote verification evidence remains an exit checkpoint.
+
 **Goal:** Make detection authoring and testing extensible.
 
 - Versioned rule schema
 - Single-event, sequence, and correlation rules
-- Threshold rules after a baseline exists
+- Threshold rules after a documented benign baseline exists (deferred from this phase)
 - Rule validation and test harness
 - Alert deduplication and enrichment
 - False-positive fixtures
