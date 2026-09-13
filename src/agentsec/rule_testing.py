@@ -84,16 +84,18 @@ def run_rule_tests(
         evaluation = evaluate_rule(rule, list(fixture.events))
         actual = tuple(match.evidence_event_ids for match in evaluation.matches)
         expected = fixture.expected_evidence
-        if expected:
-            positive.add(identity)
-        else:
-            negative.add(identity)
+        fixture_passed = actual == expected
+        if fixture_passed:
+            if expected:
+                positive.add(identity)
+            else:
+                negative.add(identity)
         results.append(
             RuleFixtureResult(
                 fixture=fixture.name,
                 rule_id=fixture.rule_id,
                 rule_version=fixture.rule_version,
-                passed=actual == expected,
+                passed=fixture_passed,
                 expected_evidence=expected,
                 actual_evidence=actual,
             )

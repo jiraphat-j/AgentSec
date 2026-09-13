@@ -1,6 +1,6 @@
 # AgentSec Lab — Decision Register
 
-> Last updated: 2026-09-09
+> Last updated: 2026-09-12
 > This register separates current decisions from ideas in the architecture draft. It does not replace Architecture Decision Records (ADRs). Long-lived implementation decisions should receive an ADR when development begins.
 
 The non-negotiable MVP security boundary is defined in [THREAT_MODEL.md](THREAT_MODEL.md).
@@ -47,6 +47,10 @@ The non-negotiable MVP security boundary is defined in [THREAT_MODEL.md](THREAT_
 | D-029 | Phase 3 declarative detections use strict bounded JSON schema 1.0; YAML and executable plugins remain deferred | Makes rules reviewable data and resolves the initial authoring-format question narrowly |
 | D-030 | Replay reads one selected run from existing SQLite through a dedicated read-only connection and never invokes the scenario runtime | Preserves canonical evidence and prevents replay from causing tool effects |
 | D-031 | Threshold rules remain deferred until a documented benign baseline exists | Prevents unsupported thresholds and false-positive claims from synthetic examples |
+| D-032 | Phase 4 derives one immutable investigation incident per matched run/trace and never groups across snapshots or rule sets | Makes evidence navigation deterministic without claiming campaign attribution |
+| D-033 | `core-lab-v1` uses explicit attack/benign labels and run-level `metrics-v1` denominators | Resolves lab outcome definitions without presenting synthetic fixtures as production accuracy |
+| D-034 | Phase 4 fingerprints validated logical event snapshots and complete rule definitions with versioned SHA-256 serialization | Detects content changes while explicitly making no authenticity or custody claim |
+| D-035 | Historical alert/incident timing is reported only from validated linked source events; offline processing time remains separate | Prevents replay duration from being mislabeled MTTD or MTTI |
 
 ## Proposed
 
@@ -64,8 +68,6 @@ The non-negotiable MVP security boundary is defined in [THREAT_MODEL.md](THREAT_
 |---|---|---|
 | R-002 | How should later phases collect real network telemetry safely? | Container network and controlled-proxy prototype; this does not block the socket-free MVP |
 | R-003 | Should the event schema map to OCSF, ECS, OpenTelemetry, or remain custom? | Mapping spike focused on agent-specific context |
-| R-005 | How will the project define attack success, attempted impact, and completed impact? | Metric definitions and sample reports |
-| R-006 | What evidence-integrity level is appropriate for a lab? | Evaluate artifact digests, hash chaining, and append-only records |
 | R-007 | Which model output or reasoning metadata can be stored safely? | Privacy, provider terms, and observability requirements; do not require hidden chain-of-thought |
 | R-008 | How can real-LLM tests remain reproducible and cost-bounded? | Opt-in integration-test and replay design |
 | R-009 | Which security mappings suit AI-agent attack chains? | Evaluate ATT&CK, ATLAS, and OWASP mappings without overclaiming |
@@ -103,6 +105,13 @@ exact positive and negative fixtures, and read-only SQLite replay. Threshold rul
 until a benign baseline exists. See the [Phase 3 plan](docs/PHASE_3_IMPLEMENTATION_PLAN.md) and
 ADR-006.
 
+## Phase 4 Incident and Evaluation Direction
+
+Phase 4 adopts immutable trace-level incident snapshots, logical snapshot and rule-set
+fingerprints, and the closed `core-lab-v1` evaluation suite. Run-level metric definitions and
+recorded-only historical timing are fixed by ADR-007. Fingerprints provide change detection, not
+source authentication or cryptographic custody.
+
 ## ADR Index
 
 - [ADR-001: Core Language and Runtime](docs/adr/ADR-001-core-language-and-runtime.md) — **Accepted**
@@ -111,3 +120,4 @@ ADR-006.
 - [ADR-004: Phase 1 Package and Contract Implementation](docs/adr/ADR-004-phase-1-package-and-contracts.md) — **Accepted**
 - [ADR-005: Phase 2 Runtime Policy and Comparison](docs/adr/ADR-005-phase-2-runtime-policy-and-comparison.md) — **Accepted**
 - [ADR-006: Phase 3 Detection Rules and Offline Replay](docs/adr/ADR-006-phase-3-detection-rules-and-replay.md) — **Accepted**
+- [ADR-007: Phase 4 Incident Investigation and Evaluation](docs/adr/ADR-007-phase-4-incidents-and-evaluation.md) — **Accepted**

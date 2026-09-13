@@ -3,16 +3,23 @@ from __future__ import annotations
 import json
 import socket
 import sqlite3
+from contextlib import closing
 from pathlib import Path
 
 import pytest
 
+import agentsec.replay as replay_module
 from agentsec.adapters import LabHttpSinkAdapter, VirtualFileAdapter
 from agentsec.cli import main
 from agentsec.constants import MAX_REPORT_BYTES, SCENARIO_ID
 from agentsec.detection_reporting import write_replay_report
 from agentsec.events import EventCollector, EventStore
-from agentsec.replay import ReplayInputError, ReplayService, read_replay_evidence
+from agentsec.replay import (
+    ReplayInputError,
+    ReplayResourceLimitExceeded,
+    ReplayService,
+    read_replay_evidence,
+)
 from agentsec.reporting import ReportWriteError
 from agentsec.resource_loader import load_canary
 from agentsec.rule_engine import load_rules
@@ -72,6 +79,46 @@ def test_replay_is_read_only_deterministic_and_invokes_no_runtime_adapters(
             assert match.evidence_event_ids
     assert (replay.replay_directory / "replay.json").is_file()
     assert (replay.replay_directory / "replay.md").is_file()
+
+
+def test_imported_events_view_is_rejected(tmp_path: Path) -> None:
+    path = tmp_path / "view.sqlite3"
+    with closing(sqlite3.connect(path)) as connection:
+        connection.execute("CREATE VIEW events AS SELECT 'run_1' AS run_id")
+    with pytest.raises(ReplayInputError, match="canonical events table"):
+        read_replay_evidence(path, "run_1")
+
+
+def test_imported_query_work_is_bounded(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    path = tmp_path / "large-scan.sqlite3"
+    with closing(sqlite3.connect(path)) as connection:
+        connection.execute(
+            "CREATE TABLE events (event_id TEXT, run_id TEXT, trace_id TEXT, "
+            "sequence INTEGER, timestamp TEXT, event_type TEXT, source_component TEXT, "
+            "tool_call_id TEXT, schema_version TEXT, payload_json TEXT)"
+        )
+        connection.executemany(
+            "INSERT INTO events VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (
+                (
+                    f"evt_{sequence}",
+                    "run_1",
+                    "trace_1",
+                    sequence,
+                    "2026-09-13T00:00:00Z",
+                    "noise",
+                    "fixture",
+                    None,
+                    "0.2",
+                    "{}",
+                )
+                for sequence in range(1, 1501)
+            ),
+        )
+        connection.commit()
+    monkeypatch.setattr(replay_module, "_MAX_SQLITE_VM_STEPS", 0)
+    with pytest.raises(ReplayResourceLimitExceeded, match="query exceeds"):
+        read_replay_evidence(path, "run_1")
 
 
 def test_replay_labels_failed_and_incomplete_sources_without_prevention_claim(

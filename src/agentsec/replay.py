@@ -27,6 +27,7 @@ _DERIVED_EVENT_TYPES = {
     "incident.created",
     "report.created",
 }
+_MAX_SQLITE_VM_STEPS = 5_000_000
 
 
 class ReplayInputError(ValueError):
@@ -76,7 +77,20 @@ def read_replay_evidence(path: Path, run_id: str) -> ReplayEvidence:
         connection.row_factory = sqlite3.Row
         connection.enable_load_extension(False)
         connection.execute("PRAGMA query_only = ON")
+        progress_calls = 0
+
+        def bound_query() -> int:
+            nonlocal progress_calls
+            progress_calls += 1
+            return int(progress_calls * 1000 > _MAX_SQLITE_VM_STEPS)
+
+        connection.set_progress_handler(bound_query, 1000)
         connection.execute("BEGIN")
+        schema = connection.execute(
+            "SELECT type FROM sqlite_master WHERE name = ?", ("events",)
+        ).fetchone()
+        if schema is None or schema["type"] != "table":
+            raise ReplayInputError("event database must contain a canonical events table")
         rows = connection.execute(
             """
             SELECT event_id, run_id, trace_id, sequence, timestamp, event_type,
@@ -89,6 +103,10 @@ def read_replay_evidence(path: Path, run_id: str) -> ReplayEvidence:
             (run_id, MAX_REPLAY_EVENTS + 1),
         ).fetchall()
     except sqlite3.Error as error:
+        if "interrupted" in str(error).lower():
+            raise ReplayResourceLimitExceeded(
+                "event database query exceeds fixed work limit"
+            ) from error
         raise ReplayInputError("event database is not a supported canonical store") from error
     finally:
         if "connection" in locals():

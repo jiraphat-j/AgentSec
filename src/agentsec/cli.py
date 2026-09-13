@@ -10,6 +10,8 @@ from pathlib import Path
 from pydantic import ValidationError
 
 from .constants import SCENARIO_ID
+from .evaluation import EvaluationService
+from .incidents import InvestigationService
 from .models import ApprovalSimulation, PolicyProfile
 from .replay import ReplayService
 from .rule_engine import load_rules
@@ -63,6 +65,21 @@ def build_parser() -> argparse.ArgumentParser:
     replay_parser.add_argument("--run-id", required=True)
     replay_parser.add_argument("--rules", type=Path, required=True)
     _add_output_directory(replay_parser)
+
+    investigate_parser = subparsers.add_parser(
+        "investigate", help="derive alerts and incidents from one existing SQLite run"
+    )
+    investigate_parser.add_argument("--events", type=Path, required=True)
+    investigate_parser.add_argument("--run-id", required=True)
+    investigate_parser.add_argument("--rules", type=Path, required=True)
+    _add_output_directory(investigate_parser)
+
+    evaluate_parser = subparsers.add_parser(
+        "evaluate", help="run the closed packaged incident-evaluation suite"
+    )
+    evaluate_parser.add_argument("--suite", choices=("core-lab-v1",), required=True)
+    evaluate_parser.add_argument("--repetitions", type=int, default=1)
+    _add_output_directory(evaluate_parser)
     return parser
 
 
@@ -134,6 +151,35 @@ def main(argv: Sequence[str] | None = None) -> int:
             print(f"matches={replay_result.report.total_matches}")
             print(f"artifacts={replay_result.replay_directory}")
             return 0
+        if arguments.command == "investigate":
+            investigation = InvestigationService().investigate(
+                arguments.events,
+                arguments.run_id,
+                arguments.rules,
+                arguments.output_dir,
+            )
+            print(f"investigation_id={investigation.report.investigation_id}")
+            print(f"source_status={investigation.report.source_status}")
+            print(f"derived_alerts={len(investigation.report.derived_alerts)}")
+            print(f"incidents={len(investigation.report.incidents)}")
+            print(f"artifacts={investigation.investigation_directory}")
+            return 0
+        if arguments.command == "evaluate":
+            evaluation = EvaluationService().evaluate(
+                arguments.suite,
+                arguments.repetitions,
+                arguments.output_dir,
+            )
+            print(f"evaluation_id={evaluation.report.evaluation_id}")
+            print(f"status={evaluation.report.status}")
+            print(
+                "children="
+                f"{evaluation.report.completed_children}/{evaluation.report.scheduled_children}"
+            )
+            print(f"artifacts={evaluation.evaluation_directory}")
+            if evaluation.report.status == "partial":
+                return 1
+            return 0 if evaluation.report.status == "passed" else 2
         parser.error("a command is required")
     except (ValidationError, ValueError) as error:
         print(f"error: invalid input ({type(error).__name__})", file=sys.stderr)
