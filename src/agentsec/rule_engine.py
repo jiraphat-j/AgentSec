@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from bisect import bisect_right
 from collections import defaultdict
 from pathlib import Path
 from typing import Final, cast
@@ -153,17 +154,25 @@ def evaluate_rule(rule: DetectionRule, events: list[Event]) -> RuleEvaluation:
 
     for identity in sorted(grouped):
         ordered = tuple(sorted(grouped[identity], key=lambda item: (item.sequence, item.event_id)))
+        step_candidates = tuple(
+            tuple(event for event in ordered if _step_matches(event, rule, step_index))
+            for step_index in range(len(rule.steps))
+        )
+        step_sequences = tuple(
+            tuple(event.sequence for event in candidates_at_step)
+            for candidates_at_step in step_candidates
+        )
 
         def walk(
             step_index: int,
             last_sequence: int,
             selected: tuple[Event, ...],
-            event_group: tuple[Event, ...] = ordered,
+            candidates_by_step: tuple[tuple[Event, ...], ...] = step_candidates,
+            sequences_by_step: tuple[tuple[int, ...], ...] = step_sequences,
         ) -> None:
             nonlocal candidates
-            for event in event_group:
-                if event.sequence <= last_sequence or not _step_matches(event, rule, step_index):
-                    continue
+            start = bisect_right(sequences_by_step[step_index], last_sequence)
+            for event in candidates_by_step[step_index][start:]:
                 candidates += 1
                 if candidates > MAX_RULE_CANDIDATES:
                     raise RuleEvaluationLimitExceeded("rule candidate count exceeds fixed limit")

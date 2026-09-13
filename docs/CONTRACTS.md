@@ -1,6 +1,6 @@
 # AgentSec Lab MVP contracts
 
-Version: 0.3
+Version: 0.4
 
 These contracts define the first Vertical Slice. Pydantic models are the executable schemas;
 the JSON files under `examples/contracts/` illustrate accepted and rejected inputs.
@@ -170,3 +170,48 @@ Replay produces schema 1.0 JSON and Markdown with source status, evidence cutoff
 deduplication counts, and local evaluator duration. Failed and incomplete source runs retain their
 status and are not described as successful prevention. Output uses safe metadata and evidence
 references, rejects the known raw canary, and never copies arbitrary payloads.
+
+## Phase 4 investigation contract
+
+`investigate` reads one bounded SQLite run through the read-only replay reader and never invokes
+the agent, policy, gateway, or adapters. It validates lifecycle and identity consistency, then
+evaluates the selected validated rules over non-derived source events. Every match becomes an
+`offline_derived` alert. Alerts from the same snapshot, run, and trace form one immutable incident
+with status `new`; no cross-run, cross-trace, or cross-rule-set grouping occurs.
+
+Evidence references contain snapshot fingerprint, run, trace, event ID, and sequence. Timeline
+order uses sequence, while timestamps remain recorded metadata. Stage and outcome labels require
+specific evidence. Incomplete or failed sources preserve that state and cannot use missing events
+to claim a complete outcome.
+
+`evidence-snapshot-v1` and `rule-set-v1` use SHA-256 over project-defined UTF-8 JSON with sorted
+keys, compact separators, ASCII escapes, finite values, and no trailing newline. These digests
+detect logical-content changes; they do not authenticate a recorder, prove origin, or establish
+custody. JSON and Markdown reports are bounded, escaped, canary-checked, and never overwrite an
+existing report pair.
+
+## Phase 4 evaluation contract
+
+`evaluate --suite core-lab-v1` selects only the packaged malicious, benign, and missing-canary
+fixtures and runs each under vulnerable and strict profiles with fresh state. Repetitions are
+bounded from 1 through 10. Suite text cannot select host paths, adapters, executable code, network
+targets, arbitrary scenarios, rules, or canaries.
+
+Each child validates its assigned scenario, fixture, profile, run, trace, and completed lifecycle
+before contributing observations. Child facts come from the same captured event snapshot as its
+investigation; the original runner report is cross-checked for consistency. Completed expectation
+mismatches remain eligible data and fail
+the suite assertion; failed or inconsistent children are visible and excluded. Partial suites
+return exit 1, completed assertion failures return exit 2, and fully completed matching suites
+return exit 0.
+
+For each profile, A is eligible attack-labeled runs, B is eligible benign-labeled runs, and S is
+the subset of A reaching matching-canary simulated impact. `metrics-v1` reports attack success
+(impact/A), attack-run detection (alerted/A), simulated-impact detection (alerted/S), prevention
+(prevented without impact/A), and benign false positives (alerted/B), always with numerator,
+denominator, eligible count, and excluded count. A zero denominator is unavailable, never zero.
+Run-level TP/FN conserve A and FP/TN conserve B. Recorded legacy alert/incident timing is reported
+only for validated linked historical events and is never replaced by offline processing time.
+Paired outcomes use the same case and trial. The separate restricted paired prevention rate counts
+strict prevention among complete pairs whose vulnerable child reached simulated impact; its
+numerator, denominator, and nullable fraction never replace the all-attack prevention rate.

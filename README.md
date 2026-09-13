@@ -1,6 +1,6 @@
 # AgentSec Lab
 
-> **Status: Phase 2 merged; Phase 3 implementation candidate locally verified**
+> **Status: Phase 3 merged; Phase 4 implementation candidate locally verified**
 
 AgentSec Lab is a planned open-source detection-engineering lab for tracing AI-agent attacks from prompt injection and tool abuse to security alerts and incident investigation.
 
@@ -52,12 +52,12 @@ The deterministic MVP validates the attack-to-incident pipeline, telemetry, dete
 
 ## Current Scope
 
-The repository contains the Phase 1 Vertical Slice and the merged Phase 2 runtime-control work.
-Phase 2 received human security review, was locally verified, and was merged through
-[PR #2](https://github.com/jiraphat-j/AgentSec/pull/2). Phase 3 adds a bounded declarative rule
-engine, exact rule fixtures, and read-only replay over canonical SQLite evidence. It is currently
-an implementation candidate; local and remote verification facts are recorded separately rather
-than inferred from implementation status.
+The repository contains the Phase 1 Vertical Slice plus merged Phase 2 runtime controls and
+Phase 3 detection engineering. Phase 3 was merged through
+[PR #3](https://github.com/jiraphat-j/AgentSec/pull/3). Phase 4 adds offline incident
+investigation, logical evidence fingerprints, and a closed labeled evaluation suite. The current
+feature-branch implementation has passed its hashing review and local verification; final diff
+review and remote CI remain delivery gates.
 
 [MVP_SCOPE.md](MVP_SCOPE.md) is the source of truth for MVP scope. Any broader item in the architecture draft is a proposal or backlog item unless the decision register says otherwise.
 
@@ -106,6 +106,22 @@ Replay writes a fresh directory containing `replay.json` and `replay.md`. The lo
 duration excludes input and report output and is not MTTD or MTTR. Fixture coverage is synthetic
 contract coverage, not a production accuracy or false-positive-rate claim.
 
+Investigate one recorded run without invoking the scenario runtime:
+
+```powershell
+.venv\Scripts\agentsec investigate --events <path-to-events.sqlite3> --run-id <run-id> --rules src/agentsec/resources/rules --output-dir artifacts/investigations
+```
+
+Run the closed three-fixture matrix under both policy profiles:
+
+```powershell
+.venv\Scripts\agentsec evaluate --suite core-lab-v1 --repetitions 1 --output-dir artifacts/evaluations
+```
+
+Investigation fingerprints detect changes in validated logical content; they do not authenticate
+the source. Evaluation metrics describe only the packaged synthetic suite, and recorded legacy
+timing remains separate from offline processing duration.
+
 Each successful run creates a new directory containing canonical `events.sqlite3`, required
 `report.json`, and required `report.md`. The generated reports contain only redacted canary
 evidence.
@@ -113,11 +129,13 @@ evidence.
 See the [example incident report](examples/reports/example-report.md) for the expected human
 output and the [example defense comparison](examples/reports/example-comparison.md) for the
 Phase 2 summary format. The [example replay](examples/reports/example-replay.md) summarizes the
-Phase 3 output contract.
+Phase 3 output contract. The [example investigation](examples/reports/example-investigation.md)
+and [example evaluation](examples/reports/example-evaluation.md) summarize the Phase 4 outputs.
 
-The detailed implementation sequence and acceptance mapping are in
-[docs/PHASE_3_IMPLEMENTATION_PLAN.md](docs/PHASE_3_IMPLEMENTATION_PLAN.md). Executable contract
-details are in [docs/CONTRACTS.md](docs/CONTRACTS.md).
+The Phase 4 sequence and acceptance mapping are in the accepted
+[implementation plan](docs/PHASE_4_IMPLEMENTATION_PLAN.md). Executable contract details are in
+[docs/CONTRACTS.md](docs/CONTRACTS.md), and current verification evidence is tracked in
+[docs/PHASE_4_VERIFICATION.md](docs/PHASE_4_VERIFICATION.md).
 
 ## Safety
 

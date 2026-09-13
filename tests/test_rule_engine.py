@@ -6,6 +6,7 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
+import agentsec.rule_engine as engine_module
 from agentsec.models import Event
 from agentsec.rule_engine import (
     RuleEvaluationLimitExceeded,
@@ -97,6 +98,55 @@ def test_packaged_rules_have_positive_and_negative_exact_fixtures() -> None:
     assert report.status == "passed"
     assert report.covered_rules == report.total_rules == 3
     assert report.assertions_passed == report.assertions_total == 6
+
+
+def test_rule_step_filter_scans_each_event_only_once_per_step(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    steps: list[dict[str, object]] = [
+        {
+            "name": "first",
+            "predicates": [{"field": "event_type", "operator": "equals", "value": "test.first"}],
+        },
+        {
+            "name": "second",
+            "predicates": [{"field": "event_type", "operator": "equals", "value": "test.second"}],
+        },
+    ]
+    rule = validate_rule_json(rule_json(kind="sequence", steps=steps))
+    events = [event(f"first_{number}", number, "test.first", {}) for number in range(1, 101)] + [
+        event(f"noise_{number}", number + 100, "test.noise", {}) for number in range(1, 1001)
+    ]
+    original = engine_module._step_matches
+    scans = 0
+
+    def counted(item: Event, rule: DetectionRule, step_index: int) -> bool:
+        nonlocal scans
+        scans += 1
+        return original(item, rule, step_index)
+
+    monkeypatch.setattr(engine_module, "_step_matches", counted)
+    evaluation = evaluate_rule(rule, events)
+    assert evaluation.matches == ()
+    assert evaluation.candidate_count == 100
+    assert scans == len(events) * 2
+
+
+def test_failed_positive_fixture_does_not_count_as_rule_coverage() -> None:
+    rules = load_rules(RULES)
+    fixtures = list(load_rule_fixtures(FIXTURES))
+    positive_index = next(
+        index
+        for index, fixture in enumerate(fixtures)
+        if fixture.rule_id == "ASL-SEQ-001" and fixture.expected_evidence
+    )
+    fixtures[positive_index] = fixtures[positive_index].model_copy(update={"expected_evidence": ()})
+
+    report = run_rule_tests(rules, tuple(fixtures))
+
+    assert report.status == "failed"
+    assert report.covered_rules == 2
+    assert report.assertions_passed == 5
 
 
 @pytest.mark.parametrize(

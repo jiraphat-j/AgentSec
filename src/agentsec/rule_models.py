@@ -204,12 +204,12 @@ class RuleTestReport(StrictModel):
         positive = {
             (result.rule_id, result.rule_version)
             for result in self.results
-            if result.expected_evidence
+            if result.passed and result.expected_evidence
         }
         negative = {
             (result.rule_id, result.rule_version)
             for result in self.results
-            if not result.expected_evidence
+            if result.passed and not result.expected_evidence
         }
         covered = len(positive & negative)
         passed = sum(result.passed for result in self.results)
