@@ -15,11 +15,25 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
   "build>=1.2,<2",
+  "fastapi>=0.115,<1",
+  "httpx>=0.28,<1",
   "mypy>=1.14,<2",
   "pip-audit>=2.8,<3",
   "pytest>=9.0.3,<10",
   "pytest-cov>=6,<7",
   "ruff>=0.9,<1",
+  "uvicorn>=0.34,<1",
+]
+dashboard = [
+  "fastapi>=0.115,<1",
+  "uvicorn>=0.34,<1",
+]
+dashboard-test = [
+  "fastapi>=0.115,<1",
+  "httpx>=0.28,<1",
+  "playwright>=1.50,<2",
+  "pytest-playwright>=0.6,<1",
+  "uvicorn>=0.34,<1",
 ]
 
 [project.scripts]
@@ -32,12 +46,21 @@ package-dir = {"" = "src"}
 where = ["src"]
 
 [tool.setuptools.package-data]
-agentsec = ["resources/**/*.json", "resources/**/*.txt"]
+agentsec = [
+  "resources/**/*.css",
+  "resources/**/*.html",
+  "resources/**/*.js",
+  "resources/**/*.json",
+  "resources/**/*.txt",
+]
 
 [tool.pytest.ini_options]
-addopts = "-ra --strict-config --strict-markers"
+addopts = "-ra --strict-config --strict-markers -m 'not dashboard_e2e'"
 testpaths = ["tests"]
 pythonpath = ["src"]
+markers = [
+  "dashboard_e2e: approved local-listener browser tests for the optional dashboard",
+]
 
 [tool.ruff]
 line-length = 100

@@ -80,6 +80,12 @@ def build_parser() -> argparse.ArgumentParser:
     evaluate_parser.add_argument("--suite", choices=("core-lab-v1",), required=True)
     evaluate_parser.add_argument("--repetitions", type=int, default=1)
     _add_output_directory(evaluate_parser)
+
+    dashboard_parser = subparsers.add_parser(
+        "dashboard", help="serve selected lab artifacts in a read-only local dashboard"
+    )
+    dashboard_parser.add_argument("--manifest", type=Path, required=True)
+    dashboard_parser.add_argument("--port", type=int, default=8765)
     return parser
 
 
@@ -180,6 +186,29 @@ def main(argv: Sequence[str] | None = None) -> int:
             if evaluation.report.status == "partial":
                 return 1
             return 0 if evaluation.report.status == "passed" else 2
+        if arguments.command == "dashboard":
+            try:
+                import uvicorn
+
+                from .dashboard_api import create_dashboard_app
+                from .dashboard_catalog import DashboardCatalog
+            except ImportError as error:
+                raise ValueError(
+                    "dashboard dependencies are unavailable; install agentsec-lab[dashboard]"
+                ) from error
+            if not 1 <= arguments.port <= 65535:
+                raise ValueError("dashboard port must be between 1 and 65535")
+            catalog = DashboardCatalog.load(arguments.manifest)
+            app = create_dashboard_app(catalog, port=arguments.port)
+            uvicorn.run(
+                app,
+                host="127.0.0.1",
+                port=arguments.port,
+                reload=False,
+                workers=1,
+                access_log=False,
+            )
+            return 0
         parser.error("a command is required")
     except (ValidationError, ValueError) as error:
         print(f"error: invalid input ({type(error).__name__})", file=sys.stderr)

@@ -1,6 +1,6 @@
 # AgentSec Lab
 
-> **Status: Phase 3 merged; Phase 4 implementation candidate locally verified**
+> **Status: Phase 4 merged and verified; Phase 5 dashboard implementation prepared, verification pending**
 
 AgentSec Lab is a planned open-source detection-engineering lab for tracing AI-agent attacks from prompt injection and tool abuse to security alerts and incident investigation.
 
@@ -52,12 +52,11 @@ The deterministic MVP validates the attack-to-incident pipeline, telemetry, dete
 
 ## Current Scope
 
-The repository contains the Phase 1 Vertical Slice plus merged Phase 2 runtime controls and
-Phase 3 detection engineering. Phase 3 was merged through
-[PR #3](https://github.com/jiraphat-j/AgentSec/pull/3). Phase 4 adds offline incident
-investigation, logical evidence fingerprints, and a closed labeled evaluation suite. The current
-feature-branch implementation has passed its hashing review and local verification; final diff
-review and remote CI remain delivery gates.
+The repository contains the Phase 1 Vertical Slice plus merged Phase 2 runtime controls, Phase 3
+detection engineering, and Phase 4 offline incident investigation and evaluation. Phase 4 passed
+its hashing review, local verification, final owner review, and human-dispatched Windows/Ubuntu CI
+for merged revision `dd3dbe1`. Phase 5 dashboard work is defined by the proposed implementation
+plan and has not yet been verified.
 
 [MVP_SCOPE.md](MVP_SCOPE.md) is the source of truth for MVP scope. Any broader item in the architecture draft is a proposal or backlog item unless the decision register says otherwise.
 
@@ -121,6 +120,17 @@ Run the closed three-fixture matrix under both policy profiles:
 Investigation fingerprints detect changes in validated logical content; they do not authenticate
 the source. Evaluation metrics describe only the packaged synthetic suite, and recorded legacy
 timing remains separate from offline processing duration.
+
+Install and start the optional read-only dashboard with an explicit artifact manifest:
+
+```powershell
+.venv\Scripts\python -m pip install -e ".[dashboard]"
+.venv\Scripts\agentsec dashboard --manifest .\dashboard-manifest.json
+```
+
+See [dashboard setup, manifest rules, and limitations](docs/DASHBOARD.md). The dashboard binds only
+to `127.0.0.1`, reads a fixed snapshot of selected artifacts, and provides no browser action that
+runs or changes the lab.
 
 Each successful run creates a new directory containing canonical `events.sqlite3`, required
 `report.json`, and required `report.md`. The generated reports contain only redacted canary

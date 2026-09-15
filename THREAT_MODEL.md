@@ -222,3 +222,24 @@ Phase 2 retains every invariant above and adds policy, risk, approval, and compa
 `risk-v1` is an explainable teaching heuristic rather than a calibrated probability. Simulated
 approval is product behavior and never substitutes for repository security review. The strict
 profile proves prevention only inside this fixed socket-free deterministic lab.
+
+## 15. Phase 5 local dashboard boundary
+
+The optional dashboard opens one explicit listener on literal `127.0.0.1`. This is an
+operator-facing presentation boundary and does not change the socket-free scenario runtime or
+`LabHttpSinkAdapter`. It assumes a trusted single-user machine; loopback does not authenticate
+other local processes or users.
+
+- Only an operator-authored, bounded manifest selects artifacts.
+- Manifest paths are relative and confined; absolute, traversal, link/reparse traversal, and
+  non-regular targets are rejected.
+- SQLite is captured through the existing read-only/query-only reader; dashboard requests never
+  reopen arbitrary paths or write evidence.
+- API output uses allowlisted projections, fixed pagination, response limits, and sanitized errors.
+- Host, Origin, Fetch Metadata, and HTTP methods are restricted. CORS, uploads, WebSockets,
+  external assets, outbound requests, and browser-triggered lab actions are absent.
+- Browser text is inserted as text, with a restrictive content security policy and no raw
+  Markdown/HTML rendering.
+
+Remote access, authentication, multi-user use, write operations, live execution, or a policy
+simulator triggers another threat-model and architecture review.
