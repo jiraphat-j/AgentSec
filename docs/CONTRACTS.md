@@ -215,3 +215,55 @@ only for validated linked historical events and is never replaced by offline pro
 Paired outcomes use the same case and trial. The separate restricted paired prevention rate counts
 strict prevention among complete pairs whose vulnerable child reached simulated impact; its
 numerator, denominator, and nullable fraction never replace the all-attack prevention rate.
+
+## Phase 5 dashboard contract
+
+The optional dashboard consumes `dashboard-manifest-v1`. A manifest contains `schema_version: 1.0`
+and no more than 256 strict entries. Each entry has a unique URL-safe `id`, a closed `kind`, a
+relative POSIX-style `path`, and optional `run_id` and `source_id` fields required by its kind.
+Event sources require a run ID. A report may name an explicitly registered event source; paths
+inside reports never grant file access.
+
+Manifest and selected-file parsing reject unknown fields and duplicate JSON object keys. Paths are
+confined beneath the manifest directory and reject absolute, drive, UNC, device, traversal,
+alternate-data-stream, symbolic-link, junction/reparse, and non-regular targets. Limits are 64 KiB
+for the manifest, 256 entries, 64 event-source runs, 256 MiB of selected input, 100,000 captured
+events, 64 MiB across report projections and serialized retained events, and 30 seconds of cooperative
+startup work. File identity and path components are checked at read time, and the startup deadline
+is checked throughout selection/loading. Existing SQLite, rule, event, and report limits still apply.
+
+The dashboard captures selected evidence once through the Phase 3 read-only/query-only SQLite
+reader. SQLite remains canonical and is never created, migrated, or changed. Imported reports are
+strictly validated against their existing schema. Provenance is one of:
+
+- `verified_against_source`: a run report exactly matches a canonical reconstruction from its
+  source event prefix, or an investigation's fingerprint, nested alert copies, references, and
+  timeline metadata resolve to the explicitly linked captured source;
+- `report_only`: the report is valid but has no selected source suitable for verification;
+- `invalid`: a supplied relationship contradicts selected evidence; startup fails.
+
+Legacy reports without a snapshot fingerprint may receive only the narrower checks supported by
+their schema. The API never calls this proof of authenticity or custody.
+
+Read API version 1 is rooted at `/api/v1`. It provides catalog, run/event, investigation,
+alert/incident, comparison, evaluation, rule, and saved rule-test GET routes. Collection responses
+contain `items`, `total`, `offset`, and `limit`; the default limit is 50 and maximum is 200. The same
+pagination applies to timelines and nested investigation/evaluation collections; detail responses
+carry nested counts instead of embedding those potentially large arrays. Unknown IDs return 404,
+invalid queries return 422, unsupported methods return 405, and bounded service failures return 503.
+Errors contain fixed codes and no filesystem paths, SQL, exception text, or rejected values. JSON
+responses are at most 1 MiB.
+
+API projections contain only explicit safe fields. Event payloads use a per-event allowlist and
+never expose tool bodies, document text, or arbitrary raw payloads. The known decoded lab canary is
+rejected from source summaries, safe events, report projections, and final API serialization before
+serving. Timeline order is trusted sequence. Impact, prevention, detection,
+control observations, recorded historical timing, and local processing time remain distinct.
+Metric values retain their recorded numerator, denominator, eligible/excluded counts, and nullable
+zero-denominator semantics.
+
+The dashboard starts only through `agentsec dashboard --manifest PATH [--port PORT]`, binds literal
+`127.0.0.1`, opens no browser, and runs one foreground process without reload or workers. It serves
+fixed packaged same-origin assets and permits GET/HEAD only. It has no CORS, upload, WebSocket,
+external asset, outbound request, run/replay/investigate/evaluate/rule-test action, authentication,
+or write operation. Existing CLI commands and schemas work without installing dashboard extras.

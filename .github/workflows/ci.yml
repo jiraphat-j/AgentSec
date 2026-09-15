@@ -34,3 +34,26 @@ jobs:
         run: python -m build
       - name: Audit Python dependencies
         run: python -m pip_audit
+
+  dashboard-browser:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+          cache: pip
+      - name: Install dashboard browser-test dependencies
+        run: python -m pip install --upgrade pip && python -m pip install -e ".[dev,dashboard-test]"
+      - name: Install Chromium on Windows
+        if: runner.os == 'Windows'
+        run: python -m playwright install chromium
+      - name: Install Chromium and system dependencies on Linux
+        if: runner.os == 'Linux'
+        run: python -m playwright install --with-deps chromium
+      - name: Run approved loopback dashboard browser tests
+        run: python -m pytest tests/e2e -o addopts="-ra --strict-config --strict-markers" -m dashboard_e2e

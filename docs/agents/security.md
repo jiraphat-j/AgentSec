@@ -36,6 +36,9 @@ When an agent works on a ticket touching these surfaces:
 AgentSec Lab's deterministic MVP enforces in-process isolation (see [THREAT_MODEL.md](../../THREAT_MODEL.md) and [ADR-003](../adr/ADR-003-mvp-isolation-and-no-egress.md)):
 
 - **No OS Network Sockets in MVP**: Simulated HTTP exfiltration is handled in-process via `LabHttpSinkAdapter` using the `lab://exfiltration-sink` scheme. Agents must never introduce code that opens real OS sockets during lab scenario execution.
+- **Phase 5 presentation exception**: ADR-008 permits an explicitly started dashboard listener
+  only on `127.0.0.1`. This exception does not apply to scenarios, agents, tools, adapters,
+  evaluations, or external egress. Dashboard network and path changes still require human review.
 - **Virtual Filesystem Only**: The fake file adapter must expose only synthetic, seeded virtual paths. Arbitrary host paths or traversal outside the lab root must always be rejected by the Tool Gateway.
 
 ---

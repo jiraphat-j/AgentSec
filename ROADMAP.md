@@ -110,12 +110,12 @@ remote verification evidence remains an exit checkpoint.
 
 ## Phase 4 — Incident Management and Evaluation
 
-**Status:** Locally verified implementation candidate. The accepted
-[Phase 4 implementation plan](docs/PHASE_4_IMPLEMENTATION_PLAN.md) is implemented on the feature
-branch with trace-level investigation reports, snapshot fingerprints, a labeled evaluation suite,
-explicit metric denominators, and recorded-source timing. The digest review, local runtime tests,
-package build, and installed-wheel smoke test passed. Final diff review and remote CI
-remain delivery gates. Mutable incident workflows and live declarative timing remain deferred.
+**Status:** Complete and merged through PR #4. The accepted
+[Phase 4 implementation plan](docs/PHASE_4_IMPLEMENTATION_PLAN.md) produced trace-level
+investigation reports, snapshot fingerprints, a labeled evaluation suite, explicit metric
+denominators, and recorded-source timing. Digest review, local verification, final owner review,
+and human-dispatched Windows/Ubuntu CI passed for merged revision `dd3dbe1`. Mutable incident
+workflows and live declarative timing remain deferred.
 
 **Goal:** Turn rule matches into investigation-ready incidents.
 

@@ -1,8 +1,7 @@
 # Phase 4 verification record
 
-Status: locally verified implementation candidate. The six previously observed gaps have focused
-regressions and fixes. Final human review and exact-commit CI remain open; Phase 4 is not
-marked complete.
+Status: **Complete.** The project owner completed the final Phase 4 review and approved Phase 4
+completion on 2026-09-15. The six previously observed gaps have focused regressions and fixes.
 
 ## Implemented scope
 
@@ -33,6 +32,12 @@ marked complete.
   `evaluate` passed all 6/6 children, restricted paired prevention was 1/1, and an artifact scan
   found no raw canary.
 - Dependency audit: no known vulnerabilities; the editable project distribution was skipped.
+- Exact merged revision: `dd3dbe1d6bd465ca0259b0e2a8380eb4029e78e8`.
+- GitHub Actions run [34773243387](https://github.com/jiraphat-j/AgentSec/actions/runs/34773243387)
+  was reported by the project owner as passing on Windows and Ubuntu for `dd3dbe1`.
+- Final human review: on 2026-09-15 the project owner confirmed review of evidence hashing,
+  read-only replay, rule evaluation, incident/evaluation logic, artifact publication, redaction,
+  and isolation boundaries, and approved Phase 4 completion.
 
 Local tests ran on the `phase-4-incident-evaluation` feature branch. Passing regression tests do
 not establish all C01–C13 requirements or substitute for exact-commit CI.
@@ -90,14 +95,38 @@ reversed clocks, missing links, wrong-canary stages, typed metadata, Unicode-esc
 write rollback, failed cleanup, stale temporary files, query/view limits, scan cost, global evidence failure,
 child metadata/multi-trace mismatch, final aggregate budget, and paired metric arithmetic.
 
-## Remaining gates
+## Gate closure
 
-1. Complete the broader C01–C13 acceptance evidence matrix; focused regressions above do not
-   cover every case in the implementation plan.
-2. Final human review of the complete Phase 4 diff, especially the sensitive hashing, replay
-   query, and rule-evaluation changes.
-3. Windows/Linux CI on the exact commit and record its links/results. The repository workflow
-   uses `workflow_dispatch`; a human must start it.
+- The C01–C13 evidence inventory below records the available focused and suite evidence.
+- The project owner completed the final review and accepted this evidence for Phase 4 completion.
+- Human-dispatched Windows and Ubuntu CI passed for the merged revision; the run link is recorded
+  above. This report relies on the owner's direct observation because the run was not accessible
+  through the available automated GitHub reader.
 
-Phase 4 must not be marked complete until these gates and C01–C13 in the implementation plan have
-recorded evidence.
+## C01–C13 evidence inventory (2026-09-14)
+
+This is a read-only mapping from existing test source and the earlier local results above; the
+tests were not rerun for this inventory. A named test shows a relevant check, not necessarily full
+coverage of every clause in its criterion. The project owner reviewed this evidence and approved
+Phase 4 completion. Items in the last column remain useful regression-expansion opportunities and
+are not known defects or Phase 5 prerequisites.
+
+| Criterion | Existing directly relevant evidence | Future regression expansion |
+|---|---|---|
+| C01 Entry/compatibility | Existing `test_end_to_end.py`, `test_replay.py`, `test_rule_engine.py` regressions; prior full suite passed | Record exact-commit compatibility result and legacy schema/CLI checklist |
+| C02 Incident correctness | `test_investigation_is_read_only_and_derives_one_trace_incident`, `test_benign_and_incomplete_investigations_do_not_invent_outcomes`, `test_packaged_evaluation_runs_exact_closed_matrix` | Document strict-profile investigation and denial/no-impact assertions explicitly |
+| C03 Isolation/deduplication | `test_sequence_and_correlation_are_deterministic_and_trace_isolated`, `test_correlation_never_combines_evidence_across_runs`, `test_repeated_events_enumerate_distinct_matches_and_deduplicate_identity` | Demonstrate incident-level isolation across runs/traces/snapshots/rule sets and exact-match deduplication |
+| C04 Evidence resolution | `test_failed_lifecycle_keeps_positive_facts_unknown_and_references_consistent` rejects one changed fingerprint; source identity is checked in investigation path | Resolve every stage/outcome/alert/incident/explanation reference to an actual source event; test forged, missing, and duplicate references |
+| C05 Timeline honesty | `test_investigation_is_read_only_and_derives_one_trace_incident` checks sequence order | Test equal/reversed timestamps and benign/dispatch stage language against exact evidence |
+| C06 Integrity | `test_phase_4_fingerprint_fixed_vectors` fixes three vectors and checks event/rule content sensitivity | Record selected-snapshot/unrelated-run stability and limitation review with test evidence |
+| C07 Outcome/lifecycle | `test_benign_and_incomplete_investigations_do_not_invent_outcomes`, `test_investigation_rejects_evidence_after_terminal_event`, `test_failed_lifecycle_keeps_positive_facts_unknown_and_references_consistent` | Add or identify malformed, contradictory, post-terminal and mixed-call outcome cases as one acceptance set |
+| C08 Ground truth | `test_packaged_evaluation_runs_exact_closed_matrix`, `test_child_validation_rejects_wrong_metadata_and_multiple_traces` | Prove changing labels cannot change rule results; document wrong profile/trial and suite-assertion failures |
+| C09 Metrics | `test_metric_denominators_failures_zero_samples_and_recorded_timing`, `test_packaged_evaluation_runs_exact_closed_matrix`, `test_evaluation_deadline_accounts_for_every_not_run_child` | Cover unequal paired failures and repetition counts beyond the one-trial happy path |
+| C10 Timing | `test_historical_timing_rejects_reversed_clocks_and_missing_links`, `test_metric_denominators_failures_zero_samples_and_recorded_timing` | Demonstrate exact source-event timing basis, offline-unavailable labels, and all exclusion cases |
+| C11 Safe execution/output | `test_investigation_is_read_only_and_derives_one_trace_incident`, `test_evaluation_uses_no_socket_or_dns`, `test_phase_4_reports_refuse_overwrite_and_exclude_raw_canary`, publication-failure tests | Check hostile metadata escaping and encoded-canary cases across all generated surfaces; final diff review |
+| C12 Limits | `test_imported_query_work_is_bounded`, `test_rule_step_filter_scans_each_event_only_once_per_step`, `test_final_evaluation_report_obeys_aggregate_budget`, `test_evaluation_deadline_accounts_for_every_not_run_child` | Assemble boundary evidence for every event/candidate/alert/trace/report/suite/deadline ceiling |
+| C13 Delivery | Prior local Ruff, MyPy, 114 tests, build, audit, isolated wheel smoke, owner sign-off, and Windows/Ubuntu run 34773243387 for `dd3dbe1` | Preserve links and exact revisions in future phase records |
+
+The tests for several rows may exercise parts of the expansion clause indirectly. Future changes
+should cite specific assertions or add focused regressions rather than treating a broad test name
+as proof of a new claim.

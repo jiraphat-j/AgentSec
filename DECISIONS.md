@@ -51,6 +51,7 @@ The non-negotiable MVP security boundary is defined in [THREAT_MODEL.md](THREAT_
 | D-033 | `core-lab-v1` uses explicit attack/benign labels and run-level `metrics-v1` denominators | Resolves lab outcome definitions without presenting synthetic fixtures as production accuracy |
 | D-034 | Phase 4 fingerprints validated logical event snapshots and complete rule definitions with versioned SHA-256 serialization | Detects content changes while explicitly making no authenticity or custody claim |
 | D-035 | Historical alert/incident timing is reported only from validated linked source events; offline processing time remains separate | Prevents replay duration from being mislabeled MTTD or MTTI |
+| D-036 | Phase 5 is an optional read-only local dashboard bound to `127.0.0.1`, backed by a strict artifact manifest and packaged assets | Makes demonstrations understandable without turning the browser into an execution or evidence-authoring surface |
 
 ## Proposed
 
@@ -83,7 +84,7 @@ The non-negotiable MVP security boundary is defined in [THREAT_MODEL.md](THREAT_
 | F-004 | Shell execution and process telemetry | Container isolation passes security tests |
 | F-005 | Memory poisoning | Persistent-memory model is defined |
 | F-006 | Multi-agent and cross-agent injection | Single-agent correlation is stable |
-| F-007 | Dashboard and policy simulator | CLI and report contracts are stable |
+| F-007 | Policy simulator | A safe hypothetical-policy contract is defined |
 | F-008 | PostgreSQL, Redis Streams, NATS, or Kafka | A measured scale or query requirement exists |
 | F-009 | Behavioral and threshold detection | A benign baseline dataset exists |
 | F-010 | Thai attack dataset and adaptive generator | Dataset governance is ready |
@@ -121,3 +122,4 @@ source authentication or cryptographic custody.
 - [ADR-005: Phase 2 Runtime Policy and Comparison](docs/adr/ADR-005-phase-2-runtime-policy-and-comparison.md) — **Accepted**
 - [ADR-006: Phase 3 Detection Rules and Offline Replay](docs/adr/ADR-006-phase-3-detection-rules-and-replay.md) — **Accepted**
 - [ADR-007: Phase 4 Incident Investigation and Evaluation](docs/adr/ADR-007-phase-4-incidents-and-evaluation.md) — **Accepted**
+- [ADR-008: Phase 5 Read-only Local Dashboard](docs/adr/ADR-008-phase-5-read-only-dashboard.md) — **Accepted**

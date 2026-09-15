@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>AgentSec Lab Dashboard</title>
+    <link rel="stylesheet" href="/assets/styles.css">
+    <script src="/assets/app.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#content">Skip to content</a>
+    <header>
+      <p class="eyebrow">LOCAL EVIDENCE VIEWER</p>
+      <h1>AgentSec Lab</h1>
+      <p>Read-only investigation dashboard for selected synthetic lab artifacts.</p>
+    </header>
+    <div class="layout">
+      <nav aria-label="Artifact views">
+        <button type="button" data-view="catalog">Overview</button>
+        <button type="button" data-view="runs">Runs</button>
+        <button type="button" data-view="investigations">Investigations</button>
+        <button type="button" data-view="comparisons">Comparisons</button>
+        <button type="button" data-view="evaluations">Evaluations</button>
+        <button type="button" data-view="rules">Rules</button>
+        <button type="button" data-view="rule-tests">Rule tests</button>
+      </nav>
+      <main id="content" tabindex="-1">
+        <div id="status" role="status" aria-live="polite">Loading selected artifacts…</div>
+        <button id="back" type="button" disabled>Back</button>
+        <section id="view" aria-labelledby="view-title">
+          <h2 id="view-title">Overview</h2>
+        </section>
+      </main>
+    </div>
+    <footer>Evidence hashes detect changes; they do not prove authenticity or custody.</footer>
+  </body>
+</html>

@@ -1,0 +1,23 @@
+{
+  "schema_version": "1.0",
+  "entries": [
+    {
+      "id": "demo-run",
+      "kind": "event_source",
+      "path": "artifacts/demo-run/events.sqlite3",
+      "run_id": "run_demo"
+    },
+    {
+      "id": "demo-report",
+      "kind": "run_report",
+      "path": "artifacts/demo-run/report.json",
+      "source_id": "demo-run"
+    },
+    {
+      "id": "demo-investigation",
+      "kind": "investigation",
+      "path": "artifacts/demo-investigation/investigation.json",
+      "source_id": "demo-run"
+    }
+  ]
+}
