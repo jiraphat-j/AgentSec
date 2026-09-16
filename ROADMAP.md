@@ -137,6 +137,10 @@ workflows and live declarative timing remain deferred.
 
 **Goal:** Make lab runs and investigations easy to understand in demos and education.
 
+**Status:** Implementation merged; implemented verification checks pass locally. Remaining
+acceptance cases, final project-owner review, manual visual accessibility checks, and exact-commit
+Windows/Ubuntu verification and Chromium jobs are required before completion.
+
 - Run overview and detail
 - Timeline viewer
 - Alert detail

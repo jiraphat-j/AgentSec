@@ -1,6 +1,6 @@
 # AgentSec Lab
 
-> **Status: Phase 4 merged and verified; Phase 5 dashboard implementation prepared, verification pending**
+> **Status: Phase 4 merged and verified; Phase 5 implemented checks pass locally, with acceptance coverage, final review, and cross-platform CI pending**
 
 AgentSec Lab is a planned open-source detection-engineering lab for tracing AI-agent attacks from prompt injection and tool abuse to security alerts and incident investigation.
 
@@ -55,8 +55,10 @@ The deterministic MVP validates the attack-to-incident pipeline, telemetry, dete
 The repository contains the Phase 1 Vertical Slice plus merged Phase 2 runtime controls, Phase 3
 detection engineering, and Phase 4 offline incident investigation and evaluation. Phase 4 passed
 its hashing review, local verification, final owner review, and human-dispatched Windows/Ubuntu CI
-for merged revision `dd3dbe1`. Phase 5 dashboard work is defined by the proposed implementation
-plan and has not yet been verified.
+for merged revision `dd3dbe1`. Phase 5 dashboard implementation is merged, and its verification
+repairs pass the local static, unit, browser, coverage, audit, build, and installed-wheel checks
+that have been executed. The remaining acceptance cases, final owner review, and exact-commit
+Windows/Ubuntu CI are still required.
 
 [MVP_SCOPE.md](MVP_SCOPE.md) is the source of truth for MVP scope. Any broader item in the architecture draft is a proposal or backlog item unless the decision register says otherwise.
 

@@ -7,10 +7,15 @@ import pytest
 from pydantic import ValidationError
 
 import agentsec.dashboard_catalog as dashboard_catalog
-from agentsec.dashboard_catalog import DashboardCatalog, DashboardInputError
+from agentsec.dashboard_catalog import (
+    DashboardCatalog,
+    DashboardInputError,
+    DashboardResourceLimitExceeded,
+)
 from agentsec.dashboard_models import ArtifactKind, DashboardManifestEntry
 from agentsec.events import EventCollector, EventStore
 from agentsec.incidents import InvestigationService
+from agentsec.replay import ReplayEvidence, read_replay_evidence
 from agentsec.resource_loader import load_canary
 from agentsec.runner import ScenarioRunner
 
@@ -229,9 +234,9 @@ def test_catalog_rejects_source_changed_during_capture(
             }
         ],
     )
-    original = dashboard_catalog.read_replay_evidence
+    original = read_replay_evidence
 
-    def mutate_after_read(path: Path, run_id: str) -> object:
+    def mutate_after_read(path: Path, run_id: str) -> ReplayEvidence:
         evidence = original(path, run_id)
         with path.open("ab") as handle:
             handle.write(b"\x00")
@@ -273,3 +278,42 @@ def test_catalog_rejects_raw_canary_in_safe_event_projection(tmp_path: Path) -> 
 
     with pytest.raises(DashboardInputError, match="raw lab canary"):
         DashboardCatalog.load(manifest)
+
+
+def test_projection_limit_stops_before_loading_later_sources(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    runner = ScenarioRunner(id_factory=sequential_ids())
+    first = runner.run("indirect-injection-secret-exfiltration", tmp_path / "artifacts")
+    second = runner.run("indirect-injection-secret-exfiltration", tmp_path / "artifacts")
+    manifest = tmp_path / "manifest.json"
+    _write_manifest(
+        manifest,
+        [
+            {
+                "id": "first",
+                "kind": "event_source",
+                "path": (first.run_directory / "events.sqlite3").relative_to(tmp_path).as_posix(),
+                "run_id": first.run_id,
+            },
+            {
+                "id": "second",
+                "kind": "event_source",
+                "path": (second.run_directory / "events.sqlite3").relative_to(tmp_path).as_posix(),
+                "run_id": second.run_id,
+            },
+        ],
+    )
+    calls = 0
+
+    def counted_read(path: Path, run_id: str) -> ReplayEvidence:
+        nonlocal calls
+        calls += 1
+        return read_replay_evidence(path, run_id)
+
+    monkeypatch.setattr(dashboard_catalog, "MAX_DASHBOARD_PROJECTION_BYTES", 1)
+    monkeypatch.setattr(dashboard_catalog, "read_replay_evidence", counted_read)
+
+    with pytest.raises(DashboardResourceLimitExceeded, match="projections exceed"):
+        DashboardCatalog.load(manifest)
+    assert calls == 1
