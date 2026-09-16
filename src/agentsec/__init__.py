@@ -1,3 +1,3 @@
 """AgentSec Lab deterministic security-control lab."""
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"

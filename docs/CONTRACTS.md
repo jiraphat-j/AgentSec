@@ -254,6 +254,10 @@ invalid queries return 422, unsupported methods return 405, and bounded service 
 Errors contain fixed codes and no filesystem paths, SQL, exception text, or rejected values. JSON
 responses are at most 1 MiB.
 
+`GET /api/v1/runs/{id}/timeline` is the bounded timeline route for both source-backed and
+report-only run records. Routes accept only their documented query keys and reject duplicate query
+parameters, including duplicate pagination fields, with the same fixed 422 response.
+
 API projections contain only explicit safe fields. Event payloads use a per-event allowlist and
 never expose tool bodies, document text, or arbitrary raw payloads. The known decoded lab canary is
 rejected from source summaries, safe events, report projections, and final API serialization before

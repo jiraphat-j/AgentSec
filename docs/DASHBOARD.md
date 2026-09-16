@@ -31,12 +31,15 @@ Paths inside reports do not grant access to other files.
 
 - Overview lists the selected catalog and whether each item was verified against a selected source
   or is a valid report without source verification.
-- Runs show identity, profile, lifecycle and a sequence-ordered safe event timeline.
-- Investigations show offline-derived alerts, immutable incidents, stages, outcome, hypotheses,
-  remediation and qualified evidence references.
+- Runs show identity, profile, lifecycle and a sequence-ordered safe event timeline. Report-only
+  records retain their bounded reported timeline and are labelled as unverified reported evidence.
+- Investigations show offline-derived alerts, immutable incidents, an accessible attack-chain
+  diagram with a tabular equivalent, stages, outcome, hypotheses, remediation and qualified evidence
+  references.
 - Comparisons preserve the recorded vulnerable/strict outcomes and first policy divergence.
 - Evaluations preserve exact metric numerators, denominators, exclusions, paired outcomes and
-  recorded timing limitations.
+  recorded timing limitations. Progress charts have exact-value table equivalents and unavailable
+  denominators remain unavailable rather than being displayed as zero.
 - Rules and rule-test views display saved definitions and results. They do not execute tests.
 
 The browser treats displayed strings as text. Event payloads use a fixed allowlist; document text,

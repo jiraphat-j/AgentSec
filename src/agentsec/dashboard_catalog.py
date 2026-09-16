@@ -463,6 +463,7 @@ class DashboardCatalog:
 
         records: dict[str, CatalogRecord] = {}
         event_count = 0
+        projection_bytes = 0
         for entry in manifest.entries:
             if entry.kind is not ArtifactKind.EVENT_SOURCE:
                 continue
@@ -474,16 +475,14 @@ class DashboardCatalog:
             event_count += len(evidence.events)
             if event_count > MAX_DASHBOARD_EVENTS:
                 raise DashboardResourceLimitExceeded("dashboard event count exceeds fixed limit")
-            records[entry.id] = _source_record(entry, evidence)
+            record = _source_record(entry, evidence)
+            projection_bytes += len(encode_safe_projection(record.data)) + sum(
+                len(_encoded_json(event.model_dump(mode="json"))) for event in record.events
+            )
+            if projection_bytes > MAX_DASHBOARD_PROJECTION_BYTES:
+                raise DashboardResourceLimitExceeded("dashboard projections exceed fixed limit")
+            records[entry.id] = record
             check_deadline()
-
-        projection_bytes = sum(
-            len(encode_safe_projection(record.data))
-            + sum(len(_encoded_json(event.model_dump(mode="json"))) for event in record.events)
-            for record in records.values()
-        )
-        if projection_bytes > MAX_DASHBOARD_PROJECTION_BYTES:
-            raise DashboardResourceLimitExceeded("dashboard projections exceed fixed limit")
         for entry in manifest.entries:
             if entry.kind is ArtifactKind.EVENT_SOURCE:
                 continue
@@ -507,7 +506,7 @@ class DashboardCatalog:
             data = _safe_report(report)
             if entry.source_id is not None:
                 data["catalog_source_id"] = entry.source_id
-            identity = str(
+            display_identity = str(
                 data.get("run_id")
                 or data.get("investigation_id")
                 or data.get("evaluation_id")
@@ -526,7 +525,7 @@ class DashboardCatalog:
                     id=entry.id,
                     kind=entry.kind,
                     provenance=provenance,
-                    title=f"{entry.kind.value.replace('_', ' ').title()} {identity}",
+                    title=f"{entry.kind.value.replace('_', ' ').title()} {display_identity}",
                     status=status,
                 ),
                 data,

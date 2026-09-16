@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import asyncio
 from importlib.resources import files
-from typing import Any
+from typing import Any, cast
 
 from fastapi import FastAPI, Query, Request
 from fastapi.exceptions import RequestValidationError
@@ -32,6 +32,18 @@ _SECURITY_HEADERS = {
     "Cache-Control": "no-store",
     "X-Frame-Options": "DENY",
 }
+
+
+def _allowed_query_keys(path: str) -> frozenset[str]:
+    parts = tuple(part for part in path.split("/") if part)
+    if parts == ("api", "v1", "catalog") or len(parts) == 3:
+        return frozenset({"offset", "limit"})
+    if len(parts) == 5 and parts[:2] == ("api", "v1"):
+        if parts[2] == "runs" and parts[4] == "events":
+            return frozenset({"offset", "limit", "trace_id", "event_type"})
+        if parts[2] in {"investigations", "evaluations", "runs"}:
+            return frozenset({"offset", "limit"})
+    return frozenset()
 
 
 def _json(value: object, status_code: int = 200) -> JSONResponse:
@@ -79,6 +91,12 @@ def create_dashboard_app(catalog: DashboardCatalog, *, port: int = 8765) -> Fast
         nonlocal active
         if len(request.url.query.encode("utf-8")) > MAX_DASHBOARD_QUERY_BYTES:
             return _json({"error": {"code": "invalid_query"}}, 422)
+        query_items = request.query_params.multi_items()
+        query_keys = [key for key, _value in query_items]
+        if len(query_keys) != len(set(query_keys)) or any(
+            key not in _allowed_query_keys(request.url.path) for key in query_keys
+        ):
+            return _json({"error": {"code": "invalid_query"}}, 422)
         if request.method not in {"GET", "HEAD"}:
             return _json({"error": {"code": "method_not_allowed"}}, 405)
         origin = request.headers.get("origin")
@@ -98,7 +116,7 @@ def create_dashboard_app(catalog: DashboardCatalog, *, port: int = 8765) -> Fast
                 active -= 1
         for name, value in _SECURITY_HEADERS.items():
             response.headers[name] = value
-        return response
+        return cast(Response, response)
 
     @app.exception_handler(RequestValidationError)
     async def invalid_request(_request: Request, _error: RequestValidationError) -> JSONResponse:
@@ -182,6 +200,14 @@ def create_dashboard_app(catalog: DashboardCatalog, *, port: int = 8765) -> Fast
     async def event_route(item_id: str, event_id: str) -> JSONResponse:
         return _json(service.event(item_id, event_id))
 
+    @app.get("/api/v1/runs/{item_id}/timeline")
+    async def report_timeline_route(
+        item_id: str,
+        offset: int = Query(0, ge=0),
+        limit: int = Query(50, ge=1, le=200),
+    ) -> JSONResponse:
+        return _json(service.report_timeline(item_id, offset, limit))
+
     @app.get("/api/v1/investigations/{item_id}/alerts/{alert_id}")
     async def alert_route(item_id: str, alert_id: str) -> JSONResponse:
         return _json(service.investigation_child(item_id, "alerts", alert_id))
@@ -198,8 +224,12 @@ def create_dashboard_app(catalog: DashboardCatalog, *, port: int = 8765) -> Fast
         offset: int = Query(0, ge=0),
         limit: int = Query(50, ge=1, le=200),
     ) -> JSONResponse:
-        if collection not in {"investigations", "evaluations"}:
+        kind = {
+            "investigations": ArtifactKind.INVESTIGATION,
+            "evaluations": ArtifactKind.EVALUATION,
+        }.get(collection)
+        if kind is None:
             raise DashboardNotFoundError("nested collection not found")
-        return _json(service.nested(item_id, nested_collection, offset, limit))
+        return _json(service.nested(item_id, kind, nested_collection, offset, limit))
 
     return app

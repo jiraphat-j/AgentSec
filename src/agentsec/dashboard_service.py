@@ -76,8 +76,17 @@ class DashboardService:
             "data": data,
         }
 
-    def nested(self, item_id: str, collection: str, offset: int, limit: int) -> dict[str, object]:
-        record = self._record(item_id, (ArtifactKind.INVESTIGATION, ArtifactKind.EVALUATION))
+    def nested(
+        self,
+        item_id: str,
+        kind: ArtifactKind,
+        collection: str,
+        offset: int,
+        limit: int,
+    ) -> dict[str, object]:
+        if kind not in {ArtifactKind.INVESTIGATION, ArtifactKind.EVALUATION}:
+            raise DashboardNotFoundError("nested collection not found")
+        record = self._record(item_id, (kind,))
         keys = {
             ArtifactKind.INVESTIGATION: {
                 "alerts": "derived_alerts",
@@ -126,6 +135,13 @@ class DashboardService:
         if event is None:
             raise DashboardNotFoundError("event not found")
         return safe_event(event)
+
+    def report_timeline(self, item_id: str, offset: int, limit: int) -> dict[str, object]:
+        record = self._record(item_id, (ArtifactKind.RUN_REPORT,))
+        values = record.data.get("timeline")
+        if not isinstance(values, list) or any(not isinstance(value, dict) for value in values):
+            raise DashboardNotFoundError("report timeline not found")
+        return self._page([deepcopy(value) for value in values], offset, limit)
 
     def investigation_child(
         self, item_id: str, collection: str, child_id: str

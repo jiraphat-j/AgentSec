@@ -1,7 +1,7 @@
 # Phase 5 security review — local dashboard boundary
 
-Status: **Awaiting project-owner review and approval for dependency installation and test
-execution.** Prepared 2026-09-15. No dashboard server or Phase 5 test has been executed.
+Status: **Approved test scope executed locally; final repair-diff review and exact-revision CI
+remain pending.** Prepared and executed 2026-09-15.
 
 ## Decision and scope
 
@@ -86,19 +86,24 @@ query SQL, fingerprint construction, rule semantics, metric semantics, or existi
 The ranges allow compatible security and bug-fix releases. The resolved versions must be recorded
 and audited after installation; this review does not claim that an unresolved range is safe.
 
-## Static preparation evidence
+## Executed verification evidence
 
-- `python -m ruff format --check .`: 92 files formatted.
-- `python -m ruff check .`: passed after preparation repairs.
-- Strict MyPy was attempted before installing optional dependencies. It reported missing FastAPI,
-  Starlette, Uvicorn, and Playwright modules, plus dependent untyped decorators; this is an expected
-  unresolved dependency state, not a passing type result. One independent typed test-construction
-  error was repaired. MyPy must pass after approved dependency installation.
+- `python -m ruff format --check .`: 94 files formatted; lint also passes.
+- Strict MyPy passes across 50 source files.
+- Focused catalog/API tests pass (21); the full non-browser suite passes (135, with 2 browser tests
+  intentionally deselected) at 90.20% Python coverage; Chromium E2E passes (2).
+- The dependency audit reports no known vulnerabilities. The local project is the only audit skip
+  because it is not published on PyPI.
+- Resolved boundary dependencies are FastAPI 0.141.1, Starlette 1.6.0, Uvicorn 0.53.0, HTTPX
+  0.28.1, Playwright 1.62.0, and pytest-playwright 0.9.0.
+- Final wheel/sdist builds and isolated core/dashboard wheel smokes pass. The core environment has
+  no FastAPI and produces the sanitized optional-extra hint; the dashboard environment loads the
+  packaged application and all three same-origin assets.
 - `git diff --check`: no whitespace errors; line-ending conversion warnings only.
 
-## Tests requiring approval
+## Approved test scope
 
-After review, approve installation/audit of the dependency set and execution of:
+The project owner authorized verification, and the following scope was executed:
 
 1. `tests/test_dashboard_catalog.py` — manifest, path, provenance, safe projection and evidence
    relationship behavior; it invokes only the already approved deterministic lab runtime to create
@@ -110,18 +115,20 @@ After review, approve installation/audit of the dependency set and execution of:
    control transport, then checks empty and representative investigation/evaluation navigation,
    evidence drill-down/back navigation, failure/exclusion visibility, and clean shutdown.
 4. Full existing suite, Ruff, strict MyPy, build, installed core/dashboard wheel smokes, asset
-   inventory, dependency audit, raw-canary scan, and manual accessibility checks.
+   inventory, dependency audit, raw-canary scan, and automated accessibility checks. The manual
+   visual accessibility checklist remains a separate completion gate.
 
-Suggested approval statement:
+Approval statement used for this scope:
 
 > Approved the Phase 5 manifest/path boundary, read-only API, loopback listener, optional dependency
 > set, and named dashboard tests for dependency installation and test execution.
 
-## Astra review resolution
+## Verification repair review required
 
-All seven review findings were applied before runtime approval: JSON-mode contract loading, raw
-canary scanning on all response surfaces, canonical run-report verification plus stronger
-investigation linkage, read-time file identity guards, complete retained-projection accounting and
-incremental deadlines, bounded nested pagination, and representative browser coverage with visible
-evaluation failures and exclusions. Runtime validation remains intentionally pending the approval
-above.
+The seven Astra findings remain resolved. Verification additionally repaired incremental projection
+budget enforcement, strict query handling, bounded report-only timeline retrieval, package-version
+alignment, missing-extra behavior, typing/CI gates, and accessible attack-chain/metric visuals.
+These repairs passed the approved local tests, but their final diff still requires project-owner
+security review and exact-commit Windows/Linux CI before Phase 5 can be closed. The remaining
+acceptance work is recorded in `PHASE_5_VERIFICATION.md`; current passing tests do not yet cover the
+full hostile-browser, resource-limit, platform-path, and manual-accessibility matrices.

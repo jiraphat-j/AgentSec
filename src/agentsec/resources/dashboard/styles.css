@@ -26,6 +26,10 @@ main { padding: clamp(1rem, 3vw, 3rem); overflow: auto; }
 .pager button, #back, .filters button { padding: .45rem .75rem; color: inherit; background: var(--panel); border: 1px solid var(--line); border-radius: .35rem; }
 .filters input { padding: .5rem; color: inherit; background: #050b09; border: 1px solid var(--line); border-radius: .35rem; }
 .failure { border-color: #dc7b7b; }
+.attack-chain { display: flex; align-items: center; gap: .45rem; flex-wrap: wrap; margin: 1rem 0; }
+.chain-stage { border: 1px solid var(--accent); border-radius: .4rem; padding: .45rem .65rem; }
+.chain-arrow { color: var(--accent); font-weight: 700; }
+progress { width: min(24rem, 100%); accent-color: var(--accent); }
 button:disabled { opacity: .5; cursor: not-allowed; }
 .tag { display: inline-block; border: 1px solid var(--line); border-radius: 99px; padding: .15rem .55rem; margin-right: .3rem; }
 table { width: 100%; border-collapse: collapse; margin: 1rem 0; }

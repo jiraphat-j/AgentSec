@@ -192,10 +192,12 @@ def main(argv: Sequence[str] | None = None) -> int:
 
                 from .dashboard_api import create_dashboard_app
                 from .dashboard_catalog import DashboardCatalog
-            except ImportError as error:
-                raise ValueError(
-                    "dashboard dependencies are unavailable; install agentsec-lab[dashboard]"
-                ) from error
+            except ImportError:
+                print(
+                    "error: dashboard dependencies unavailable; install agentsec-lab[dashboard]",
+                    file=sys.stderr,
+                )
+                return 2
             if not 1 <= arguments.port <= 65535:
                 raise ValueError("dashboard port must be between 1 and 65535")
             catalog = DashboardCatalog.load(arguments.manifest)
