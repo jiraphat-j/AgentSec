@@ -20,6 +20,7 @@ from .constants import (
 from .events import EventCollector
 from .models import (
     HttpPostArguments,
+    InputChannel,
     PolicyAction,
     PolicyDecision,
     PolicyProfile,
@@ -45,6 +46,7 @@ class ToolGateway:
         *,
         profile: PolicyProfile = PolicyProfile.VULNERABLE,
         untrusted_document: bool = True,
+        context_origin: InputChannel = InputChannel.DOCUMENT,
         approval_simulator: ApprovalSimulator | None = None,
         call_id_factory: Callable[[], str] = _tool_call_id,
     ) -> None:
@@ -56,6 +58,7 @@ class ToolGateway:
         self._value_sha256 = value_sha256
         self._canary_value = canary_value
         self._untrusted_document = untrusted_document
+        self._context_origin = context_origin
         self._approval_simulator = approval_simulator
         self._policy = PolicyEvaluator(profile)
         self._call_id_factory = call_id_factory
@@ -111,6 +114,7 @@ class ToolGateway:
             "read_file",
             untrusted_document=self._untrusted_document,
             secret_resource=True,
+            context_origin=self._context_origin,
         )
         authorization = self._authorize(
             "read_file", call_id, self._policy.evaluate("read_file", risk)
@@ -149,6 +153,7 @@ class ToolGateway:
             "http_post",
             untrusted_document=self._untrusted_document,
             matching_canary=self._canary_value in validated.body,
+            context_origin=self._context_origin,
         )
         authorization = self._authorize(
             "http_post", call_id, self._policy.evaluate("http_post", risk)

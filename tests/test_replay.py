@@ -39,8 +39,8 @@ def test_rule_fixture_command_writes_complete_coverage_report(tmp_path: Path) ->
     data = json.loads((result.output_directory / "rule-tests.json").read_text(encoding="utf-8"))
 
     assert result.report.status == "passed"
-    assert data["covered_rules"] == data["total_rules"] == 3
-    assert data["assertions_passed"] == data["assertions_total"] == 6
+    assert data["covered_rules"] == data["total_rules"] == 4
+    assert data["assertions_passed"] == data["assertions_total"] == 8
     assert (result.output_directory / "rule-tests.md").is_file()
 
 
@@ -70,6 +70,7 @@ def test_replay_is_read_only_deterministic_and_invokes_no_runtime_adapters(
     assert replay.report.evaluated_event_count < replay.report.input_event_count
     assert [evaluation.rule_id for evaluation in replay.report.evaluations] == [
         "ASL-CORR-002",
+        "ASL-CORR-003",
         "ASL-EVENT-001",
         "ASL-SEQ-001",
     ]
@@ -267,7 +268,7 @@ def test_phase_3_cli_validate_test_and_replay(
     )
 
     assert validated == tested == replayed == 0
-    assert len(load_rules(RULES)) == 3
+    assert len(load_rules(RULES)) == 4
 
 
 def test_phase_3_cli_distinguishes_invalid_input_from_resource_limits(tmp_path: Path) -> None:

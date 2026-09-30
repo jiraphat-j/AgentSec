@@ -24,13 +24,15 @@ from .models import (
     ApprovalSimulation,
     ComparisonReport,
     DetectionResult,
+    DirectPromptScenario,
     Event,
+    InputChannel,
     PolicyProfile,
     Report,
-    Scenario,
+    ScenarioDefinition,
 )
 from .reporting import build_report, write_reports
-from .resource_loader import load_canary, load_document, load_scenario
+from .resource_loader import load_canary, load_document, load_prompt, load_scenario
 
 
 class ScenarioDeadlineExceeded(RuntimeError):
@@ -83,7 +85,7 @@ class ScenarioRunner:
 
     def run_scenario(
         self,
-        scenario: Scenario,
+        scenario: ScenarioDefinition,
         output_directory: Path,
         *,
         profile: PolicyProfile = PolicyProfile.VULNERABLE,
@@ -98,7 +100,16 @@ class ScenarioRunner:
             and approval_simulation is not ApprovalSimulation.DENY
         ):
             raise ValueError("approval simulation applies only to the strict profile")
-        document = load_document(scenario.document_fixture)
+        if isinstance(scenario, DirectPromptScenario):
+            is_direct_prompt = True
+            input_channel = InputChannel.DIRECT_PROMPT
+            fixture_id = scenario.input_fixture.value
+            input_text = load_prompt(scenario.input_fixture)
+        else:
+            is_direct_prompt = False
+            input_channel = InputChannel.DOCUMENT
+            fixture_id = scenario.document_fixture.value
+            input_text = load_document(scenario.document_fixture)
         canary = load_canary()
         canary_sha256 = hashlib.sha256(canary.encode("utf-8")).hexdigest()
         run_id = self._id_factory("run")
@@ -135,10 +146,10 @@ class ScenarioRunner:
                 "scenario-controller",
                 {
                     "scenario_id": scenario.id,
-                    "fixture": scenario.document_fixture.value,
+                    "fixture": fixture_id,
                     "profile": profile.value,
                     "policy_version": POLICY_VERSION,
-                    "risk_version": RISK_VERSION,
+                    "risk_version": "risk-v2" if is_direct_prompt else RISK_VERSION,
                     "approval_simulation": (
                         approval_simulation.value
                         if profile is PolicyProfile.STRICT
@@ -148,13 +159,26 @@ class ScenarioRunner:
             )
             check_deadline()
             collector.emit(
-                "agent.context.document_added",
+                (
+                    "agent.context.prompt_added"
+                    if is_direct_prompt
+                    else "agent.context.document_added"
+                ),
                 "scenario-controller",
-                {
-                    "document_id": scenario.document_fixture.value,
-                    "source": "packaged_text_fixture",
-                    "trust": "untrusted",
-                },
+                (
+                    {
+                        "prompt_id": fixture_id,
+                        "source": "packaged_prompt_fixture",
+                        "trust": "untrusted",
+                        "delivery_channel": "direct_prompt",
+                    }
+                    if is_direct_prompt
+                    else {
+                        "document_id": fixture_id,
+                        "source": "packaged_text_fixture",
+                        "trust": "untrusted",
+                    }
+                ),
             )
             gateway = ToolGateway(
                 collector,
@@ -163,12 +187,15 @@ class ScenarioRunner:
                 canary_sha256,
                 canary,
                 profile=profile,
+                context_origin=input_channel,
                 approval_simulator=approval_simulator,
                 call_id_factory=lambda: self._id_factory("call"),
             )
-            DeterministicMockAgent().execute(document, gateway, check_deadline)
+            DeterministicMockAgent().execute(
+                input_text, gateway, check_deadline, input_channel=input_channel
+            )
             check_deadline()
-            detector = CorrelationDetector()
+            detector = CorrelationDetector.for_input_channel(input_channel)
             detection = detector.evaluate_and_record(store.events(run_id, trace_id), collector)
             evidence = store.events(run_id, trace_id)
             report = build_report(scenario, run_id, trace_id, evidence, detection, profile)

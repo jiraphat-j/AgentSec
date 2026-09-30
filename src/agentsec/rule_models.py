@@ -24,6 +24,7 @@ type RuleField = Literal[
     "source_component",
     "tool_call_id",
     "payload.trust",
+    "payload.delivery_channel",
     "payload.resource",
     "payload.classification",
     "payload.canary_id",

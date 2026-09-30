@@ -12,7 +12,7 @@ import agentsec.evaluation as evaluation_module
 import agentsec.incidents as incidents_module
 from agentsec.adapters import LabHttpSinkAdapter, VirtualFileAdapter
 from agentsec.cli import main
-from agentsec.constants import MAX_REPORT_BYTES
+from agentsec.constants import DIRECT_PROMPT_CORRELATION_RULE_ID, MAX_REPORT_BYTES
 from agentsec.evaluation import (
     EvaluationResourceLimitExceeded,
     EvaluationService,
@@ -69,8 +69,14 @@ def test_phase_4_fingerprint_fixed_vectors() -> None:
         "14fa38b1705351531017a0aecc348168c80e5eec6a1520a26c4dd8b931c612e1"
     )
     rules = load_rules(RULES)
-    assert fingerprint_rules(rules) == (
+    legacy_rules = tuple(
+        rule for rule in rules if rule.rule_id != DIRECT_PROMPT_CORRELATION_RULE_ID
+    )
+    assert fingerprint_rules(legacy_rules) == (
         "5b15e8bec52b1520975af8701de6e87801251ab64e85165c79d6b5f723d36be8"
+    )
+    assert fingerprint_rules(rules) == (
+        "5e876f4f814e4674f3f1859bc667bd469b972023b0785585268b63cf274179e5"
     )
     assert fingerprint_suite(suite_data) == (
         "53de470176966e7bcb52b82ae89d64fe27016e954c4db4e011c08352422a82c4"
@@ -283,6 +289,21 @@ def test_historical_timing_rejects_reversed_clocks_and_missing_links(tmp_path: P
         update={"payload": {**wrong_sink.payload, "canary_id": "wrong-canary"}}
     )
     assert incidents_module._stage_for_event(wrong_sink) is None
+
+
+def test_direct_historical_timing_accepts_direct_correlation(tmp_path: Path) -> None:
+    run = ScenarioRunner(id_factory=sequential_ids()).run(
+        "direct-prompt-injection-secret-exfiltration", tmp_path
+    )
+    store = EventStore(run.run_directory / "events.sqlite3")
+    try:
+        events = store.events(run.run_id)
+    finally:
+        store.close()
+
+    timing = incidents_module._historical_timing(tuple(events))
+
+    assert timing.exclusion_reason is None
 
 
 def test_failed_lifecycle_keeps_positive_facts_unknown_and_references_consistent(

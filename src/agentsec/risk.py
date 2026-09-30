@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from .models import RiskAssessment, RiskBand, RiskFactor
+from .models import InputChannel, RiskAssessment, RiskBand, RiskFactor
 
 
 def assess_risk(
@@ -11,10 +11,20 @@ def assess_risk(
     untrusted_document: bool,
     secret_resource: bool = False,
     matching_canary: bool = False,
+    context_origin: InputChannel = InputChannel.DOCUMENT,
 ) -> RiskAssessment:
     factors: list[RiskFactor] = []
     if untrusted_document:
-        factors.append(RiskFactor(code="untrusted_document", weight=20))
+        factors.append(
+            RiskFactor(
+                code=(
+                    "untrusted_context"
+                    if context_origin is InputChannel.DIRECT_PROMPT
+                    else "untrusted_document"
+                ),
+                weight=20,
+            )
+        )
     if tool == "read_file" and secret_resource:
         factors.append(RiskFactor(code="classified_secret_access", weight=60))
     if tool == "http_post":
@@ -28,4 +38,10 @@ def assess_risk(
         band = RiskBand.ELEVATED
     else:
         band = RiskBand.LOW
-    return RiskAssessment(score=score, band=band, factors=tuple(factors))
+    return RiskAssessment(
+        version="risk-v2" if context_origin is InputChannel.DIRECT_PROMPT else "risk-v1",
+        context_origin="direct_prompt" if context_origin is InputChannel.DIRECT_PROMPT else None,
+        score=score,
+        band=band,
+        factors=tuple(factors),
+    )

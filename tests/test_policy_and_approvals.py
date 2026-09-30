@@ -5,6 +5,7 @@ import pytest
 from agentsec.approvals import ApprovalBindingError, ApprovalSimulator
 from agentsec.models import (
     ApprovalSimulation,
+    InputChannel,
     PolicyAction,
     PolicyProfile,
     RiskBand,
@@ -29,6 +30,22 @@ def test_risk_score_is_deterministic_bounded_and_profile_independent() -> None:
         PolicyEvaluator(PolicyProfile.VULNERABLE).evaluate("http_post", first).risk
         == PolicyEvaluator(PolicyProfile.STRICT).evaluate("http_post", first).risk
     )
+
+
+def test_direct_prompt_risk_uses_origin_correct_v2_factor() -> None:
+    risk = assess_risk(
+        "read_file",
+        untrusted_document=True,
+        secret_resource=True,
+        context_origin=InputChannel.DIRECT_PROMPT,
+    )
+
+    assert risk.version == "risk-v2"
+    assert risk.context_origin == "direct_prompt"
+    assert [factor.code for factor in risk.factors] == [
+        "untrusted_context",
+        "classified_secret_access",
+    ]
 
 
 @pytest.mark.parametrize(

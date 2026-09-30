@@ -92,12 +92,13 @@ def test_packaged_rules_have_positive_and_negative_exact_fixtures() -> None:
 
     assert [rule.rule_id for rule in rules] == [
         "ASL-CORR-002",
+        "ASL-CORR-003",
         "ASL-EVENT-001",
         "ASL-SEQ-001",
     ]
     assert report.status == "passed"
-    assert report.covered_rules == report.total_rules == 3
-    assert report.assertions_passed == report.assertions_total == 6
+    assert report.covered_rules == report.total_rules == 4
+    assert report.assertions_passed == report.assertions_total == 8
 
 
 def test_rule_step_filter_scans_each_event_only_once_per_step(
@@ -145,8 +146,8 @@ def test_failed_positive_fixture_does_not_count_as_rule_coverage() -> None:
     report = run_rule_tests(rules, tuple(fixtures))
 
     assert report.status == "failed"
-    assert report.covered_rules == 2
-    assert report.assertions_passed == 5
+    assert report.covered_rules == 3
+    assert report.assertions_passed == 7
 
 
 @pytest.mark.parametrize(

@@ -24,6 +24,17 @@ class DocumentFixture(StrEnum):
     MISSING_CANARY = "missing_canary"
 
 
+class PromptFixture(StrEnum):
+    MALICIOUS = "malicious"
+    BENIGN = "benign"
+    MISSING_CANARY = "missing_canary"
+
+
+class InputChannel(StrEnum):
+    DOCUMENT = "document"
+    DIRECT_PROMPT = "direct_prompt"
+
+
 class PolicyProfile(StrEnum):
     VULNERABLE = "vulnerable"
     STRICT = "strict"
@@ -57,6 +68,20 @@ class Scenario(StrictModel):
     name: str = Field(min_length=1, max_length=160)
     document_fixture: DocumentFixture
     timeout_seconds: int = Field(ge=1, le=MAX_TIMEOUT_SECONDS)
+
+
+class DirectPromptScenario(StrictModel):
+    """Strict Phase 6A resource contract for one packaged direct-prompt scenario."""
+
+    schema_version: Literal["0.2"] = "0.2"
+    id: str = Field(min_length=1, max_length=128, pattern=r"^[a-z0-9-]+$")
+    name: str = Field(min_length=1, max_length=160)
+    input_channel: Literal[InputChannel.DIRECT_PROMPT] = InputChannel.DIRECT_PROMPT
+    input_fixture: PromptFixture
+    timeout_seconds: int = Field(ge=1, le=MAX_TIMEOUT_SECONDS)
+
+
+type ScenarioDefinition = Scenario | DirectPromptScenario
 
 
 class ReadFileArguments(StrictModel):
@@ -102,13 +127,16 @@ class RiskFactor(StrictModel):
 
 
 class RiskAssessment(StrictModel):
-    version: Literal["risk-v1"] = "risk-v1"
+    version: Literal["risk-v1", "risk-v2"] = "risk-v1"
+    context_origin: Literal["direct_prompt"] | None = None
     score: int = Field(ge=0, le=100)
     band: RiskBand
     factors: tuple[RiskFactor, ...]
 
     @model_validator(mode="after")
     def score_and_band_must_match_factors(self) -> Self:
+        if (self.version == "risk-v1") != (self.context_origin is None):
+            raise ValueError("risk version and context origin disagree")
         codes = [factor.code for factor in self.factors]
         if len(codes) != len(set(codes)):
             raise ValueError("risk factor codes must be unique")
@@ -233,7 +261,7 @@ class Report(StrictModel):
     evidence_cutoff_sequence: int
     policy_profile: PolicyProfile
     policy_version: Literal["policy-v1"] = "policy-v1"
-    risk_version: Literal["risk-v1"] = "risk-v1"
+    risk_version: Literal["risk-v1", "risk-v2"] = "risk-v1"
     detection: DetectionResult
     prevention: PreventionResult
     simulated_impact: ImpactResult
@@ -267,7 +295,7 @@ class ComparisonReport(StrictModel):
     scenario_name: str
     status: Literal["completed"] = "completed"
     policy_version: Literal["policy-v1"] = "policy-v1"
-    risk_version: Literal["risk-v1"] = "risk-v1"
+    risk_version: Literal["risk-v1", "risk-v2"] = "risk-v1"
     children: tuple[ComparisonChild, ComparisonChild]
     divergence: str
     conclusion: str

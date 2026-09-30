@@ -19,6 +19,18 @@ Hard ceilings are 64 KiB per document, 16 KiB per tool body, 8 tool requests, 12
 64 KiB per persisted event payload, 1 MiB per report, and 5 seconds per scenario. A scenario may lower its timeout but cannot
 raise it.
 
+## Phase 6A direct-prompt contract
+
+`direct-prompt-injection-secret-exfiltration` is the only Phase 6A public scenario. It uses strict
+scenario schema 0.2 with `input_channel: direct_prompt` and a closed packaged `input_fixture`.
+Schema 0.1 document scenarios remain unchanged. The controller records
+`agent.context.prompt_added` with fixture ID, packaged source, untrusted trust label, and
+`delivery_channel: direct_prompt`; raw prompt text is never persisted.
+
+Direct scenario policy evidence uses `risk-v2` with `untrusted_context` and the direct-prompt
+origin. Existing indirect artifacts retain `risk-v1` and `untrusted_document`. `policy-v1` remains
+unchanged. Direct matching-canary correlation is `ASL-CORR-003` version 1.
+
 ## Tool contract
 
 The closed registry contains `read_file` and `http_post`.
@@ -265,6 +277,13 @@ serving. Timeline order is trusted sequence. Impact, prevention, detection,
 control observations, recorded historical timing, and local processing time remain distinct.
 Metric values retain their recorded numerator, denominator, eligible/excluded counts, and nullable
 zero-denominator semantics.
+
+For Phase 6A projections, a `prompt_added` event must carry exactly the closed packaged prompt
+fixture ID, `source: packaged_prompt_fixture`, `trust: untrusted`, and
+`delivery_channel: direct_prompt`. A direct scenario's projected `run.started` fixture must also be
+one of the closed prompt fixture IDs. Invalid prompt metadata is rejected at dashboard loading or
+with a fixed API error; rejected values are never echoed. This validates projection metadata, not
+the authenticity of a selected SQLite source or arbitrary event-envelope identifiers.
 
 The dashboard starts only through `agentsec dashboard --manifest PATH [--port PORT]`, binds literal
 `127.0.0.1`, opens no browser, and runs one foreground process without reload or workers. It serves
