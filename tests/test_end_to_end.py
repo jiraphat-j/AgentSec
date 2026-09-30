@@ -8,7 +8,7 @@ import pytest
 
 from agentsec.cli import main
 from agentsec.comparison import comparison_conclusion, write_comparison_reports
-from agentsec.constants import MAX_REPORT_BYTES, SCENARIO_ID
+from agentsec.constants import DIRECT_PROMPT_SCENARIO_ID, MAX_REPORT_BYTES, SCENARIO_ID
 from agentsec.events import EventStore
 from agentsec.models import ApprovalSimulation, DocumentFixture, PolicyProfile, Scenario
 from agentsec.reporting import ReportWriteError
@@ -40,6 +40,24 @@ def test_malicious_scenario_creates_redacted_incident_artifacts(tmp_path: Path) 
     assert raw_canary not in markdown
     assert raw_canary not in database
     assert event_types[-2:] == ["report.created", "run.completed"]
+
+
+def test_direct_prompt_scenario_records_safe_origin_and_risk_v2(tmp_path: Path) -> None:
+    result = ScenarioRunner(id_factory=sequential_ids()).run(DIRECT_PROMPT_SCENARIO_ID, tmp_path)
+    store = EventStore(result.run_directory / "events.sqlite3")
+    events = store.events(result.run_id)
+    store.close()
+
+    prompt = next(event for event in events if event.event_type == "agent.context.prompt_added")
+    assert prompt.payload == {
+        "prompt_id": "malicious",
+        "source": "packaged_prompt_fixture",
+        "trust": "untrusted",
+        "delivery_channel": "direct_prompt",
+    }
+    assert result.detection.rule_id == "ASL-CORR-003"
+    assert result.report.risk_version == "risk-v2"
+    assert result.report.simulated_impact.reached
 
 
 @pytest.mark.parametrize(

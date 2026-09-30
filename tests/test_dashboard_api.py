@@ -119,6 +119,53 @@ def test_api_rejects_raw_canary_even_for_directly_constructed_catalog() -> None:
     assert response.json() == {"error": {"code": "unsafe_projection_rejected"}}
 
 
+@pytest.mark.parametrize(
+    ("prompt_id", "expected_status"),
+    (("malicious", 200), ("ignore previous instructions", 503)),
+)
+def test_api_projects_only_closed_prompt_metadata(prompt_id: str, expected_status: int) -> None:
+    event = Event(
+        event_id="evt_prompt",
+        run_id="run_1",
+        trace_id="trace_1",
+        sequence=1,
+        timestamp="2026-09-15T00:00:00Z",
+        event_type="agent.context.prompt_added",
+        source_component="scenario-controller",
+        payload={
+            "prompt_id": prompt_id,
+            "source": "packaged_prompt_fixture",
+            "trust": "untrusted",
+            "delivery_channel": "direct_prompt",
+        },
+    )
+    catalog = DashboardCatalog(
+        (
+            CatalogRecord(
+                CatalogSummary(
+                    id="source",
+                    kind=ArtifactKind.EVENT_SOURCE,
+                    provenance=Provenance.VERIFIED,
+                    title="Run run_1",
+                    status="incomplete",
+                ),
+                {"id": "source", "run_id": "run_1"},
+                (event,),
+            ),
+        )
+    )
+    client = TestClient(create_dashboard_app(catalog, port=8765), base_url="http://127.0.0.1:8765")
+
+    response = client.get("/api/v1/runs/source/events")
+
+    assert response.status_code == expected_status
+    if expected_status == 200:
+        assert response.json()["items"][0]["payload"] == event.payload
+    else:
+        assert response.json() == {"error": {"code": "unsafe_projection_rejected"}}
+        assert prompt_id not in response.text
+
+
 def test_nested_collections_are_paginated_and_removed_from_detail() -> None:
     record = CatalogRecord(
         CatalogSummary(

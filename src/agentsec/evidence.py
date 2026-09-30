@@ -67,6 +67,7 @@ def _validate_relevant_payload(event: Event) -> None:
     string_fields: dict[str, tuple[str, ...]] = {
         "run.started": ("scenario_id", "fixture", "profile", "policy_version"),
         "agent.context.document_added": ("document_id", "source", "trust"),
+        "agent.context.prompt_added": ("prompt_id", "source", "trust", "delivery_channel"),
         "tool.requested": ("tool",),
         "file.read": ("classification", "canary_id", "value_sha256"),
         "lab.sink.payload_recorded": ("canary_id", "value_sha256", "observed_in"),

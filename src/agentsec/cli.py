@@ -9,7 +9,12 @@ from pathlib import Path
 
 from pydantic import ValidationError
 
-from .constants import SCENARIO_ID
+from .constants import (
+    DIRECT_PROMPT_EVALUATION_SUITE_ID,
+    DIRECT_PROMPT_SCENARIO_ID,
+    EVALUATION_SUITE_ID,
+    SCENARIO_ID,
+)
 from .evaluation import EvaluationService
 from .incidents import InvestigationService
 from .models import ApprovalSimulation, PolicyProfile
@@ -26,7 +31,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
     run_parser = subparsers.add_parser("run", help="run a packaged scenario")
-    run_parser.add_argument("scenario", choices=(SCENARIO_ID,))
+    run_parser.add_argument("scenario", choices=(SCENARIO_ID, DIRECT_PROMPT_SCENARIO_ID))
     run_parser.add_argument(
         "--profile",
         choices=tuple(profile.value for profile in PolicyProfile),
@@ -44,7 +49,7 @@ def build_parser() -> argparse.ArgumentParser:
     compare_parser = subparsers.add_parser(
         "compare", help="run vulnerable and strict profiles and compare their evidence"
     )
-    compare_parser.add_argument("scenario", choices=(SCENARIO_ID,))
+    compare_parser.add_argument("scenario", choices=(SCENARIO_ID, DIRECT_PROMPT_SCENARIO_ID))
     _add_output_directory(compare_parser)
 
     rules_parser = subparsers.add_parser("rules", help="validate or test detection rules")
@@ -77,7 +82,11 @@ def build_parser() -> argparse.ArgumentParser:
     evaluate_parser = subparsers.add_parser(
         "evaluate", help="run the closed packaged incident-evaluation suite"
     )
-    evaluate_parser.add_argument("--suite", choices=("core-lab-v1",), required=True)
+    evaluate_parser.add_argument(
+        "--suite",
+        choices=(EVALUATION_SUITE_ID, DIRECT_PROMPT_EVALUATION_SUITE_ID),
+        required=True,
+    )
     evaluate_parser.add_argument("--repetitions", type=int, default=1)
     _add_output_directory(evaluate_parser)
 

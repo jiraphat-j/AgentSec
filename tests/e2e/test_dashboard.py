@@ -6,16 +6,39 @@ import threading
 import time
 from contextlib import closing
 from typing import Any
+from urllib.parse import urlsplit
 
 import pytest
 
 playwright = pytest.importorskip("playwright.sync_api")
 uvicorn = pytest.importorskip("uvicorn")
 
+from uvicorn import Server
+
 from agentsec.dashboard_api import create_dashboard_app
 from agentsec.dashboard_catalog import CatalogRecord, DashboardCatalog
 from agentsec.dashboard_models import ArtifactKind, CatalogSummary, Provenance
-from agentsec.models import Event
+from agentsec.models import Event, PromptFixture
+from agentsec.resource_loader import load_canary, load_prompt
+
+
+def wait_for_server(server: Server, thread: threading.Thread) -> None:
+    deadline = time.monotonic() + 10
+    while not server.started and thread.is_alive() and time.monotonic() < deadline:
+        time.sleep(0.01)
+    assert server.started and thread.is_alive()
+
+
+@pytest.fixture(autouse=True)
+def block_external_browser_requests(page: Any) -> None:
+    def allow_loopback_only(route: Any) -> None:
+        target = urlsplit(route.request.url)
+        if target.scheme in {"http", "https"} and target.hostname == "127.0.0.1":
+            route.continue_()
+            return
+        route.abort()
+
+    page.route("**/*", allow_loopback_only)
 
 
 @pytest.mark.dashboard_e2e
@@ -35,6 +58,7 @@ def test_empty_dashboard_keyboard_flow(page: Any) -> None:
     thread = threading.Thread(target=server.run, daemon=True)
     thread.start()
     try:
+        wait_for_server(server, thread)
         page.goto(f"http://127.0.0.1:{port}")
         playwright.expect(page.get_by_role("heading", name="AgentSec Lab")).to_be_visible()
         playwright.expect(
@@ -194,6 +218,7 @@ def test_representative_investigation_and_evaluation_flow(page: Any) -> None:
     thread = threading.Thread(target=server.run, daemon=True)
     thread.start()
     try:
+        wait_for_server(server, thread)
         page.goto(f"http://127.0.0.1:{port}")
         page.get_by_role("button", name="Run run_1").click()
         playwright.expect(
@@ -230,6 +255,80 @@ def test_representative_investigation_and_evaluation_flow(page: Any) -> None:
         unavailable = page.get_by_role("progressbar", name="benign_false_positive_rate Unavailable")
         playwright.expect(unavailable).to_be_visible()
         assert unavailable.get_attribute("value") is None
+    finally:
+        server.should_exit = True
+        thread.join(timeout=10)
+    assert not thread.is_alive()
+
+
+@pytest.mark.dashboard_e2e
+def test_direct_prompt_projection_redacts_browser_content(page: Any) -> None:
+    raw_prompt = load_prompt(PromptFixture.MALICIOUS)
+    canary = load_canary()
+    event = Event(
+        event_id="evt_prompt",
+        run_id="run_direct",
+        trace_id="trace_direct",
+        sequence=1,
+        timestamp="2026-09-15T00:00:00Z",
+        event_type="agent.context.prompt_added",
+        source_component="scenario-controller",
+        payload={
+            "prompt_id": PromptFixture.MALICIOUS.value,
+            "source": "packaged_prompt_fixture",
+            "trust": "untrusted",
+            "delivery_channel": "direct_prompt",
+            "raw_prompt": raw_prompt,
+            "fake_canary": canary,
+        },
+    )
+    catalog = DashboardCatalog(
+        (
+            CatalogRecord(
+                CatalogSummary(
+                    id="direct",
+                    kind=ArtifactKind.EVENT_SOURCE,
+                    provenance=Provenance.VERIFIED,
+                    title="Run run_direct",
+                    status="incomplete",
+                ),
+                {"id": "direct", "run_id": "run_direct"},
+                (event,),
+            ),
+        )
+    )
+    with closing(socket.socket()) as probe:
+        probe.bind(("127.0.0.1", 0))
+        port = int(probe.getsockname()[1])
+    server = uvicorn.Server(
+        uvicorn.Config(
+            create_dashboard_app(catalog, port=port),
+            host="127.0.0.1",
+            port=port,
+            log_level="error",
+        )
+    )
+    thread = threading.Thread(target=server.run, daemon=True)
+    requests: list[str] = []
+    page.on("request", lambda request: requests.append(request.url))
+    thread.start()
+    try:
+        wait_for_server(server, thread)
+        page.goto(f"http://127.0.0.1:{port}")
+        page.get_by_role("button", name="Run run_direct").click()
+        playwright.expect(
+            page.get_by_role("heading", name="Sequence-ordered timeline")
+        ).to_be_visible()
+        page.get_by_role("button", name="Open evidence").click()
+        playwright.expect(page.get_by_role("heading", name="Evidence evt_prompt")).to_be_visible()
+        visible = page.locator("#view").inner_text()
+        assert "malicious" in visible
+        assert "packaged_prompt_fixture" in visible
+        assert "direct_prompt" in visible
+        for forbidden in (raw_prompt, "[agentsec:direct-prompt-injection]", canary):
+            assert forbidden not in page.content()
+        assert requests
+        assert all(urlsplit(url).hostname == "127.0.0.1" for url in requests)
     finally:
         server.should_exit = True
         thread.join(timeout=10)

@@ -13,6 +13,8 @@ from .constants import (
     CANARY_ID,
     CORRELATION_RULE_ID,
     CORRELATION_RULE_VERSION,
+    DIRECT_PROMPT_CORRELATION_RULE_ID,
+    DIRECT_PROMPT_CORRELATION_RULE_VERSION,
     EVIDENCE_FINGERPRINT_VERSION,
     MAX_DERIVED_ALERTS,
     MAX_INVESTIGATION_TRACES,
@@ -103,7 +105,7 @@ def _alert(
 
 def _stage_for_event(event: Event) -> StageLabel | None:
     if (
-        event.event_type == "agent.context.document_added"
+        event.event_type in {"agent.context.document_added", "agent.context.prompt_added"}
         and event.payload.get("trust") == "untrusted"
     ):
         return StageLabel.UNTRUSTED_CONTEXT
@@ -181,21 +183,28 @@ def _outcome(
 
 
 def _explanation(
-    category: AlertCategory, outcome: OutcomeAssessment
+    category: AlertCategory, outcome: OutcomeAssessment, events: list[Event]
 ) -> tuple[str, tuple[str, ...]]:
+    direct_prompt = any(
+        event.event_type == "agent.context.prompt_added"
+        and event.payload.get("trust") == "untrusted"
+        and event.payload.get("delivery_channel") == "direct_prompt"
+        for event in events
+    )
+    origin = "an untrusted direct user prompt" if direct_prompt else "untrusted document content"
     remediation = (
-        "Treat document content as untrusted data rather than tool instructions.",
+        f"Treat {origin} as untrusted data rather than tool instructions.",
         "Require policy authorization for classified-resource access and outbound actions.",
         "Investigate the linked event sequence and verify the simulated asset scope.",
     )
     if outcome.outcome == "simulated_impact":
         cause = (
-            "The evidence supports the hypothesis that untrusted document instructions preceded "
+            f"The evidence supports the hypothesis that {origin} preceded "
             "classified-resource access and matching fake-canary transfer to the in-process sink."
         )
     elif outcome.outcome == "prevented":
         cause = (
-            "The evidence supports the hypothesis that untrusted document instructions proposed "
+            f"The evidence supports the hypothesis that {origin} proposed "
             "a sensitive action which the strict defense policy denied before simulated impact."
         )
     elif category is AlertCategory.CONTROL_OBSERVATION:
@@ -213,34 +222,50 @@ def _explanation(
 
 def _historical_timing(events: tuple[Event, ...]) -> HistoricalTiming:
     by_id = {event.event_id: event for event in events}
+    context_contracts: dict[tuple[str, int], tuple[str, str | None]] = {
+        (CORRELATION_RULE_ID, CORRELATION_RULE_VERSION): (
+            "agent.context.document_added",
+            None,
+        ),
+        (DIRECT_PROMPT_CORRELATION_RULE_ID, DIRECT_PROMPT_CORRELATION_RULE_VERSION): (
+            "agent.context.prompt_added",
+            "direct_prompt",
+        ),
+    }
     matches = [
         event
         for event in events
         if event.event_type == "detection.match"
         and event.source_component == "correlation-detector"
-        and event.payload.get("rule_id") == CORRELATION_RULE_ID
+        and type(event.payload.get("rule_version")) is int
+        and (event.payload.get("rule_id"), event.payload.get("rule_version")) in context_contracts
     ]
     if not matches:
         return HistoricalTiming(exclusion_reason="legacy_detection_unavailable")
     for match in matches:
+        expected_context_type, expected_delivery_channel = context_contracts[
+            (str(match.payload["rule_id"]), int(match.payload["rule_version"]))
+        ]
         ids = match.payload.get("evidence_event_ids")
         if (
-            type(match.payload.get("rule_version")) is not int
-            or match.payload["rule_version"] != CORRELATION_RULE_VERSION
-            or not isinstance(ids, list)
+            not isinstance(ids, list)
             or len(ids) != 3
             or any(type(item) is not str for item in ids)
             or len(set(ids)) != 3
             or any(item not in by_id for item in ids)
         ):
             continue
-        document, secret_read, sink = (by_id[item] for item in ids)
-        chain = (document, secret_read, sink, match)
+        context, secret_read, sink = (by_id[item] for item in ids)
+        chain = (context, secret_read, sink, match)
         if (
             any(item.run_id != match.run_id or item.trace_id != match.trace_id for item in chain)
             or [item.sequence for item in chain] != sorted(item.sequence for item in chain)
-            or document.event_type != "agent.context.document_added"
-            or document.payload.get("trust") != "untrusted"
+            or context.event_type != expected_context_type
+            or context.payload.get("trust") != "untrusted"
+            or (
+                expected_delivery_channel is not None
+                and context.payload.get("delivery_channel") != expected_delivery_channel
+            )
             or secret_read.event_type != "file.read"
             or secret_read.payload.get("classification") != "secret"
             or secret_read.payload.get("canary_id") != CANARY_ID
@@ -262,7 +287,7 @@ def _historical_timing(events: tuple[Event, ...]) -> HistoricalTiming:
             and event.run_id == match.run_id
             and event.trace_id == match.trace_id
             and event.sequence > match.sequence
-            and event.payload.get("rule_id") == CORRELATION_RULE_ID
+            and event.payload.get("rule_id") == match.payload.get("rule_id")
             and event.payload.get("evidence_event_ids") == ids
             and isinstance(event.payload.get("alert_id"), str)
             and bool(event.payload["alert_id"])
@@ -366,7 +391,7 @@ def build_investigation(
             if any(alert.category is AlertCategory.SUSPICIOUS_ACTIVITY for alert in trace_alerts)
             else AlertCategory.CONTROL_OBSERVATION
         )
-        cause, remediation = _explanation(category, assessment)
+        cause, remediation = _explanation(category, assessment, trace_events)
         incidents.append(
             Incident(
                 stable_key=(

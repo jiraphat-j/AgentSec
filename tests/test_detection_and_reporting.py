@@ -19,7 +19,9 @@ from agentsec.reporting import (
 from .helpers import sequential_ids
 
 
-def add_attack_evidence(collector: EventCollector, *, matched: bool = True) -> None:
+def add_attack_evidence(
+    collector: EventCollector, *, matched: bool = True, redacted: bool = True
+) -> None:
     collector.emit("agent.context.document_added", "controller", {"trust": "untrusted"})
     collector.emit(
         "file.read",
@@ -29,7 +31,13 @@ def add_attack_evidence(collector: EventCollector, *, matched: bool = True) -> N
     collector.emit(
         "lab.sink.payload_recorded",
         "lab-http-sink-adapter",
-        {"canary_id": CANARY_ID, "value_sha256": "digest", "matched": matched},
+        {
+            "canary_id": CANARY_ID,
+            "value_sha256": "digest",
+            "matched": matched,
+            "redacted": redacted,
+            "observed_in": "http_request_body",
+        },
     )
 
 
@@ -58,6 +66,84 @@ def test_incomplete_or_unmatched_chain_does_not_detect(tmp_path: Path) -> None:
     store.close()
 
     assert not result.detected
+
+
+def test_detector_recovers_missing_alert_and_incident(tmp_path: Path) -> None:
+    store = EventStore(tmp_path / "events.sqlite3")
+    collector = EventCollector(store, "run_1", "trace_1", id_factory=sequential_ids())
+    add_attack_evidence(collector)
+    detector = CorrelationDetector()
+    evaluated = detector.evaluate(store.events("run_1"))
+    collector.emit(
+        "detection.match",
+        "correlation-detector",
+        {
+            "rule_id": evaluated.rule_id,
+            "rule_version": evaluated.rule_version,
+            "severity": "critical",
+            "evidence_event_ids": list(evaluated.evidence_event_ids),
+        },
+    )
+
+    recovered = detector.evaluate_and_record(store.events("run_1"), collector)
+    events = store.events("run_1")
+    store.close()
+
+    assert recovered.alert_id == "alert_run_1"
+    assert recovered.incident_id == "incident_run_1"
+    assert sum(event.event_type == "alert.created" for event in events) == 1
+    assert sum(event.event_type == "incident.created" for event in events) == 1
+
+
+def test_negative_detection_is_idempotent(tmp_path: Path) -> None:
+    store = EventStore(tmp_path / "events.sqlite3")
+    collector = EventCollector(store, "run_1", "trace_1", id_factory=sequential_ids())
+    detector = CorrelationDetector()
+
+    first = detector.evaluate_and_record(store.events("run_1"), collector)
+    second = detector.evaluate_and_record(store.events("run_1"), collector)
+    events = store.events("run_1")
+    store.close()
+
+    assert not first.detected and not second.detected
+    assert sum(event.event_type == "detection.no_match" for event in events) == 1
+
+
+def test_unredacted_sink_does_not_match_live_detector(tmp_path: Path) -> None:
+    store = EventStore(tmp_path / "events.sqlite3")
+    collector = EventCollector(store, "run_1", "trace_1", id_factory=sequential_ids())
+    add_attack_evidence(collector, redacted=False)
+
+    result = CorrelationDetector().evaluate(store.events("run_1"))
+    store.close()
+
+    assert not result.detected
+
+
+def test_indirect_report_text_remains_compatible(tmp_path: Path) -> None:
+    store = EventStore(tmp_path / "events.sqlite3")
+    collector = EventCollector(store, "run_1", "trace_1", id_factory=sequential_ids())
+    add_attack_evidence(collector)
+    events = store.events("run_1")
+    detection = CorrelationDetector().evaluate(events)
+    store.close()
+    scenario = Scenario(
+        id="scenario",
+        name="Historical report",
+        document_fixture=DocumentFixture.MALICIOUS,
+        timeout_seconds=5,
+    )
+
+    report = build_report(scenario, "run_1", "trace_1", events, detection)
+
+    assert report.root_cause == (
+        "The vulnerable profile followed an instruction from untrusted document content "
+        "and allowed both controlled tool actions."
+    )
+    assert report.recommended_remediation[0] == (
+        "Treat document content as untrusted data rather than tool instructions."
+    )
+    assert report.recommended_remediation[2].startswith("Correlate document provenance")
 
 
 def test_wrong_order_or_digest_does_not_detect(tmp_path: Path) -> None:

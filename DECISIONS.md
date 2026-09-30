@@ -52,6 +52,7 @@ The non-negotiable MVP security boundary is defined in [THREAT_MODEL.md](THREAT_
 | D-034 | Phase 4 fingerprints validated logical event snapshots and complete rule definitions with versioned SHA-256 serialization | Detects content changes while explicitly making no authenticity or custody claim |
 | D-035 | Historical alert/incident timing is reported only from validated linked source events; offline processing time remains separate | Prevents replay duration from being mislabeled MTTD or MTTI |
 | D-036 | Phase 5 is an optional read-only local dashboard bound to `127.0.0.1`, backed by a strict artifact manifest and packaged assets | Makes demonstrations understandable without turning the browser into an execution or evidence-authoring surface |
+| D-037 | Phase 6A adds one closed direct-prompt scenario with origin-correct `risk-v2` evidence while preserving indirect `risk-v1` artifacts and `policy-v1` behavior | Prevents a direct user prompt from being mislabeled as an untrusted document without expanding tool permissions |
 
 ## Proposed
 

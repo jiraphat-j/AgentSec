@@ -12,13 +12,15 @@ from .models import (
     ApprovalEvidence,
     ComparisonChild,
     ComparisonReport,
+    DirectPromptScenario,
     EnforcementLayer,
     Event,
+    InputChannel,
     Outcome,
     PolicyDecisionEvidence,
     PolicyProfile,
     RiskAssessment,
-    Scenario,
+    ScenarioDefinition,
 )
 from .outcomes import derive_impact, derive_prevention
 from .reporting import ReportWriteError, safe_markdown
@@ -34,7 +36,12 @@ class ComparisonEvidence:
 
 
 def _child(source: ComparisonEvidence) -> ComparisonChild:
-    detection = CorrelationDetector().evaluate(source.events)
+    channel = (
+        InputChannel.DIRECT_PROMPT
+        if any(event.event_type == "agent.context.prompt_added" for event in source.events)
+        else InputChannel.DOCUMENT
+    )
+    detection = CorrelationDetector.for_input_channel(channel).evaluate(source.events)
     impact = derive_impact(source.events)
     prevention = derive_prevention(source.events)
     outcome: Outcome
@@ -105,7 +112,7 @@ def _child(source: ComparisonEvidence) -> ComparisonChild:
 
 
 def build_comparison(
-    scenario: Scenario,
+    scenario: ScenarioDefinition,
     comparison_id: str,
     vulnerable: ComparisonEvidence,
     strict: ComparisonEvidence,
@@ -127,6 +134,7 @@ def build_comparison(
         children=(vulnerable_child, strict_child),
         divergence=divergence,
         conclusion=conclusion,
+        risk_version="risk-v2" if isinstance(scenario, DirectPromptScenario) else "risk-v1",
         safety_and_limitations=(
             "Both children use the same packaged deterministic scenario in isolated runs.",
             "The lab opens no operating-system socket and performs no DNS lookup.",
@@ -204,7 +212,7 @@ def _first_policy_divergence(vulnerable: ComparisonChild, strict: ComparisonChil
     return "Canonical policy evidence contains no corresponding decision divergence."
 
 
-def _verify_recorded_run(source: ComparisonEvidence, scenario: Scenario) -> None:
+def _verify_recorded_run(source: ComparisonEvidence, scenario: ScenarioDefinition) -> None:
     started = next((event for event in source.events if event.event_type == "run.started"), None)
     if started is None:
         raise ValueError("comparison child has no run.started evidence")
@@ -212,8 +220,13 @@ def _verify_recorded_run(source: ComparisonEvidence, scenario: Scenario) -> None
         raise ValueError("comparison child identity does not match canonical evidence")
     if started.payload.get("scenario_id") != scenario.id:
         raise ValueError("comparison children must use the same scenario")
-    if started.payload.get("fixture") != scenario.document_fixture.value:
-        raise ValueError("comparison children must use the same document fixture")
+    fixture = (
+        scenario.input_fixture
+        if isinstance(scenario, DirectPromptScenario)
+        else scenario.document_fixture
+    )
+    if started.payload.get("fixture") != fixture.value:
+        raise ValueError("comparison children must use the same packaged fixture")
     if started.payload.get("profile") != source.profile.value:
         raise ValueError("comparison profile does not match canonical evidence")
 

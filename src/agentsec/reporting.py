@@ -7,7 +7,15 @@ import re
 from pathlib import Path
 
 from .constants import MAX_REPORT_BYTES
-from .models import DetectionResult, Event, Outcome, PolicyProfile, Report, Scenario
+from .models import (
+    DetectionResult,
+    DirectPromptScenario,
+    Event,
+    Outcome,
+    PolicyProfile,
+    Report,
+    ScenarioDefinition,
+)
 from .outcomes import derive_impact, derive_prevention
 
 
@@ -16,7 +24,7 @@ class ReportWriteError(RuntimeError):
 
 
 def build_report(
-    scenario: Scenario,
+    scenario: ScenarioDefinition,
     run_id: str,
     trace_id: str,
     events: list[Event],
@@ -48,6 +56,7 @@ def build_report(
             "lab.sink.payload_recorded",
         }
     )
+    is_direct_prompt = isinstance(scenario, DirectPromptScenario)
     if outcome == "simulated_impact":
         executive_summary = (
             "The deterministic lab observed a fake canary at the in-process sink. "
@@ -59,7 +68,10 @@ def build_report(
             )
         )
         root_cause = (
-            "The vulnerable profile followed an instruction from untrusted document content "
+            "The vulnerable profile followed an instruction from direct user prompt "
+            "and allowed both controlled tool actions."
+            if is_direct_prompt
+            else "The vulnerable profile followed an instruction from untrusted document content "
             "and allowed both controlled tool actions."
         )
     elif outcome == "prevented":
@@ -68,7 +80,10 @@ def build_report(
             "simulated impact."
         )
         root_cause = (
-            "Untrusted document content proposed a sensitive tool action; the strict policy "
+            "Direct user prompt proposed a sensitive tool action; the strict policy "
+            "recognized the risk and denied dispatch."
+            if is_direct_prompt
+            else "Untrusted document content proposed a sensitive tool action; the strict policy "
             "recognized the risk and denied dispatch."
         )
     elif outcome == "incomplete":
@@ -90,11 +105,16 @@ def build_report(
         trace_id=trace_id,
         status="completed",
         executive_summary=executive_summary,
-        attack_vector="Indirect prompt injection through an untrusted text document",
+        attack_vector=(
+            "Direct prompt injection through an untrusted user prompt"
+            if is_direct_prompt
+            else "Indirect prompt injection through an untrusted text document"
+        ),
         agent_and_tool_actions=actions,
         timeline=tuple(events),
         evidence_cutoff_sequence=events[-1].sequence if events else 0,
         policy_profile=profile,
+        risk_version="risk-v2" if is_direct_prompt else "risk-v1",
         detection=detection,
         prevention=prevention,
         simulated_impact=impact,
@@ -107,9 +127,20 @@ def build_report(
         ),
         root_cause=root_cause,
         recommended_remediation=(
-            "Treat document content as untrusted data rather than tool instructions.",
+            (
+                "Treat direct user prompt content as untrusted data rather than tool instructions."
+                if is_direct_prompt
+                else "Treat document content as untrusted data rather than tool instructions."
+            ),
             "Require policy authorization for sensitive data access and outbound actions.",
-            "Correlate document provenance, secret access, and outbound data-flow telemetry.",
+            (
+                "Correlate context provenance, secret access, and outbound data-flow telemetry."
+                if is_direct_prompt
+                else (
+                    "Correlate document provenance, secret access, and outbound "
+                    "data-flow telemetry."
+                )
+            ),
         ),
         safety_and_limitations=(
             "This is an educational simulation using a fake canary with no real privileges.",

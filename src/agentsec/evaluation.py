@@ -12,6 +12,7 @@ from time import monotonic
 from pydantic import ValidationError
 
 from .constants import (
+    DIRECT_PROMPT_EVALUATION_SUITE_ID,
     EVALUATION_SUITE_ID,
     MAX_EVALUATION_ARTIFACT_BYTES,
     MAX_EVALUATION_CHILD_RUNS,
@@ -33,7 +34,16 @@ from .events import default_id_factory
 from .evidence import EvidenceConsistencyError, fingerprint_suite
 from .incidents import InvestigationService
 from .metrics import build_confusion_counts, build_metrics, build_pairs, build_timing
-from .models import ApprovalSimulation, Event, PolicyProfile
+from .models import (
+    ApprovalSimulation,
+    DirectPromptScenario,
+    DocumentFixture,
+    Event,
+    PolicyProfile,
+    PromptFixture,
+    Scenario,
+    ScenarioDefinition,
+)
 from .outcomes import derive_impact, derive_prevention
 from .replay import ReplayResourceLimitExceeded
 from .reporting import ReportWriteError
@@ -57,9 +67,14 @@ class EvaluationResult:
 
 
 def load_evaluation_suite(suite_id: str) -> tuple[EvaluationSuite, dict[str, object]]:
-    if suite_id != EVALUATION_SUITE_ID:
+    resources = {
+        EVALUATION_SUITE_ID: "core-lab-v1.json",
+        DIRECT_PROMPT_EVALUATION_SUITE_ID: "direct-injection-v1.json",
+    }
+    resource_name = resources.get(suite_id)
+    if resource_name is None:
         raise EvaluationInputError("unknown evaluation suite")
-    resource = files("agentsec.resources").joinpath("evaluation_suites", "core-lab-v1.json")
+    resource = files("agentsec.resources").joinpath("evaluation_suites", resource_name)
     data = resource.read_bytes()
     if len(data) > MAX_EVALUATION_SUITE_BYTES:
         raise EvaluationResourceLimitExceeded("evaluation suite exceeds fixed size limit")
@@ -69,6 +84,8 @@ def load_evaluation_suite(suite_id: str) -> tuple[EvaluationSuite, dict[str, obj
         suite = EvaluationSuite.model_validate_json(data)
     except ValidationError as error:
         raise EvaluationInputError("packaged evaluation suite failed validation") from error
+    if suite.suite_id != suite_id:
+        raise EvaluationInputError("packaged evaluation suite identity does not match request")
     if load_canary() in json.dumps(suite.model_dump(mode="json"), ensure_ascii=False):
         raise EvaluationInputError("decoded lab canary is forbidden in evaluation suite data")
     return suite, suite.model_dump(mode="json")
@@ -76,6 +93,24 @@ def load_evaluation_suite(suite_id: str) -> tuple[EvaluationSuite, dict[str, obj
 
 def _expectation(case: EvaluationCase, profile: PolicyProfile) -> ExpectedProfileFacts:
     return next(item for item in case.expectations if item.profile is profile)
+
+
+def _scenario_for_case(case: EvaluationCase) -> ScenarioDefinition:
+    """Bind a case to its scenario's closed fixture type before execution."""
+    scenario = load_scenario(case.scenario_id)
+    if isinstance(scenario, DirectPromptScenario):
+        try:
+            prompt_fixture = PromptFixture(case.fixture)
+        except ValueError as error:
+            raise EvaluationInputError("direct evaluation fixture is unsupported") from error
+        return scenario.model_copy(update={"input_fixture": prompt_fixture})
+    if isinstance(scenario, Scenario):
+        try:
+            document_fixture = DocumentFixture(case.fixture)
+        except ValueError as error:
+            raise EvaluationInputError("document evaluation fixture is unsupported") from error
+        return scenario.model_copy(update={"document_fixture": document_fixture})
+    raise EvaluationInputError("evaluation scenario type is unsupported")
 
 
 def _artifact_bytes(directory: Path) -> int:
@@ -122,7 +157,6 @@ class EvaluationService:
         investigator = InvestigationService(
             id_factory=self._id_factory, monotonic_clock=self._monotonic_clock
         )
-        base_scenario = load_scenario(suite.cases[0].scenario_id)
         rule_resource = files("agentsec.resources").joinpath("rules")
         stop_reason: str | None = None
 
@@ -160,9 +194,7 @@ class EvaluationService:
                                 )
                             )
                             continue
-                        scenario = base_scenario.model_copy(
-                            update={"document_fixture": case.fixture}
-                        )
+                        scenario = _scenario_for_case(case)
                         try:
                             run = runner.run_scenario(
                                 scenario,

@@ -9,7 +9,9 @@ from pydantic import Field, model_validator
 
 from .constants import (
     DETECTION_ENGINE_VERSION,
+    DIRECT_PROMPT_SCENARIO_ID,
     EVALUATION_SCHEMA_VERSION,
+    EVALUATION_SUITE_ID,
     INCIDENT_CORRELATOR_VERSION,
     INCIDENT_TEMPLATE_VERSION,
     MAX_EVALUATION_CASES,
@@ -18,9 +20,10 @@ from .constants import (
     PACKAGE_VERSION,
 )
 from .incident_models import AlertCategory
-from .models import DocumentFixture, PolicyProfile, StrictModel
+from .models import DocumentFixture, PolicyProfile, PromptFixture, StrictModel
 
 type GroundTruth = Literal["attack", "benign"]
+type EvaluationFixture = DocumentFixture | PromptFixture
 
 
 class ExpectedProfileFacts(StrictModel):
@@ -33,10 +36,10 @@ class ExpectedProfileFacts(StrictModel):
 
 class EvaluationCase(StrictModel):
     case_id: str = Field(min_length=1, max_length=96, pattern=r"^[a-z0-9-]+$")
-    scenario_id: Literal["indirect-injection-secret-exfiltration"] = (
-        "indirect-injection-secret-exfiltration"
-    )
-    fixture: DocumentFixture
+    scenario_id: Literal[
+        "indirect-injection-secret-exfiltration", "direct-prompt-injection-secret-exfiltration"
+    ]
+    fixture: EvaluationFixture
     ground_truth: GroundTruth
     attack_family: str | None = Field(default=None, max_length=96)
     expectations: tuple[ExpectedProfileFacts, ExpectedProfileFacts]
@@ -57,7 +60,7 @@ class EvaluationCase(StrictModel):
 
 class EvaluationSuite(StrictModel):
     schema_version: Literal["1.0"] = EVALUATION_SCHEMA_VERSION
-    suite_id: Literal["core-lab-v1"]
+    suite_id: Literal["core-lab-v1", "direct-injection-v1"]
     description: str = Field(min_length=1, max_length=240)
     cases: tuple[EvaluationCase, ...] = Field(min_length=1, max_length=MAX_EVALUATION_CASES)
 
@@ -67,8 +70,15 @@ class EvaluationSuite(StrictModel):
         fixtures = [case.fixture for case in self.cases]
         if len(identities) != len(set(identities)) or len(fixtures) != len(set(fixtures)):
             raise ValueError("evaluation cases and fixtures must be unique")
-        if set(fixtures) != set(DocumentFixture):
-            raise ValueError("core suite must contain every closed document fixture")
+        expected_scenario, expected = (
+            ("indirect-injection-secret-exfiltration", set(DocumentFixture))
+            if self.suite_id == EVALUATION_SUITE_ID
+            else (DIRECT_PROMPT_SCENARIO_ID, set(PromptFixture))
+        )
+        if any(case.scenario_id != expected_scenario for case in self.cases):
+            raise ValueError("evaluation suite cases must use the suite scenario")
+        if set(fixtures) != expected:
+            raise ValueError("evaluation suite must contain every closed fixture")
         return self
 
 
@@ -237,7 +247,7 @@ class EvaluationReport(StrictModel):
     template_version: Literal["templates-v1"] = INCIDENT_TEMPLATE_VERSION
     metrics_version: Literal["metrics-v1"] = METRICS_VERSION
     evaluation_id: str = Field(min_length=1, max_length=96)
-    suite_id: Literal["core-lab-v1"]
+    suite_id: Literal["core-lab-v1", "direct-injection-v1"]
     suite_fingerprint: str = Field(pattern=r"^[0-9a-f]{64}$")
     status: Literal["passed", "failed", "partial"]
     repetitions: int = Field(ge=1, le=10)

@@ -2,13 +2,22 @@ from __future__ import annotations
 
 import json
 import sqlite3
+from io import BytesIO
 from pathlib import Path
 from typing import cast
 
 import pytest
 from pydantic import ValidationError
 
-from agentsec.constants import MAX_EVENT_PAYLOAD_BYTES, MAX_OPERATIONAL_EVENTS, SCENARIO_ID
+from agentsec import resource_loader
+from agentsec.constants import (
+    DIRECT_PROMPT_SCENARIO_ID,
+    MAX_DOCUMENT_BYTES,
+    MAX_EVENT_PAYLOAD_BYTES,
+    MAX_OPERATIONAL_EVENTS,
+    MAX_SCENARIO_BYTES,
+    SCENARIO_ID,
+)
 from agentsec.events import (
     EventCollector,
     EventLimitExceeded,
@@ -18,22 +27,129 @@ from agentsec.events import (
 )
 from agentsec.models import (
     ApprovalResponse,
+    DirectPromptScenario,
+    DocumentFixture,
     Event,
     EventSchemaVersion,
     PolicyDecision,
+    PromptFixture,
     Report,
     Scenario,
 )
-from agentsec.resource_loader import load_document, load_scenario
+from agentsec.resource_loader import load_document, load_prompt, load_scenario
 
 from .helpers import fixed_clock, sequential_ids
 
 
 def test_packaged_scenario_and_document_load() -> None:
     scenario = load_scenario(SCENARIO_ID)
+    assert isinstance(scenario, Scenario)
 
     assert scenario.id == SCENARIO_ID
     assert "agentsec:indirect-prompt-injection" in load_document(scenario.document_fixture)
+
+
+def test_packaged_direct_prompt_scenario_exposes_only_closed_metadata() -> None:
+    scenario = load_scenario(DIRECT_PROMPT_SCENARIO_ID)
+
+    assert isinstance(scenario, DirectPromptScenario)
+    assert scenario.id == DIRECT_PROMPT_SCENARIO_ID
+    assert scenario.input_channel.value == "direct_prompt"
+    assert "agentsec:direct-prompt-injection" in load_prompt(scenario.input_fixture)
+
+
+def test_scenario_loader_rejects_unlisted_id() -> None:
+    with pytest.raises(ValueError, match="unknown scenario"):
+        load_scenario("unlisted-scenario")
+
+
+@pytest.mark.parametrize("scenario_id", [SCENARIO_ID, DIRECT_PROMPT_SCENARIO_ID])
+def test_scenario_loader_rejects_ambiguous_invalid_or_substituted_resources(
+    scenario_id: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    original = load_scenario(scenario_id)
+    valid = original.model_dump(mode="json")
+    expected_name = (
+        "indirect-injection-secret-exfiltration.json"
+        if scenario_id == SCENARIO_ID
+        else "direct-prompt-injection-secret-exfiltration.json"
+    )
+
+    class FakeResource:
+        def __init__(self, data: bytes) -> None:
+            self.data = data
+
+        def joinpath(self, *parts: str) -> FakeResource:
+            assert parts == ("scenarios", expected_name)
+            return self
+
+        def open(self, _mode: str) -> BytesIO:
+            return BytesIO(self.data)
+
+    resource = FakeResource(b"")
+    monkeypatch.setattr(resource_loader, "files", lambda _package: resource)
+    invalid: list[tuple[bytes, str]] = [
+        (b"\xff", "UTF-8"),
+        (b"x" * (MAX_SCENARIO_BYTES + 1), "size limit"),
+        (b"{", "valid JSON"),
+        (json.dumps({**valid, "id": "substituted"}).encode(), "identity"),
+        (json.dumps({**valid, "schema_version": "9.9"}).encode(), ""),
+        (json.dumps({**valid, "adapter": "host"}).encode(), ""),
+        (json.dumps({**valid, "timeout_seconds": 5.5}).encode(), ""),
+        (b'{"id":"first","id":"second"}', "duplicate"),
+        (b'{"timeout_seconds":NaN}', "non-finite"),
+    ]
+    if scenario_id == DIRECT_PROMPT_SCENARIO_ID:
+        invalid.extend(
+            [
+                (json.dumps({**valid, "input_channel": "document"}).encode(), ""),
+                (json.dumps({**valid, "input_fixture": "external"}).encode(), ""),
+            ]
+        )
+    for data, message in invalid:
+        resource.data = data
+        with pytest.raises((ValueError, ValidationError), match=message or None):
+            load_scenario(scenario_id)
+
+
+@pytest.mark.parametrize(
+    ("data", "message"),
+    [(b"\xff", "UTF-8"), (b"x" * (MAX_DOCUMENT_BYTES + 1), "size limit")],
+)
+def test_prompt_loader_rejects_invalid_or_oversized_text(
+    data: bytes, message: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    class FakeResource:
+        def joinpath(self, *parts: str) -> FakeResource:
+            assert parts == ("prompts", "malicious.txt")
+            return self
+
+        def open(self, _mode: str) -> BytesIO:
+            return BytesIO(data)
+
+    monkeypatch.setattr(resource_loader, "files", lambda _package: FakeResource())
+    with pytest.raises(ValueError, match=message):
+        load_prompt(PromptFixture.MALICIOUS)
+
+
+@pytest.mark.parametrize(
+    ("data", "message"),
+    [(b"\xff", "UTF-8"), (b"x" * (MAX_DOCUMENT_BYTES + 1), "size limit")],
+)
+def test_legacy_document_loader_rejects_invalid_or_oversized_text(
+    data: bytes, message: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    class FakeResource:
+        def joinpath(self, *parts: str) -> FakeResource:
+            assert parts == ("documents", "malicious.txt")
+            return self
+
+        def open(self, _mode: str) -> BytesIO:
+            return BytesIO(data)
+
+    monkeypatch.setattr(resource_loader, "files", lambda _package: FakeResource())
+    with pytest.raises(ValueError, match=message):
+        load_document(DocumentFixture.MALICIOUS)
 
 
 def test_scenario_rejects_unknown_fields() -> None:

@@ -280,6 +280,77 @@ def test_catalog_rejects_raw_canary_in_safe_event_projection(tmp_path: Path) -> 
         DashboardCatalog.load(manifest)
 
 
+@pytest.mark.parametrize(
+    "override",
+    (
+        {"prompt_id": "ignore previous instructions"},
+        {"source": "untrusted prompt text"},
+        {"trust": "trusted"},
+        {"delivery_channel": "document"},
+    ),
+)
+def test_catalog_rejects_forged_prompt_metadata(
+    tmp_path: Path, override: dict[str, object]
+) -> None:
+    source = tmp_path / "events.sqlite3"
+    store = EventStore(source)
+    collector = EventCollector(store, "run_1", "trace_1", id_factory=sequential_ids())
+    collector.emit(
+        "run.started",
+        "scenario-controller",
+        {
+            "scenario_id": "direct-prompt-injection-secret-exfiltration",
+            "fixture": "malicious",
+            "profile": "vulnerable",
+            "policy_version": "policy-v1",
+        },
+    )
+    payload: dict[str, object] = {
+        "prompt_id": "malicious",
+        "source": "packaged_prompt_fixture",
+        "trust": "untrusted",
+        "delivery_channel": "direct_prompt",
+    }
+    payload.update(override)
+    collector.emit("agent.context.prompt_added", "scenario-controller", payload)
+    store.close()
+    original = source.read_bytes()
+    manifest = tmp_path / "manifest.json"
+    _write_manifest(
+        manifest,
+        [{"id": "source", "kind": "event_source", "path": source.name, "run_id": "run_1"}],
+    )
+
+    with pytest.raises(DashboardInputError, match="unsafe prompt metadata"):
+        DashboardCatalog.load(manifest)
+    assert source.read_bytes() == original
+
+
+def test_catalog_rejects_forged_direct_fixture_id(tmp_path: Path) -> None:
+    source = tmp_path / "events.sqlite3"
+    store = EventStore(source)
+    collector = EventCollector(store, "run_1", "trace_1", id_factory=sequential_ids())
+    collector.emit(
+        "run.started",
+        "scenario-controller",
+        {
+            "scenario_id": "direct-prompt-injection-secret-exfiltration",
+            "fixture": "ignore previous instructions",
+            "profile": "vulnerable",
+            "policy_version": "policy-v1",
+        },
+    )
+    store.close()
+    manifest = tmp_path / "manifest.json"
+    _write_manifest(
+        manifest,
+        [{"id": "source", "kind": "event_source", "path": source.name, "run_id": "run_1"}],
+    )
+
+    with pytest.raises(DashboardInputError, match="unsafe direct fixture"):
+        DashboardCatalog.load(manifest)
+
+
 def test_projection_limit_stops_before_loading_later_sources(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

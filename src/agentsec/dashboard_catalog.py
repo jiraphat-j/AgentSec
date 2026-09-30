@@ -14,6 +14,7 @@ from typing import Any
 from pydantic import BaseModel, ValidationError
 
 from .constants import (
+    DIRECT_PROMPT_SCENARIO_ID,
     MAX_DASHBOARD_EVENTS,
     MAX_DASHBOARD_INPUT_BYTES,
     MAX_DASHBOARD_MANIFEST_BYTES,
@@ -34,7 +35,7 @@ from .detection import CorrelationDetector
 from .evaluation_models import EvaluationReport
 from .evidence import fingerprint_snapshot, validate_snapshot
 from .incident_models import EvidenceReference, InvestigationReport
-from .models import ComparisonReport, Event, Report
+from .models import ComparisonReport, Event, InputChannel, PromptFixture, Report
 from .replay import ReplayEvidence, read_replay_evidence
 from .reporting import build_report
 from .resource_loader import load_canary, load_scenario
@@ -80,6 +81,7 @@ _SAFE_PAYLOAD_FIELDS: dict[str, frozenset[str]] = {
     "run.completed": frozenset({"detected", "prevented", "simulated_impact"}),
     "run.failed": frozenset({"error_type"}),
     "agent.context.document_added": frozenset({"document_id", "source", "trust"}),
+    "agent.context.prompt_added": frozenset({"prompt_id", "source", "trust", "delivery_channel"}),
     "tool.requested": frozenset({"tool"}),
     "policy.evaluated": frozenset({"tool", "profile", "policy_id", "policy_version", "risk"}),
     "policy.allowed": frozenset(
@@ -110,6 +112,7 @@ _SAFE_PAYLOAD_FIELDS: dict[str, frozenset[str]] = {
     "incident.created": frozenset({"incident_id", "alert_id", "severity"}),
     "report.created": frozenset({"formats"}),
 }
+_PROMPT_FIXTURE_IDS = frozenset(fixture.value for fixture in PromptFixture)
 
 
 def _reject_duplicate_keys(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
@@ -202,8 +205,44 @@ def _encoded_json(value: object) -> bytes:
         raise DashboardInputError("dashboard projection is not valid JSON") from error
 
 
+def _validate_prompt_payload(value: object) -> None:
+    if not isinstance(value, dict):
+        raise DashboardInputError("dashboard projection contains unsafe prompt metadata")
+    prompt_id = value.get("prompt_id")
+    if (
+        type(prompt_id) is not str
+        or prompt_id not in _PROMPT_FIXTURE_IDS
+        or value
+        != {
+            "prompt_id": prompt_id,
+            "source": "packaged_prompt_fixture",
+            "trust": "untrusted",
+            "delivery_channel": "direct_prompt",
+        }
+    ):
+        raise DashboardInputError("dashboard projection contains unsafe prompt metadata")
+
+
+def _validate_prompt_projection(value: object) -> None:
+    if isinstance(value, dict):
+        if value.get("event_type") == "agent.context.prompt_added":
+            _validate_prompt_payload(value.get("payload"))
+        elif "prompt_id" in value:
+            _validate_prompt_payload(value)
+        if value.get("scenario_id") == DIRECT_PROMPT_SCENARIO_ID and "fixture" in value:
+            fixture = value["fixture"]
+            if type(fixture) is not str or fixture not in _PROMPT_FIXTURE_IDS:
+                raise DashboardInputError("dashboard projection contains unsafe direct fixture")
+        for child in value.values():
+            _validate_prompt_projection(child)
+    elif isinstance(value, (list, tuple)):
+        for child in value:
+            _validate_prompt_projection(child)
+
+
 def encode_safe_projection(value: object) -> bytes:
     encoded = _encoded_json(value)
+    _validate_prompt_projection(value)
     if _canary_bytes() in encoded:
         raise DashboardInputError("dashboard projection contains the raw lab canary")
     return encoded
@@ -376,7 +415,12 @@ def _verify_run_report(report: Report, source: CatalogRecord) -> None:
         scenario = load_scenario(scenario_id)
     except (OSError, ValidationError, ValueError) as error:
         raise DashboardInputError("run report references an unsupported scenario") from error
-    detection = CorrelationDetector().evaluate(list(timeline))
+    channel = (
+        InputChannel.DIRECT_PROMPT
+        if any(event.event_type == "agent.context.prompt_added" for event in timeline)
+        else InputChannel.DOCUMENT
+    )
+    detection = CorrelationDetector.for_input_channel(channel).evaluate(list(timeline))
     alert = next((event for event in timeline if event.event_type == "alert.created"), None)
     incident = next((event for event in timeline if event.event_type == "incident.created"), None)
     if detection.detected:
