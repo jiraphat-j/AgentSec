@@ -76,7 +76,7 @@ def test_phase_4_fingerprint_fixed_vectors() -> None:
         "5b15e8bec52b1520975af8701de6e87801251ab64e85165c79d6b5f723d36be8"
     )
     assert fingerprint_rules(rules) == (
-        "5e876f4f814e4674f3f1859bc667bd469b972023b0785585268b63cf274179e5"
+        "a8289edfc931edd0e43ddafd069345b1e82be949c08d4c83b8aeb01e7c8f4133"
     )
     assert fingerprint_suite(suite_data) == (
         "53de470176966e7bcb52b82ae89d64fe27016e954c4db4e011c08352422a82c4"

@@ -1,5 +1,9 @@
 # Phase 6A security review
 
+Latest C07 state (2026-10-01): **Targeted repair owner-reviewed and approved;
+sandbox quality/regression/browser/build/installed CLI checks passed.** See [C07 review](PHASE_G0_C07_REVIEW.md).
+Earlier approvals/results below do not establish review or execution of this changed diff.
+
 Status: **C11 repair owner-approved; C02 test execution was owner-authorized after assistant
 review, and focused, full non-browser, installed-package, and Playwright checks passed in a
 networkless sandbox. Final owner full-diff review and acceptance remain open.**
@@ -79,3 +83,30 @@ and whether malformed or substituted resources fail closed. Only Ruff format/lin
 and diff checks had passed before runtime execution. The preceding G2 results were not inherited;
 the owner separately authorized this execution on 2026-09-30. The renewed sandbox results and
 remaining C02 caveat are in the [verification record](PHASE_6_VERIFICATION.md).
+
+## C07 prepared repair review request, 2026-10-01
+
+The direct live detector and offline rule have a prepared diff requiring exact virtual secret
+resource and canonical context/read/sink components. Direct fixtures include the resource;
+sixteen unexecuted regressions cover negatives, positives, interleaving and indirect compatibility.
+Rule version 1 is retained provisionally as a documented C07 correction, not a finalized
+compatibility decision. Review stricter imported-evidence matching and changed rule content/
+fingerprint, or require coordinated version updates before execution. No gateway, policy, adapter,
+risk, hashing algorithm, tool, socket/process permission, schema, dependency, old-suite or CI change.
+
+Ruff format/lint, isolated strict MyPy (55 files), diff and JSON structure checks passed. No
+changed-runtime command ran. The request to proceed without owner review is not recorded as
+satisfying the mandatory concrete-diff human-review gate. A human reviewer must inspect the
+files and prepared manifest in the C07 record and sign off before the named sandbox tests run.
+
+The owner subsequently confirmed they reviewed this repair and approved it on 2026-10-01.
+The source/test manifest was verified unchanged before execution. This approves the named
+sandbox-only C07/regression/package/browser checks and the disclosed version-1 correction;
+it does not authorize publication, CI dispatch, further sensitive changes or phase acceptance.
+
+Following approval, the focused sixteen C07 tests passed; the final suite passed 288 tests at
+91.36% coverage and four Chromium checks passed separately. Only the expected full-ruleset golden
+vector required alignment after the first regression run; sensitive code remained the reviewed
+snapshot. The legacy rule/suite/snapshot vectors stayed unchanged. Quality/build/clean installed
+CLI checks passed in the documented networkless namespace. Remaining G0/G3/G4 criteria and final
+full-diff review are not accepted by this result; see the latest verification section.

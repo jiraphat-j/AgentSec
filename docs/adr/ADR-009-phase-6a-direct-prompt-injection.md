@@ -10,5 +10,12 @@ The controller records safe prompt provenance but never prompt text. Direct runs
 an `untrusted_context` factor and `direct_prompt` origin; historic document runs retain `risk-v1`.
 `policy-v1` decisions remain unchanged. Live direct correlation is `ASL-CORR-003` version 1.
 
+On 2026-10-01 the owner reviewed and approved the bounded C07 correction: retain direct rule
+version 1 while requiring canonical context/read/sink component labels and the exact virtual
+secret resource in live/offline matching. Incomplete or inconsistent imported direct evidence
+will cease matching, and rule-content/ruleset fingerprints change. Persisted alerts and indirect
+rules remain unchanged; this is metadata consistency checking, not evidence authentication.
+See [C07 review](../PHASE_G0_C07_REVIEW.md) for the approved snapshot and sandbox execution scope.
+
 No real model, host resource, OS socket, DNS lookup, process, arbitrary input, or external service
 is introduced. This decision does not approve security-sensitive test execution or merge.
