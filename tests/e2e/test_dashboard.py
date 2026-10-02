@@ -1,10 +1,13 @@
 # ruff: noqa: E402 -- optional modules are skipped before importing dependent modules.
 from __future__ import annotations
 
+import hashlib
+import json
 import socket
 import threading
 import time
 from contextlib import closing
+from pathlib import Path
 from typing import Any
 from urllib.parse import urlsplit
 
@@ -15,11 +18,15 @@ uvicorn = pytest.importorskip("uvicorn")
 
 from uvicorn import Server
 
+from agentsec.constants import DIRECT_PROMPT_SCENARIO_ID
 from agentsec.dashboard_api import create_dashboard_app
 from agentsec.dashboard_catalog import CatalogRecord, DashboardCatalog
 from agentsec.dashboard_models import ArtifactKind, CatalogSummary, Provenance
+from agentsec.events import EventCollector, EventStore
 from agentsec.models import Event, PromptFixture
 from agentsec.resource_loader import load_canary, load_prompt
+from agentsec.runner import ScenarioRunner
+from tests.helpers import sequential_ids
 
 
 def wait_for_server(server: Server, thread: threading.Thread) -> None:
@@ -87,6 +94,148 @@ def test_empty_dashboard_keyboard_flow(page: Any) -> None:
         server.should_exit = True
         thread.join(timeout=10)
     assert not thread.is_alive()
+
+
+@pytest.mark.dashboard_e2e
+def test_manifest_loaded_direct_evidence_and_hostile_text_remain_inert(
+    page: Any, tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    run = ScenarioRunner(id_factory=sequential_ids()).run(
+        DIRECT_PROMPT_SCENARIO_ID, tmp_path / "artifacts"
+    )
+    direct_source = run.run_directory / "events.sqlite3"
+    hostile = (
+        '<script>globalThis.__hostileExecuted=true;fetch("https://example.invalid/probe")</script>'
+        '<svg onload="globalThis.__hostileExecuted=true"></svg>'
+        '<img src="https://example.invalid/image" onerror="globalThis.__hostileExecuted=true">'
+        '<a href="javascript:globalThis.__hostileExecuted=true">attack</a>'
+        "[markdown](https://example.invalid/link)\x1b\t\n"
+    )
+    hostile_source = tmp_path / "hostile.sqlite3"
+    store = EventStore(hostile_source)
+    collector = EventCollector(store, "run_hostile", "trace_hostile", id_factory=sequential_ids())
+    collector.emit("run.started", "scenario-controller", {"profile": "vulnerable"})
+    collector.emit("tool.requested", "tool-gateway", {"tool": hostile, "body": load_canary()})
+    hostile_event = store.events("run_hostile")[-1]
+    store.close()
+    sources = (direct_source, run.run_directory / "report.json", hostile_source)
+    source_hashes = {path: hashlib.sha256(path.read_bytes()).hexdigest() for path in sources}
+    manifest = tmp_path / "manifest.json"
+    manifest.write_text(
+        json.dumps(
+            {
+                "schema_version": "1.0",
+                "entries": [
+                    {
+                        "id": "direct",
+                        "kind": "event_source",
+                        "path": direct_source.relative_to(tmp_path).as_posix(),
+                        "run_id": run.run_id,
+                    },
+                    {
+                        "id": "direct_report",
+                        "kind": "run_report",
+                        "path": (run.run_directory / "report.json")
+                        .relative_to(tmp_path)
+                        .as_posix(),
+                        "source_id": "direct",
+                    },
+                    {
+                        "id": "hostile",
+                        "kind": "event_source",
+                        "path": hostile_source.name,
+                        "run_id": "run_hostile",
+                    },
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    catalog = DashboardCatalog.load(manifest)
+    direct = catalog.get("direct")
+    assert direct is not None and direct.snapshot_fingerprint is not None
+    prompt_event = next(
+        event for event in direct.events if event.event_type == "agent.context.prompt_added"
+    )
+
+    with closing(socket.socket()) as probe:
+        probe.bind(("127.0.0.1", 0))
+        port = int(probe.getsockname()[1])
+    origin = f"http://127.0.0.1:{port}"
+    server = uvicorn.Server(
+        uvicorn.Config(
+            create_dashboard_app(catalog, port=port), host="127.0.0.1", port=port, log_level="error"
+        )
+    )
+    thread = threading.Thread(target=server.run, daemon=True)
+    blocked: list[str] = []
+    requested: list[str] = []
+    errors: list[str] = []
+
+    def exact_origin_only(route: Any) -> None:
+        if route.request.url.startswith(origin + "/"):
+            route.continue_()
+        else:
+            blocked.append(route.request.url)
+            route.abort()
+
+    page.unroute("**/*")
+    page.context.route("**/*", exact_origin_only)
+    page.context.on("request", lambda request: requested.append(request.url))
+    page.on("pageerror", lambda error: errors.append(str(error)))
+    page.add_init_script("globalThis.__hostileExecuted = false")
+    thread.start()
+    try:
+        wait_for_server(server, thread)
+        page.goto(origin)
+        page.get_by_role("button", name=f"Run {run.run_id}", exact=True).click()
+        playwright.expect(
+            page.get_by_role("heading", name="Sequence-ordered timeline")
+        ).to_be_visible()
+        page.locator(f'button[data-evidence-id="{prompt_event.event_id}"]').click()
+        playwright.expect(
+            page.get_by_role("heading", name=f"Evidence {prompt_event.event_id}")
+        ).to_be_visible()
+        response = page.request.get(f"{origin}/api/v1/runs/direct/events/{prompt_event.event_id}")
+        assert response.status == 200
+        assert response.json()["payload"] == prompt_event.payload
+        content = page.content() + response.text()
+        for forbidden in (
+            load_prompt(PromptFixture.MALICIOUS),
+            "[agentsec:direct-prompt-injection]",
+            load_canary(),
+        ):
+            assert forbidden not in content
+        assert "packaged_prompt_fixture" in page.locator("#view").inner_text()
+
+        page.get_by_role("button", name="Runs", exact=True).click()
+        page.get_by_role("button", name="Run run_hostile", exact=True).click()
+        playwright.expect(
+            page.get_by_role("heading", name="Sequence-ordered timeline")
+        ).to_be_visible()
+        page.locator(f'button[data-evidence-id="{hostile_event.event_id}"]').click()
+        playwright.expect(
+            page.get_by_role("heading", name=f"Evidence {hostile_event.event_id}")
+        ).to_be_visible()
+        rendered = page.locator("#view").inner_text()
+        assert "<script>" in rendered and "<svg onload=" in rendered
+        assert "[markdown](https://example.invalid/link)" in rendered
+        assert page.locator("#view script, #view svg, #view img, #view a[href]").count() == 0
+        assert page.evaluate("globalThis.__hostileExecuted") is False
+        assert page.url.rstrip("/") == origin
+        assert len(page.context.pages) == 1
+        assert load_canary() not in page.content()
+        assert requested and all(url.startswith(origin + "/") for url in requested)
+        assert blocked == [] and errors == []
+    finally:
+        server.should_exit = True
+        thread.join(timeout=10)
+    assert not thread.is_alive()
+    assert {
+        path: hashlib.sha256(path.read_bytes()).hexdigest() for path in sources
+    } == source_hashes
+    captured = capsys.readouterr()
+    assert load_canary() not in captured.out + captured.err
 
 
 @pytest.mark.dashboard_e2e

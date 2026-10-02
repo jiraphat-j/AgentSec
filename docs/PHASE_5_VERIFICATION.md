@@ -237,3 +237,55 @@ or CI code.
 
 The results above establish only the cases named in their tests and smoke checks. They do not yet
 establish complete C01–C13 coverage. No owner-approved deferral is currently recorded.
+
+## G0 dashboard evidence extension — 2026-10-01
+
+The owner approved continuing prior-phase evidence completion with sandbox-only execution.
+The test-only isolated worktree is based on merged revision
+`9649fc5fe0e580e7f736c7e6247e731e98521310`. Source/test manifest SHA-256 is
+`1470545f5b093ff69e1aa206ecf137a0998f4f0b1d0484b868d9f193f3673b76` over 80 sorted
+tracked/non-ignored untracked `src`, `tests`, and `pyproject.toml` paths. Full commands, file hashes,
+versions, limits, failed attempts and artifact locations are recorded in the
+[expanded Phase 6A G0 evidence](PHASE_6_VERIFICATION.md#expanded-phase-6b-g0-evidence-2026-10-01).
+There are no product-source, packaged-fixture, dependency or CI changes in this worktree.
+
+| Open area | Additional local evidence | Still not established |
+|---|---|---|
+| Loader/API/DOM parity and hostile content | A genuine manifest-loaded direct run/report reaches exact API/DOM metadata; hostile HTML/script/SVG/image/JavaScript URL/Markdown/control text stays inert; browser checks no injected nodes, script effects, navigation, popups, errors or non-origin requests; source hashes unchanged | Complete artifact-kind and encoding matrix, every failure/log path |
+| Encoded synthetic credential redaction | Loader rejects Unicode-escaped canary after SQLite JSON decoding; raw canary is absent in the source-byte representation | Every artifact kind and encoding variant |
+| C04 confined paths and source identity | Real Linux file and parent symlinks rejected; file identity replacement between check and open rejected | Windows junction/reparse CI and full mutation/cleanup matrix |
+| C10 resources/concurrency | Actual at/over manifest 64 KiB, entries 256, sources 64, rule 64 KiB, report/response 1 MiB, query 2 KiB and page 200 tests; simulated startup 30 s boundary; eight held requests accepted, ninth rejected and capacity recovered | Aggregate input/event/projection tests use reduced caps rather than actual 256 MiB/100,000/64 MiB ceilings; startup clock is simulated; full memory/performance and matrix evidence remain open |
+| Package/core optionality | Exact wheel/sdist contain all dashboard assets; clean installed core has no FastAPI and returns the dashboard extra-install hint | Current-wheel clean dashboard-extra installation was not repeated; source-sandbox browser tests are separate evidence |
+
+Final local results on this snapshot: **213 non-browser tests passed**, four browser tests
+deselected, **91.00% coverage** with the 90% gate enforced; **four Chromium tests passed**.
+Ruff format (100 files), lint and strict MyPy (53 source files) passed. The staged Python dependency
+audit found no known vulnerabilities; it does not cover Chromium or extracted Ubuntu libraries.
+One upstream Starlette/httpx deprecation warning remains. Wheel/sdist and installed CLI smoke
+passed; all attack-scenario and browser execution stayed in the networkless WSL2 bubblewrap
+namespace. No Windows-host scenario/browser run occurred in this batch.
+
+The old instruction to commit Phase 5 repairs above is historical: those repairs are already in
+the merged ancestry through `5f6de2d`. The new evidence/test changes are still uncommitted.
+This extension does not close every C01–C13 criterion, record a deferral, or establish manual
+accessibility, exact-final-commit Windows/Ubuntu CI or final owner security/acceptance sign-off.
+Phase 5 acceptance and Phase 6B G0 remain open; README/ROADMAP completion flags are unchanged.
+
+### Later G0 continuation — correlation evidence gap
+
+The latest non-browser run on the expanded test-only worktree returned **272 passed, eight
+failed, four browser tests deselected, 91.33% coverage**. The failures concern direct correlation
+accepting a wrong recorded virtual-file resource or altered source-component labels, not a
+dashboard browser execution failure or demonstrated host-data access. See the
+[C07 review record](PHASE_G0_C07_REVIEW.md) for reproduction, limitations and the proposed repair.
+The earlier dashboard browser/package results remain historical; they were not rerun in this
+continuation and do not substitute for a green latest full verification gate. No product repair,
+manual acceptance, CI dispatch or publication occurred; prior-phase readiness remains unresolved.
+
+### C07 repair verified
+
+The owner reviewed and approved the C07 repair. The final sandbox run passed 288 non-browser
+tests at 91.36% coverage and four Chromium tests; quality, build and installed-CLI checks passed.
+See [the final record](PHASE_6_VERIFICATION.md#owner-reviewed-c07-sandbox-verification--2026-10-01)
+for the tested snapshot and limits. The earlier eight failures are resolved, but the remaining
+Phase 5 acceptance items above are still open.

@@ -1,8 +1,8 @@
 # Phase 6A verification record
 
-Status: **C02 loader repair passed focused, full non-browser, installed-package, and Playwright
-checks in a networkless sandbox on an uncommitted snapshot. C01–C13 acceptance, manual
-accessibility, exact-commit CI, and final review remain open.**
+Status: **C07 repair owner-reviewed and sandbox-verified: 288 non-browser tests passed at
+91.36% coverage, four Chromium tests passed, and quality/build/installed-CLI checks passed.
+G0, remaining cases, manual accessibility, exact-commit CI and final full-diff review remain open.**
 
 G0 Phase 5 deferral and G1 Phase 6A design approval were provided by the owner on 2026-09-22.
 On 2026-09-24 the owner authorized G2 test execution only inside a sandbox. On 2026-09-27 the owner
@@ -255,3 +255,300 @@ At the time of these local verification runs, no commit, push, PR, merge, or rel
 performed. The retained wheel and sdist are in the task-owned `phase6a-test-env/dist` directory
 outside the repository. Subsequent integration actions must be evaluated against their own exact
 commit and CI evidence; these local results do not by themselves close G3 or G4.
+
+## Phase 6B G0 focused evidence batch, 2026-09-30
+
+The owner approved the prepared test-only G0 batch for **networkless sandbox execution**, not a
+blanket Phase 5/6A deferral, Phase 6B implementation, host execution, CI dispatch, or final
+acceptance. A new isolated worktree is based on merged-main revision
+`9649fc5fe0e580e7f736c7e6247e731e98521310`. There are no product-source changes. The sole
+new test file, `tests/test_phase6a_g0_prepared.py`, has SHA-256
+`56530e28eca61ea9bb047f2168aa3b61cdc61bd196e2344a04bee19d23bec959` at execution.
+
+The prior Python 3.13 environment was not available in this worktree. Setup staged uv 0.12.21,
+CPython 3.13.15, pytest 9.1.1 and Pydantic 2.13.5 in a separate network-capable bubblewrap
+namespace **without a repository mount**. Ubuntu's system Python lacked `ensurepip`; initial
+PyPI lookup failed because `/etc/resolv.conf` points to an unmounted WSL resolver file. Mounting
+only that resolver file read-only fixed setup DNS. The final dependency-install setup command
+cleared inherited environment variables; the earlier uv/Python staging commands did not. No
+scenario or test ran during setup.
+
+The runtime used WSL2 Ubuntu and `bwrap --unshare-all` with no external network, a read-only
+worktree at `/work`, a read-only staged environment at `/sandbox`, no general host drive/home
+mount, cleared environment, `PYTHONDONTWRITEBYTECODE=1`, disabled pytest cache/plugin autoload,
+and tmpfs `/tmp` for output. Only `/usr`, `/bin`, `/lib`, `/lib64`, `/etc/passwd`, and `/etc/group`
+were additionally exposed read-only, plus sandbox `/dev` and `/proc`. The preflight verified that
+the staged Python 3.13.15 and test file were readable inside the namespace and the host C: drive
+was not mounted. The test shell set CPU 60 s, virtual memory 1 GiB per process, process count
+128, file descriptors 256, file size 64 MiB, and wall deadline 120 s. The inner command was:
+
+```text
+python -m pytest -p no:cacheprovider -q tests/test_phase6a_g0_prepared.py
+```
+
+Observed result: **12 passed in 2.62 s**, no skips. The batch adds partial evidence for C05
+(direct vulnerable/strict SQLite and report byte scans, provenance order, forced failure), C07
+(positive and seven negative live/offline rule parity variants), and C12 (socket/DNS/subprocess
+spies under both profiles). Ruff format/lint and full-project strict MyPy passed on the prepared
+test snapshot before execution. It does **not** cover the other C05/C07/C12 cases listed above,
+the Phase 5 open rows, manual accessibility, or exact-commit Windows/Ubuntu CI. G0 and final
+Phase 6A acceptance remain open; no commit, push, PR, merge or release is authorized by this run.
+
+## Expanded Phase 6B G0 evidence, 2026-10-01
+
+The owner approved continuing the G0 evidence-completion work and its sandbox-only execution.
+This reuses the existing approval, not a new Phase 6B runtime authorization or a deferral.
+The isolated worktree remains based on merged revision
+`9649fc5fe0e580e7f736c7e6247e731e98521310`. Product source, packaged fixtures, dependencies,
+and CI configuration are unchanged. Three new test modules and one browser-test addition
+provide additional evidence; all changes remain uncommitted.
+
+### Exact tested snapshot
+
+Source/test manifest SHA-256 is
+`1470545f5b093ff69e1aa206ecf137a0998f4f0b1d0484b868d9f193f3673b76` over 80 sorted
+tracked and non-ignored untracked paths under `src`, `tests`, and `pyproject.toml`. Each record
+is `path`, one space, and the lowercase file SHA-256; records are joined with LF, without a
+trailing LF. This identifies an uncommitted snapshot, not an exact-commit CI result.
+
+| Test file | SHA-256 |
+|---|---|
+| `tests/test_phase6a_g0_prepared.py` | `56530e28eca61ea9bb047f2168aa3b61cdc61bd196e2344a04bee19d23bec959` |
+| `tests/test_dashboard_g0_boundaries.py` | `323205b49bfed91fe4fc66cc1b8193d7f3cd6a29d12faa0e4dc6a91806a2c47e` |
+| `tests/test_phase6a_g0_matrix.py` | `ca29a90a5c9f078e8266747d34d98074c63cab35fb7d9dacf4708fb56439a4ad` |
+| `tests/e2e/test_dashboard.py` | `1904decbca93b12acf813b200d1605ffb66ac2c30c31c7bc5087105a5cddd133` |
+
+### Added assertions and their limits
+
+- C02: all four public scenario/document/prompt resource-loading paths independently assert
+  one binary `read(cap + 1)` call and stream closure, at the configured byte ceiling and above it.
+- C03/C04/C08: the complete three-fixture/two-profile direct matrix checks exact outcomes,
+  tool/incident counts, provenance order, event identities/sequences, decoded report redaction,
+  and direct-origin wording. Consecutive, concurrent and comparison runs check run/trace/report
+  separation; comparison outcomes and wording are checked, not a complete golden report.
+- C06: both approval simulations cannot override strict secret-read denial; the direct context
+  origin and risk-v2 score 80 are asserted. This is not the full forged-policy/legacy-reader matrix.
+- C07: missing/reordered/cross-run/cross-trace/interleaved-noise cases add live/offline parity.
+  An offline candidate cap of three accepts the positive chain; two fails explicitly. This uses
+  a reduced cap, not a 10,000-candidate capacity or live-detector exhaustion demonstration.
+- C09: direct investigation cannot invoke runtime adapters, leaves source bytes unchanged, and
+  resolves incident/stage/timeline evidence identities and fingerprints. Decoded incident JSON
+  and Markdown exclude the marker/canary. Forged/missing/cutoff cases remain separate.
+- C10/C01: two direct-suite repetitions check 12 distinct children, six complete pairs, every
+  metric numerator/denominator, impact-pair prevention 2/2, no failures/exclusions, and the
+  unchanged core-suite fingerprint. Failure/exclusion and timing paths are not fully direct-specific.
+- C11 and Phase 5 P5-02: a genuine manifest-loaded direct source/report reaches the API and DOM
+  with exact metadata parity. A separate hostile SQLite source includes inert HTML/script/SVG,
+  image/JavaScript URLs, Markdown and control characters. The browser checks text-only rendering,
+  no injected nodes/script effects/navigation/popups/page errors, exact-loopback-origin requests,
+  no raw prompt/marker/canary in the checked output/logs, and unchanged source hashes. A separate
+  loader regression rejects a Unicode-escaped canary after SQLite JSON decoding. These are
+  named cases, not a proof over every artifact kind or malicious encoding.
+- C12 and Phase 5 P5-03: new dashboard tests assert actual manifest 64 KiB, entry 256, source 64,
+  rule 64 KiB, report 1 MiB, response 1 MiB, query 2 KiB, page-size 200 ceilings and rejection above
+  them. Aggregate input/event/projection tests use reduced caps; startup uses a simulated clock.
+  Linux file/parent symlinks and an identity swap before open are rejected. Eight concurrent ASGI
+  requests succeed, a ninth is rejected, and capacity recovers. This is not Windows reparse
+  evidence, a full source-mutation matrix, or a large-ceiling memory/performance demonstration.
+
+### Final commands and observed results
+
+The commands below ran in the networkless namespace with cache/plugin autoload disabled;
+coverage and optional browser plugins were explicitly enabled where needed.
+
+```text
+python -m ruff format --check --no-cache .
+python -m ruff check --no-cache .
+python -m mypy --no-incremental --cache-dir /tmp/mypy src tests
+COVERAGE_FILE=/tmp/.coverage python -m pytest -p no:cacheprovider -p pytest_cov.plugin --cov=agentsec --cov-report=term --cov-fail-under=90 -q
+python -m pytest -p no:cacheprovider -p pytest_playwright.pytest_playwright -p pytest_base_url.plugin -o addopts= --strict-markers -m dashboard_e2e --browser chromium -q tests/e2e/test_dashboard.py
+python -m build --no-isolation --outdir /tmp/dist
+```
+
+- Ruff: **100 files already formatted; lint passed**. Strict MyPy: **53 source files passed**.
+- Final non-browser run: **213 passed, 4 browser tests deselected, 91.00% coverage in 25.62 s**
+  (3,321 statements, 299 missed), above the enforced 90% gate. One upstream Starlette/httpx
+  deprecation remains. The earlier fixture ResourceWarning was fixed by closing SQLite properly.
+- Final Chromium run: **4 passed in 7.35 s**, no skips. This includes the new manifest-loaded
+  hostile-content test, not just the earlier synthetic in-memory browser cases.
+- Wheel and sdist built from a disposable `/tmp/build-source` copy. Both independently contained
+  all eight Phase 6A resources and three dashboard assets. Wheel SHA-256:
+  `7ccc84bca0110372023dbad2de2081b2891218ae177099ba868bc09d8fc1d434`; sdist SHA-256:
+  `2463d8a8cd6200cb827436e2530515c50842224f5605f1a9de7f8ed408550003`.
+- A fresh core-only `/tmp/smoke` environment installed this exact wheel offline from staged
+  dependency wheels. Imports resolved to its site-packages, not `/work`; `PYTHONPATH` was unset.
+  FastAPI was absent, version metadata was 0.4.0, and the dashboard returned exit 2 with its
+  extra-install hint. Direct vulnerable/strict and indirect vulnerable CLI runs passed; direct
+  and core suites each passed **6/6**. Installed comparison and investigation passed; investigation
+  derived one alert/incident and left the source hash unchanged.
+- `python -m pip_audit --progress-spinner off`, in a separate network-capable namespace with
+  **no repository mount**, found **no known vulnerabilities** in staged Python dependencies after
+  adding setuptools 84.0.0. This does not audit Chromium, Ubuntu library archives or project code.
+- `git diff --check` passed; `git diff --exit-code -- src pyproject.toml` confirmed no product change.
+
+### Execution boundary and failed attempts
+
+Runtime isolation remained WSL2 Ubuntu 26.04 bubblewrap `--unshare-all`, cleared environment,
+read-only `/work` and `/sandbox`, tmpfs output, no general host home/drive mount and no external
+network. Non-browser tests used CPU 90 s, virtual address space 1 GiB/process, 128 processes,
+256 file descriptors, 64 MiB/file and wall deadline 180 s. Chromium used CPU 180 s, 512 file
+descriptors, 64 MiB/file and wall deadline 240 s, without per-process memory/process-count caps;
+the WSL VM memory ceiling (about 7.4 GiB observed) and 4 GiB swap remain the memory bounds.
+Playwright/Chromium headless shell versions were 1.63.0/153.0.8010.12. Additional staged browser
+libraries were extracted into the task environment, not installed on the host.
+
+The first offline uv installation exhausted the 1 GiB virtual-address limit after package builds
+passed. Its retry used a 4 GiB installer virtual-address limit and one installation thread;
+scenario/CLI Python retained the 1 GiB limit. A smoke command initially assumed a nonexistent
+`--version` option; it was corrected to read installed package metadata. Initial new-test failures
+were fixture issues (error matcher and an attempted update of an append-only event store); the
+fixtures were corrected without changing product code or weakening the boundary assertions.
+
+Only package/CLI smoke runs additionally exposed a dedicated task-owned `/results` mount writable;
+the repository remained read-only. Retained artifacts are in
+`/home/godji/agentsec-g0-env.045vOJ/results` inside Ubuntu; all other test/build working output was
+temporary. No real credentials were used; attack inputs and canaries remain synthetic and inert.
+
+### G0 disposition after this batch
+
+This materially extends local evidence but does **not** close G0 or Phase 5/6A acceptance.
+Remaining technical work includes full artifact-kind/encoded/error/log redaction coverage,
+direct host-file/path spies and forced adapter/store/report failures/cleanup, forged context and
+legacy risk readers, wrong path/source correlation negatives, direct investigation forged/missing/
+cutoff cases, full suite failure/exclusion/timing cases, and the full dashboard mutation/resource
+matrix. Windows junction/reparse checks, manual keyboard/narrow-width/real 200% zoom/focus/contrast
+review, and human-dispatched Windows/Ubuntu verification plus Chromium CI on one final reviewed
+commit are also outstanding. Final owner security/acceptance review and any itemized deferrals
+must be recorded separately. No commit, push, PR, merge, release or CI dispatch occurred in this batch.
+
+## Further G0 failure/policy checks and C07 finding, 2026-10-01
+
+After the owner approved careful continuation, two test-only modules were added. The final full
+non-browser run returned **272 passed, eight failed, four browser tests deselected in 20.80 s**,
+with **91.33% coverage** and the 90% threshold enforced. All **59** new failure/host-I/O/policy
+checks passed. The eight failures demonstrate both engines accepting a wrong recorded read
+resource and altered component labels; the wrong-path negative is an explicit C07 acceptance gap.
+Exact component-provenance requirements and rule-version compatibility need review. No tests
+were skipped, xfailed or weakened to hide this result; pytest exited 1.
+
+The tested manifest SHA-256 is
+`8da375580cc49b907b296bdf29f31de16f05e5e83af2d59aef62658f8f1699c6` over 82 paths, using the
+same LF path/hash convention above, against unchanged base `9649fc5fe0e580e7f736c7e6247e731e98521310`.
+Ruff format/lint passed (102 files), strict MyPy passed (55 source files), and diff checks passed.
+No product source, packaged resource, dependency or CI change was made. Runtime stayed inside
+the same bounded networkless sandbox; Windows was used only for static formatting/linting.
+Package/browser/audit results above were not rerun and are not a passing final-snapshot gate.
+
+[C07 review record](PHASE_G0_C07_REVIEW.md) contains the exact command/results/hashes, cause,
+synthetic-only impact, named passing cases, their limitations and a bounded proposed repair.
+The workflow stops before executing a product repair or starting Phase 6B. The next owner action
+is to authorize preparing that targeted repair for review and resolve its provenance/version
+contract; the prior test approval does not silently authorize it. G0 remains open and the latest
+verification gate is **failed**, not merely pending CI or manual acceptance.
+
+## Prepared C07 repair — static checks only, 2026-10-01
+
+The owner requested proceeding without their review. A targeted direct detector/rule/fixture
+repair and sixteen regression cases were prepared; mandatory concrete-diff human review was
+not bypassed. No changed runtime, pytest, browser, build or installed CLI command ran. Draft
+predicates require canonical components and the exact virtual secret path; historical indirect
+behavior and gateway/policy/risk/adapter/hash/dependency/CI sources are unchanged. Rule version
+1 is a provisional bug-fix compatibility proposal requiring review, with stricter imported-evidence
+matching and changed rule fingerprint disclosed in [C07 review](PHASE_G0_C07_REVIEW.md).
+
+Prepared manifest: **82 paths**, SHA-256
+`5f6b1d077ba0a3cd589be0554e58556adfb4eebbb78f0c86bdf7d32940f4c446`.
+Ruff format/lint, isolated strict MyPy (55 files), PowerShell JSON structure and diff checks passed.
+Windows MyPy first returned an internal error; the isolated static retry passed. Earlier
+test results/hashes belong to earlier snapshots, not this repair. No publication/CI dispatch or
+Phase 6B implementation occurred. Changed-runtime verification and G0 acceptance remain pending.
+
+## Owner-reviewed C07 sandbox verification — 2026-10-01
+
+The owner explicitly confirmed review and approved the concrete repair after receiving the G2
+location and C07 review link. The prepared manifest was recomputed unchanged before execution.
+The approval covers the canonical resource/component predicates and the disclosed version-1
+correction; CONTRACTS and ADR-009 now record that compatibility decision. It is not full-phase
+acceptance or permission to publish, dispatch CI or start Phase 6B runtime implementation.
+
+Base HEAD remains `9649fc5fe0e580e7f736c7e6247e731e98521310`; changes are uncommitted.
+The first focused run passed **16 tests in 3.68 s** on the approved prepared manifest.
+The first full run returned **287 passed, one failed, four deselected, 91.36% coverage in 22.87 s**:
+the only failure was the full ruleset golden fingerprint, which necessarily changed with the
+approved predicate correction. The golden value was updated, leaving the separate legacy-rules,
+snapshot and core-suite vectors unchanged. No product code or sensitive behavior changed after
+approval. Ruff then caught mixed line endings from that edit; formatting normalized the test
+file before the final rerun. Neither failure is counted as passing evidence.
+
+Final source/test manifest: **82 paths**, SHA-256
+`9202764ddf721b0257c3954e8802ede26aaca3aeb2c5b40a2b8414c9c55bc489`.
+Manifest convention is sorted unique tracked/non-ignored untracked `src`, `tests` and
+`pyproject.toml` paths, each `path + space + lowercase content SHA-256`, LF-separated without
+trailing LF, then SHA-256 of UTF-8 bytes. Only the fingerprint-vector test differs from the
+approved prepared source/test manifest; its SHA-256 is
+`a4bf074c5d875b204563d9f08d7da744e0e991afb5b96b9eb605d4f290805f37`.
+
+### Final commands and observed results
+
+```text
+python -m pytest -p no:cacheprovider -q tests/test_phase6a_g0_correlation_review.py --tb=short
+python -m ruff format --check --no-cache src tests
+python -m ruff check --no-cache src tests
+python -m mypy --no-incremental --cache-dir /tmp/mypy src tests
+COVERAGE_FILE=/tmp/.coverage python -m pytest -p no:cacheprovider -p pytest_cov.plugin --cov=agentsec --cov-report=term --cov-fail-under=90 -q --tb=short
+python -m pytest -p no:cacheprovider -p pytest_playwright.pytest_playwright -p pytest_base_url.plugin -o addopts= --strict-markers -m dashboard_e2e --browser chromium -q tests/e2e/test_dashboard.py
+python -m build --no-isolation --outdir /results/c07-20261001/dist
+```
+
+- Ruff format/lint passed; strict MyPy passed for **55 source files**.
+- Final non-browser suite: **288 passed, four browser tests deselected in 21.43 s**,
+  **91.36% coverage** (3,322 statements, 287 missed). One upstream Starlette/httpx deprecation
+  warning remains. All sixteen C07 cases and 59 failure/policy cases are included and passed.
+- Chromium: **four passed in 6.05 s**, no skips, including genuine manifest-loaded direct
+  evidence, hostile inert text, browser request guards, redaction and unchanged source hashes.
+- Offline wheel/sdist build used a disposable `/tmp/build-source` copy of `src`, `pyproject.toml`
+  and `README.md`. Archive checks verified all eight Phase 6A resources byte-for-byte against
+  the checkout and all three dashboard assets in each archive.
+  Wheel SHA-256: `e261a885fe0295a58cb99447c753acd85b5af5138af4ac3981d9d91d841b1bfc`;
+  sdist SHA-256: `31ce22230f54b9e56582d695802ac24887326d25d39f606f9f120ec739fa33d9`.
+- A fresh core-only environment installed that wheel offline from staged dependency wheels.
+  From `/tmp`, with **no repository mount or PYTHONPATH**, imports resolved to
+  `/results/c07-20261001/smoke/lib/python3.13/site-packages`, metadata version was 0.4.0 and
+  FastAPI was absent. Installed CLI checks passed: direct vulnerable simulated impact/detection,
+  direct strict prevention, indirect vulnerable compatibility, direct comparison, both suites
+  **6/6**, rule fixtures **4/4**, replay **one match**, investigation **one alert/one incident**,
+  and missing-dashboard-extra fixed hint/exit 2. Investigation left source bytes unchanged.
+- New logical ruleset fingerprint:
+  `a8289edfc931edd0e43ddafd069345b1e82be949c08d4c83b8aeb01e7c8f4133`;
+  old value `5e876f4f814e4674f3f1859bc667bd469b972023b0785585268b63cf274179e5`.
+  The legacy-only rule fingerprint remains
+  `5b15e8bec52b1520975af8701de6e87801251ab64e85165c79d6b5f723d36be8`.
+  Identity/version preservation does not imply unchanged predicates or imported-evidence results.
+- No dependencies changed or downloaded. The earlier staged Python dependency audit remains
+  historical evidence; it was not rerun and does not audit Chromium, OS libraries or product code.
+
+### Isolation and remaining gates
+
+WSL2 Ubuntu 26.04, CPython 3.13.15; bubblewrap `--unshare-all`, cleared environment,
+read-only task runtime/repository, no general host-home/drive mount, tmpfs working output.
+Focused checks used CPU 90 s/wall 180 s; final combined quality/regression checks used CPU
+120 s/wall 240 s. Both retained 1 GiB virtual-address, 128-process, 256-descriptor and
+64 MiB/file limits. Browser checks retained CPU 180 s/wall 240 s, 512 descriptors and
+64 MiB/file; Chromium's incompatible per-process address/process caps remained omitted,
+with the existing WSL memory/swap ceiling instead. Build/installer used 4 GiB address,
+CPU 120 s/wall 240 s; installed scenario/CLI checks returned to 1 GiB, CPU 90 s/wall 180 s.
+Only build/package/CLI exposed task-owned results writable. Retained archives and CLI artifacts
+are under Ubuntu `/home/godji/agentsec-g0-env.045vOJ/results/c07-20261001`; other test output
+was disposable. Windows ran only static formatting/read-only checks, never scenarios/tests.
+
+The demonstrated C07 wrong/missing-path and component-label defect is repaired, not deferred.
+Broader correlation enumeration/resource-limit parity, other residual redaction/incident/
+evaluation/dashboard cases, manual accessibility, Windows junction/reparse checks, exact-reviewed-
+commit Windows/Ubuntu CI and final full-diff acceptance remain open. These passing checks do not
+close G0/G3/G4 or freeze Phase 6B G1. No commit, push, PR, merge, CI dispatch or release occurred.
+
+### Commit and push authorization
+
+After reviewing the results, the owner approved committing and pushing this verified G0/C07
+batch on 2026-10-01. Local Phase 6B planning and agent-workflow edits are excluded. CI dispatch,
+PR creation, merge and phase acceptance remain separate steps.
