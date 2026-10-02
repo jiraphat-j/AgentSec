@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import hashlib
 import json
 import os
 import sqlite3
@@ -18,10 +19,15 @@ import agentsec.dashboard_api as api
 import agentsec.dashboard_catalog as catalog_module
 from agentsec.constants import (
     MAX_DASHBOARD_ENTRIES,
+    MAX_DASHBOARD_EVENTS,
+    MAX_DASHBOARD_INPUT_BYTES,
     MAX_DASHBOARD_MANIFEST_BYTES,
+    MAX_DASHBOARD_PROJECTION_BYTES,
     MAX_DASHBOARD_QUERY_BYTES,
     MAX_DASHBOARD_RESPONSE_BYTES,
     MAX_DASHBOARD_RUNS,
+    MAX_REPLAY_DATABASE_BYTES,
+    MAX_REPLAY_EVENTS,
     MAX_REPORT_BYTES,
     MAX_RULE_BYTES,
 )
@@ -78,6 +84,11 @@ def source_entries(count: int) -> list[dict[str, object]]:
         }
         for index in range(count)
     ]
+
+
+def source_digest(path: Path) -> str:
+    with path.open("rb") as handle:
+        return hashlib.file_digest(handle, "sha256").hexdigest()
 
 
 def test_manifest_size_accepts_exact_ceiling_and_rejects_one_byte_over(tmp_path: Path) -> None:
@@ -161,6 +172,42 @@ def test_cumulative_selected_bytes_at_and_over_reduced_cap(
         DashboardCatalog.load(manifest)
 
 
+def test_cumulative_selected_bytes_at_and_over_actual_cap(tmp_path: Path) -> None:
+    source = tmp_path / "events.sqlite3"
+    write_source(source)
+    # SQLite's header describes its canonical pages; trailing padding is inert input bytes.
+    with source.open("r+b") as handle:
+        handle.truncate(MAX_REPLAY_DATABASE_BYTES)
+    original_source_digest = source_digest(source)
+    artifact = tmp_path / "report.json"
+    write_rule_test(artifact)
+    data = artifact.read_bytes()
+    artifact.write_bytes(data + b" " * (MAX_REPORT_BYTES - len(data)))
+    report_count, remainder = divmod(
+        MAX_DASHBOARD_INPUT_BYTES - source.stat().st_size, artifact.stat().st_size
+    )
+    assert remainder == 0
+    entries = source_entries(1) + [
+        {"id": f"report_{index}", "kind": "rule_test", "path": artifact.name}
+        for index in range(report_count)
+    ]
+    assert len(entries) + 1 <= MAX_DASHBOARD_ENTRIES
+    assert (
+        source.stat().st_size + report_count * artifact.stat().st_size == MAX_DASHBOARD_INPUT_BYTES
+    )
+    manifest = tmp_path / "manifest.json"
+    write_manifest(manifest, entries)
+    assert len(DashboardCatalog.load(manifest).records) == len(entries)
+    extra = tmp_path / "extra.json"
+    write_rule_test(extra)
+    write_manifest(manifest, [*entries, {"id": "extra", "kind": "rule_test", "path": extra.name}])
+    with pytest.raises(DashboardResourceLimitExceeded, match="aggregate limit"):
+        DashboardCatalog.load(manifest)
+    assert source.stat().st_size == MAX_REPLAY_DATABASE_BYTES
+    assert source_digest(source) == original_source_digest
+    assert artifact.read_bytes() == data + b" " * (MAX_REPORT_BYTES - len(data))
+
+
 def test_cumulative_events_at_and_over_reduced_cap(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -172,6 +219,52 @@ def test_cumulative_events_at_and_over_reduced_cap(
     monkeypatch.setattr(catalog_module, "MAX_DASHBOARD_EVENTS", 1)
     with pytest.raises(DashboardResourceLimitExceeded, match="event count"):
         DashboardCatalog.load(manifest)
+
+
+def test_cumulative_events_at_and_one_over_actual_cap(tmp_path: Path) -> None:
+    source = tmp_path / "events.sqlite3"
+    write_source(source)
+    with closing(sqlite3.connect(source)) as connection, connection:
+        connection.executemany(
+            """INSERT INTO events (
+                event_id, run_id, trace_id, sequence, timestamp, event_type,
+                source_component, tool_call_id, schema_version, payload_json
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            [
+                (
+                    f"evt_boundary_{sequence}",
+                    "run_1",
+                    "trace_1",
+                    sequence,
+                    "2026-10-02T00:00:00Z",
+                    "test.safe_metadata",
+                    "test",
+                    None,
+                    "0.2",
+                    "{}",
+                )
+                for sequence in range(2, MAX_REPLAY_EVENTS + 1)
+            ],
+        )
+    count, remainder = divmod(MAX_DASHBOARD_EVENTS, MAX_REPLAY_EVENTS)
+    assert remainder == 0 and count + 1 <= MAX_DASHBOARD_RUNS
+    original = source.read_bytes()
+    manifest = tmp_path / "manifest.json"
+    entries = source_entries(count)
+    write_manifest(manifest, entries)
+    catalog = DashboardCatalog.load(manifest)
+    assert sum(len(record.events) for record in catalog.records) == MAX_DASHBOARD_EVENTS
+    extra = tmp_path / "extra.sqlite3"
+    write_source(extra)
+    original_extra = extra.read_bytes()
+    write_manifest(
+        manifest,
+        [*entries, {"id": "extra", "kind": "event_source", "path": extra.name, "run_id": "run_1"}],
+    )
+    with pytest.raises(DashboardResourceLimitExceeded, match="event count"):
+        DashboardCatalog.load(manifest)
+    assert source.read_bytes() == original
+    assert extra.read_bytes() == original_extra
 
 
 def test_projection_bytes_at_and_over_reduced_cap(
@@ -188,6 +281,52 @@ def test_projection_bytes_at_and_over_reduced_cap(
     monkeypatch.setattr(catalog_module, "MAX_DASHBOARD_PROJECTION_BYTES", exact - 1)
     with pytest.raises(DashboardResourceLimitExceeded, match="projections"):
         DashboardCatalog.load(manifest)
+
+
+def test_projection_bytes_at_and_over_actual_cap(tmp_path: Path) -> None:
+    # A schema-valid rule-test string has no independent fixture-name length cap.
+    value: dict[str, Any] = {
+        "schema_version": "1.0",
+        "status": "failed",
+        "total_rules": 1,
+        "covered_rules": 0,
+        "assertions_passed": 0,
+        "assertions_total": 1,
+        "results": [
+            {
+                "fixture": "",
+                "rule_id": "ASL-TEST-001",
+                "rule_version": 1,
+                "passed": False,
+                "expected_evidence": [],
+                "actual_evidence": [],
+            }
+        ],
+    }
+    envelope = len(encode_safe_projection(value))
+    value["results"][0]["fixture"] = "x" * (MAX_REPORT_BYTES - envelope)
+    encoded = encode_safe_projection(value)
+    assert len(encoded) == MAX_REPORT_BYTES
+    artifact = tmp_path / "report.json"
+    artifact.write_bytes(encoded)
+    count, remainder = divmod(MAX_DASHBOARD_PROJECTION_BYTES, len(encoded))
+    assert remainder == 0 and count + 1 <= MAX_DASHBOARD_ENTRIES
+    entries: list[dict[str, object]] = [
+        {"id": f"report_{index}", "kind": "rule_test", "path": artifact.name}
+        for index in range(count)
+    ]
+    manifest = tmp_path / "manifest.json"
+    write_manifest(manifest, entries)
+    catalog = DashboardCatalog.load(manifest)
+    assert sum(len(encode_safe_projection(record.data)) for record in catalog.records) == (
+        MAX_DASHBOARD_PROJECTION_BYTES
+    )
+    extra = tmp_path / "extra.json"
+    write_rule_test(extra)
+    write_manifest(manifest, [*entries, {"id": "extra", "kind": "rule_test", "path": extra.name}])
+    with pytest.raises(DashboardResourceLimitExceeded, match="projections"):
+        DashboardCatalog.load(manifest)
+    assert artifact.read_bytes() == encoded
 
 
 @pytest.mark.parametrize("elapsed", [30.0, 30.001])

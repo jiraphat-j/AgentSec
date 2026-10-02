@@ -112,6 +112,7 @@ def test_prompt_timeline_exception_keeps_projection_validation_strict(
 
 
 @pytest.mark.parametrize("profile", list(PolicyProfile))
+@pytest.mark.parametrize("validation_path", ["linkage_helper", "public_loader"])
 @pytest.mark.parametrize(
     "mutation",
     [
@@ -127,10 +128,13 @@ def test_prompt_timeline_exception_keeps_projection_validation_strict(
     ],
 )
 def test_linked_direct_investigation_rejects_inconsistent_evidence(
-    tmp_path: Path, profile: PolicyProfile, mutation: str
+    tmp_path: Path, profile: PolicyProfile, validation_path: str, mutation: str
 ) -> None:
     source, report_path, manifest = direct_investigation_files(tmp_path, profile)
     original = source.read_bytes()
+    linked_manifest = manifest.read_bytes()
+    positive = DashboardCatalog.load(manifest).get("investigation")
+    assert positive is not None and positive.summary.provenance == "verified_against_source"
     source_manifest = json.loads(manifest.read_text(encoding="utf-8"))
     source_manifest["entries"] = source_manifest["entries"][:1]
     manifest.write_text(json.dumps(source_manifest), encoding="utf-8")
@@ -164,9 +168,16 @@ def test_linked_direct_investigation_rejects_inconsistent_evidence(
     report_path.write_text(json.dumps(report), encoding="utf-8")
     # Check linkage independently of projection. The public-loader positive above remains
     # an explicit regression, so a projection failure cannot masquerade as tamper rejection.
+    if validation_path == "public_loader":
+        manifest.write_bytes(linked_manifest)
     with pytest.raises((DashboardInputError, EvidenceConsistencyError, ValidationError)):
-        changed = InvestigationReport.model_validate_json(report_path.read_text(encoding="utf-8"))
-        _verify_investigation(changed, source_record)
+        if validation_path == "public_loader":
+            DashboardCatalog.load(manifest)
+        else:
+            changed = InvestigationReport.model_validate_json(
+                report_path.read_text(encoding="utf-8")
+            )
+            _verify_investigation(changed, source_record)
     assert source.read_bytes() == original
     assert_redacted(tmp_path)
 

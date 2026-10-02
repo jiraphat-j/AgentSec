@@ -1,7 +1,8 @@
 # Phase 6A verification record
 
-Status: **The owner-approved dashboard repair passed sandbox verification: 331 non-browser tests,
-four Chromium checks, 91.65% coverage, quality/build and installed-package checks.
+Status: **The owner-approved dashboard repair and subsequent test-only evidence batch passed
+sandbox verification: 373 non-browser tests, four Chromium checks, 91.95% coverage,
+quality/build and installed-package checks.
 G0, other residual cases, manual accessibility, exact-commit CI and final review remain open.**
 
 G0 Phase 5 deferral and G1 Phase 6A design approval were provided by the owner on 2026-09-22.
@@ -678,3 +679,82 @@ The two demonstrated defects are fixed, not deferred. Passing evidence does not 
 redaction/resource/incident/evaluation matrices, correlation enumeration parity, manual
 accessibility, Windows junction/reparse checks, exact-commit Windows/Ubuntu CI or final acceptance.
 No CI dispatch, commit, push, PR, merge or Phase 6B implementation occurred in this rerun.
+
+## Continued artifact and aggregate-limit evidence — 2026-10-02
+
+The owner authorized committing/pushing the reviewed repair and continuing the workflow with
+a sub-agent reviewer. The repair was committed and pushed as
+`df084a0203042b9494e6140e5fe456e5a8decfa6` (`Fix dashboard investigation validation`) on
+`codex/g0-evidence-completion`. The independent read-only review found no actionable blocker;
+it supplements the preceding concrete owner G2 approval, not a replacement human sign-off.
+An attempted draft PR creation returned GitHub integration HTTP 403; no PR was created.
+
+The next batch changes tests and evidence documentation only. Product source, resources,
+dependency contracts and CI configuration remain identical to the approved repair. It adds:
+
+- Fourteen public-loader/CLI checks: seven genuine JSON artifact kinds, each contaminated in
+  one permitted string field using either literal or JSON-Unicode-escaped synthetic canary.
+  Every case first loads the genuine artifact, independently validates the contaminated schema,
+  proves JSON decoding reveals the canary, and requires rejection without listener startup,
+  output disclosure or input mutation. These are representative fields/encodings, not an
+  all-field or arbitrary-secret scan. The contaminated fixtures intentionally contain a fake
+  canary in task-local temporary files; no real credential is used.
+- Six supported API detail routes each pass a clean 200 control before returning fixed 503 for
+  a contaminated in-memory artifact. Captured output/logs and response/security headers are
+  checked. A separate replay detail-route 404 is route-contract evidence, not an API redaction
+  scan; replay is covered by the public-loader/CLI matrix.
+- Eighteen additional investigation cases exercise the public loader alongside independent
+  linkage-helper checks, with a genuine public positive before each mutation under both direct
+  profiles. The direct evidence module now has 61 cases.
+- Three actual dashboard aggregate-bound checks without patching constants: 256 MiB selected
+  input, 100,000 retained events, and 64 MiB retained projections. Repeated selected paths/run
+  identities exercise per-entry accounting, not that many distinct physical files, unique events
+  or runs. Input uses one 64 MiB padded canonical SQLite source plus 192 one-MiB JSON entries;
+  events use ten selections of one 10,000-event source; projections use 64 selections of one
+  schema-valid one-MiB report. Extra valid entries trigger each specific limit. Event overflow is
+  exactly one event; byte/projection overflow is an extra valid small report, not one byte.
+  Source bytes/hashes and selected report bytes remain unchanged after accepted/rejected loads.
+
+The reviewer suggested clean API controls, separating replay 404 evidence, and source hash
+checks; those improvements were applied before the final rerun. Initial static checks caught
+four import/list lint issues and two test-only type errors in the new cap tests; they were fixed
+before runtime execution of those tests. No product repair was needed.
+
+Final source/test manifest: **84 paths**, SHA-256
+`7a07a8a978cf9431a06c0949ddaa4c0ab8f46858ddb5e74c92a8d6c3f074c2f1`.
+Results on this snapshot:
+
+- Ruff format/lint passed; strict MyPy passed for 57 source files.
+- Focused three-module batch: **102 passed in 17.55 s**.
+- Full non-browser suite: **373 passed, four browser tests deselected in 40.01 s**,
+  **91.95% coverage** (3,329 statements, 268 missed). One upstream Starlette/httpx warning remains.
+- Unchanged Chromium suite: **four passed in 5.83 s**, no skips.
+- Offline wheel/sdist build passed. Every packaged source/resource byte matches the checkout;
+  sdist includes all three changed regression modules. Wheel SHA-256:
+  `a5d02b001634648d62853fdd2cd78ce6cbbb1f5096a8fa0bf02fa5717d39fcf4`;
+  sdist SHA-256: `ae6b2dc8cd336f51328f1ba6bbe33023059cf88ed8061f259a28450d6e637860`.
+- The exact wheel installed offline into a fresh core-only environment (FastAPI absent,
+  metadata 0.4.0). With no repository mount/PYTHONPATH, both direct profile CLI flows,
+  investigations and replay passed; genuine linked investigations load, late cutoffs reject,
+  and source hashes remain unchanged. Indirect compatibility, comparison, both 6/6 suites,
+  rule fixtures 4/4, missing-dashboard hint/exit 2 and unchanged ruleset fingerprint passed.
+
+Focused command:
+
+```text
+python -m pytest -p no:cacheprovider -q tests/test_dashboard_artifact_redaction.py tests/test_direct_evidence_boundaries.py tests/test_dashboard_g0_boundaries.py --tb=short
+```
+
+Quality/coverage, Chromium and installed smoke reuse the commands and isolation in the preceding
+section. All runtime execution stayed in networkless bubblewrap; no host scenario ran. Combined
+checks used CPU 120 s, wall 240 s, 1 GiB address limit, 128 processes, 256 descriptors and
+64 MiB/file; Chromium retained its existing WSL memory/swap and CPU/wall/descriptor bounds.
+Build/install retained the 4 GiB address bound and existing staged dependency wheels only.
+Archives, core environment and synthetic CLI results are retained under Ubuntu
+`/home/godji/agentsec-g0-env.045vOJ/results/g0-artifact-20261002`.
+No downloads, dependency changes, audit rerun, CI dispatch, merge or Phase 6B runtime change.
+
+This closes the demonstrated representative artifact and actual aggregate-accounting cases,
+not the complete G0 inventory. Broader hostile-content/field/failure/mutation and resource-work
+matrices, Windows reparse tests, manual accessibility, human-dispatched exact-commit CI and final
+owner acceptance remain separate open gates. Delegated review does not waive those gates.

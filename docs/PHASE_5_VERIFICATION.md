@@ -1,6 +1,7 @@
 # Phase 5 verification record
 
-Status: implemented local checks pass with repairs; complete C01–C13 acceptance evidence, a final
+Status: latest local regression is 373 non-browser tests and four Chromium checks passed;
+complete C01–C13 acceptance evidence, a final
 reviewed revision, Windows/Linux CI, and project-owner acceptance remain pending.
 
 ## Verification completion plan
@@ -289,3 +290,19 @@ tests at 91.36% coverage and four Chromium tests; quality, build and installed-C
 See [the final record](PHASE_6_VERIFICATION.md#owner-reviewed-c07-sandbox-verification--2026-10-01)
 for the tested snapshot and limits. The earlier eight failures are resolved, but the remaining
 Phase 5 acceptance items above are still open.
+
+### Artifact redaction and actual aggregate bounds — 2026-10-02
+
+The owner-approved dashboard investigation repair and subsequent test-only continuation passed
+**373 non-browser tests at 91.95% coverage**, four Chromium checks, quality, offline build and
+clean installed-wheel CLI checks. Representative schema-valid literal/JSON-Unicode canary
+contamination is rejected across all seven JSON artifact kinds; six API detail routes return
+fixed errors after clean positive controls. Replay 404 is separate route-contract evidence.
+Actual 256 MiB selected-input, 100,000 retained-event and 64 MiB projection accounting checks
+passed without reduced constants, using repeated selected paths and synthetic temporary files.
+Source hashes/bytes remain unchanged. These do not prove distinct-file/run scale or complete
+all-field, hostile-content, mutation and resource-work matrices. See the
+[dated Phase 6 record](PHASE_6_VERIFICATION.md#continued-artifact-and-aggregate-limit-evidence--2026-10-02)
+for the exact 84-path snapshot, commands, archive hashes and sandbox bounds.
+Manual accessibility, Windows reparse evidence, human-dispatched exact-commit CI and final owner
+acceptance remain open. No new product/dependency/CI change or phase-completion claim is made.
