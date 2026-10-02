@@ -1,7 +1,8 @@
 # Phase 6A security review
 
-Latest C07 state (2026-10-01): **Targeted repair owner-reviewed and approved;
-sandbox quality/regression/browser/build/installed CLI checks passed.** See [C07 review](PHASE_G0_C07_REVIEW.md).
+Latest state (2026-10-02): **The dashboard timeline/cutoff repair is owner-approved;
+sandbox quality, regression, browser, build and installed-package checks passed.** See the review below. The C07 repair passed its
+approved sandbox checks and is merged; these new defects are separate.
 Earlier approvals/results below do not establish review or execution of this changed diff.
 
 Status: **C11 repair owner-approved; C02 test execution was owner-authorized after assistant
@@ -110,3 +111,50 @@ vector required alignment after the first regression run; sensitive code remaine
 snapshot. The legacy rule/suite/snapshot vectors stayed unchanged. Quality/build/clean installed
 CLI checks passed in the documented networkless namespace. Remaining G0/G3/G4 criteria and final
 full-diff review are not accepted by this result; see the latest verification section.
+
+## G0 dashboard repair review — 2026-10-02
+
+**Security-sensitive: review required before execution.** The owner's continuation approval
+covers remaining sandbox G0 tests, not execution of a newly changed dashboard validation surface.
+The current diff is based on merged PR #8 (`0c3f151177d94b97c12548a5410b840afb1a4c22`).
+
+Two bugs reproduced under both direct profiles: the dashboard rejects genuine investigation
+timeline metadata as missing prompt payload, and the linked-report verification helper accepts
+a declared cutoff beyond the last captured event. The expanded pre-repair suite returned
+322 passed/four failed; its hash and exact commands are in the verification record.
+
+Prepared change in `src/agentsec/dashboard_catalog.py`:
+
+- Keep the existing exact prompt-payload validator whenever `payload` is present. Without one,
+  accept only the existing strict `TimelineEntry` model: bounded reference/timeline metadata,
+  required fields, strict types, no unknown fields. Malformed or arbitrary no-payload prompt
+  dictionaries still fail. This permits metadata-only timelines, not prompt text or HTML.
+- Require an investigation's declared cutoff to equal the actual last sequence of the selected
+  source prefix. Fingerprint/reference/nested-alert/timeline checks remain unchanged.
+
+Review the metadata-only exception, malformed/extra-field negatives, the unchanged canary scan,
+and cutoff behavior for completed/failed/incomplete prefixes. Report-only artifacts retain their
+explicitly narrower provenance; this does not authenticate imported reports or source labels.
+No gateway/policy/adapter/detector/risk/hash/schema/resource/dependency/listener/CI change.
+
+`tests/test_direct_evidence_boundaries.py` has 43 prepared cases. Five extra projection negatives
+cover missing evidence, unknown raw-prompt field, invalid event payload, bad reference sequence
+and an arbitrary no-payload event dictionary. No test/scenario/browser/build/installed CLI ran
+after this product edit. Static checks only passed; current manifest is
+`8342ed5f7ca6c13038f2073f2565cad5a8930bf7a4f9952c692a866789ac9866` (83 paths).
+
+Requested execution after human review: the new module, existing dashboard catalog/API tests,
+full non-browser coverage, existing four Chromium checks and offline package/installed CLI
+checks, all in the previously approved networkless sandbox. Approval does not authorize host
+scenario execution, new dependencies, CI dispatch, commit/push, merge or Phase 6B implementation.
+
+The owner approved this concrete review and the requested sandbox rerun on 2026-10-02.
+The prepared manifest was recomputed and matched before execution. This scoped G2 approval
+does not close the remaining G0/acceptance gates or authorize publication/CI dispatch.
+
+The approved rerun passed 71 focused checks, all 331 non-browser tests at 91.65% coverage,
+four Chromium checks, quality/build and clean installed-package checks. Both installed direct
+profiles accept genuine investigations and reject non-resolving cutoffs without source writes.
+The reviewed source/test manifest stayed unchanged; no extra runtime change was made. Results,
+archive hashes and isolation limits are in the latest verification section. Remaining G0,
+manual accessibility, cross-platform CI and final full-diff acceptance are still open.

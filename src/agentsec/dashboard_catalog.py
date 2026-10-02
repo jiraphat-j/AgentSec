@@ -34,7 +34,7 @@ from .dashboard_models import (
 from .detection import CorrelationDetector
 from .evaluation_models import EvaluationReport
 from .evidence import fingerprint_snapshot, validate_snapshot
-from .incident_models import EvidenceReference, InvestigationReport
+from .incident_models import EvidenceReference, InvestigationReport, TimelineEntry
 from .models import ComparisonReport, Event, InputChannel, PromptFixture, Report
 from .replay import ReplayEvidence, read_replay_evidence
 from .reporting import build_report
@@ -226,7 +226,16 @@ def _validate_prompt_payload(value: object) -> None:
 def _validate_prompt_projection(value: object) -> None:
     if isinstance(value, dict):
         if value.get("event_type") == "agent.context.prompt_added":
-            _validate_prompt_payload(value.get("payload"))
+            if "payload" in value:
+                _validate_prompt_payload(value["payload"])
+            else:
+                # Investigation timelines contain strict reference metadata, not event payloads.
+                try:
+                    TimelineEntry.model_validate(value)
+                except ValidationError as error:
+                    raise DashboardInputError(
+                        "dashboard projection contains unsafe prompt metadata"
+                    ) from error
         elif "prompt_id" in value:
             _validate_prompt_payload(value)
         if value.get("scenario_id") == DIRECT_PROMPT_SCENARIO_ID and "fixture" in value:
@@ -350,6 +359,8 @@ def _verify_investigation(report: InvestigationReport, source: CatalogRecord) ->
         event for event in source.events if event.sequence <= report.evidence_cutoff_sequence
     ]
     snapshot = validate_snapshot(cutoff_events, report.source_status)
+    if report.evidence_cutoff_sequence != snapshot.evidence_cutoff_sequence:
+        raise DashboardInputError("investigation cutoff does not resolve to selected evidence")
     fingerprint = fingerprint_snapshot(snapshot)
     if report.source_run_id != snapshot.run_id or report.snapshot_fingerprint != fingerprint:
         raise DashboardInputError("investigation does not match its selected evidence source")

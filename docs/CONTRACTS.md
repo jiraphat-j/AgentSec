@@ -265,6 +265,11 @@ strictly validated against their existing schema. Provenance is one of:
 Legacy reports without a snapshot fingerprint may receive only the narrower checks supported by
 their schema. The API never calls this proof of authenticity or custody.
 
+A linked investigation's declared evidence cutoff must resolve to the last sequence of its
+captured source prefix. Metadata-only investigation timeline entries use the strict `TimelineEntry`
+shape; they do not require or permit a prompt payload. Actual prompt events retain the closed
+prompt-payload checks below. Both paths retain the decoded-canary scan.
+
 Read API version 1 is rooted at `/api/v1`. It provides catalog, run/event, investigation,
 alert/incident, comparison, evaluation, rule, and saved rule-test GET routes. Collection responses
 contain `items`, `total`, `offset`, and `limit`; the default limit is 50 and maximum is 200. The same

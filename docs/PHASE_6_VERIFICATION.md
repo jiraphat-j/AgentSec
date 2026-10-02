@@ -1,8 +1,8 @@
 # Phase 6A verification record
 
-Status: **C07 repair owner-reviewed and sandbox-verified: 288 non-browser tests passed at
-91.36% coverage, four Chromium tests passed, and quality/build/installed-CLI checks passed.
-G0, remaining cases, manual accessibility, exact-commit CI and final full-diff review remain open.**
+Status: **The owner-approved dashboard repair passed sandbox verification: 331 non-browser tests,
+four Chromium checks, 91.65% coverage, quality/build and installed-package checks.
+G0, other residual cases, manual accessibility, exact-commit CI and final review remain open.**
 
 G0 Phase 5 deferral and G1 Phase 6A design approval were provided by the owner on 2026-09-22.
 On 2026-09-24 the owner authorized G2 test execution only inside a sandbox. On 2026-09-27 the owner
@@ -552,3 +552,129 @@ close G0/G3/G4 or freeze Phase 6B G1. No commit, push, PR, merge, CI dispatch or
 After reviewing the results, the owner approved committing and pushing this verified G0/C07
 batch on 2026-10-01. Local Phase 6B planning and agent-workflow edits are excluded. CI dispatch,
 PR creation, merge and phase acceptance remain separate steps.
+
+## G0 direct evidence continuation — 2026-10-02
+
+PR #8 merged as `0c3f151177d94b97c12548a5410b840afb1a4c22`; the owner asked to continue.
+Work uses the existing isolated worktree on `codex/g0-evidence-completion` at that merge.
+No Actions run was found for either the PR head or merge during the read-only GitHub check.
+The primary checkout's Phase 6B planning and agent-workflow edits remain separate and untouched.
+
+`tests/test_direct_evidence_boundaries.py` adds direct-specific incident/evaluation checks.
+On the test-only snapshot, focused execution returned **34 passed, four failed in 7.20 s**;
+the full non-browser suite returned **322 passed, four failed, four browser tests deselected in
+31.06 s**, **91.66% coverage** (3,322 statements, 277 missed). Coverage passed but pytest exited
+1: this is not a green acceptance gate. Ruff format/lint and strict MyPy (56 source files) passed.
+One upstream Starlette/httpx deprecation warning remains. Product/resources/CI were unchanged.
+
+Passing additions cover missing/wrong incident references, nested-alert and timeline alterations,
+early cutoffs, failed/incomplete direct lifecycles, exact snapshot/reference cutoffs, seven invalid
+historical-link/clock cases, local versus global evaluation failures, skipped-child accounting,
+metric exclusions/zero denominators/incomplete pairs, synthetic exception redaction, assertion
+failure exit 2 without exclusion, and the actual 300-second deadline at/over boundary. The latter
+uses a cooperative fake clock, not a wall-time or preemptive-timeout claim.
+
+The four failures are two defects under both profiles:
+
+- A genuine direct investigation cannot load in the dashboard. Its strict timeline metadata has
+  `event_type: agent.context.prompt_added` but no event payload; the recursive prompt validator
+  wrongly requires the full prompt payload there. The positive fails before any tampering.
+- The linked-investigation verification helper accepts a cutoff one sequence beyond the source's
+  final event. It fingerprints the filtered captured snapshot but never checks the declared cutoff
+  equals that snapshot's actual final sequence. This was isolated below the failing projection;
+  it is not a claim that the full public loader accepted the artifact.
+
+The first test layout hit the same positive-load defect in eighteen parameter cases (18 failed,
+18 passed in 9.00 s). The public positive was separated into two explicit tests and linkage checks
+were isolated against the genuine captured source; no failure was skipped or marked xfail.
+
+Executed test-only manifest: **83 paths**, SHA-256
+`68fb0365261b92e0bd2a4e8523bced33f4949ff16b10ccae7edd818b0a6c8170`;
+test module SHA-256 `7903e112e3ef83cf804cf1484397b27905029fa43dc40517e3c06bdb4e3628ab`.
+Use the manifest convention defined in the preceding C07 section.
+
+Commands inside the same networkless WSL2 bubblewrap boundary:
+
+```text
+python -m pytest -p no:cacheprovider -q tests/test_direct_evidence_boundaries.py --tb=line
+python -m ruff format --check --no-cache src tests
+python -m ruff check --no-cache src tests
+python -m mypy --no-incremental --cache-dir /tmp/mypy src tests
+COVERAGE_FILE=/tmp/.coverage python -m pytest -p no:cacheprovider -p pytest_cov.plugin --cov=agentsec --cov-report=term --cov-fail-under=90 -q --tb=line
+```
+
+Cleared environment, read-only task/repository mounts, no host home/drive or external network,
+tmpfs output, 1 GiB address limit, 128 processes, 256 descriptors, 64 MiB/file. Focused checks
+used CPU 90 s/wall 180 s; the combined quality/full check used CPU 120 s/wall 240 s. No host
+scenario execution, new dependencies, browser/build/audit rerun, CI dispatch or publication.
+
+### Prepared dashboard repair — not runtime-tested
+
+The minimal diff permits a no-payload prompt timeline entry only after strict `TimelineEntry`
+validation; actual event payloads keep the existing exact closed prompt-field checks. Linked
+investigations also require the declared cutoff to resolve to the captured snapshot's last
+sequence. Five additional malformed-shape/payload regressions are prepared, bringing the module
+to **43 cases**, all unexecuted on this changed product snapshot. See the concrete
+[G2 review](PHASE_6_SECURITY_REVIEW.md#g0-dashboard-repair-review--2026-10-02).
+
+Prepared manifest: **83 paths**, SHA-256
+`8342ed5f7ca6c13038f2073f2565cad5a8930bf7a4f9952c692a866789ac9866`;
+catalog SHA-256 `762f31cf5e4e868538080ac6ed0746459346d91e5df9359a70c57c9657716722`;
+test module SHA-256 `8950c584779f261971f8d5ef22b01b0e7600c5c03d78ed50b5793be5ac3e93df`.
+Only static formatting/lint/types and diff checks apply to this new snapshot. Earlier runtime
+results do not establish its correctness. New G2 review is required before executing it.
+Other G0 cases, manual accessibility, cross-platform CI and Phase 6B G1 remain open; nothing
+was committed or pushed in this continuation.
+
+## Approved dashboard repair verification — 2026-10-02
+
+The owner approved the concrete dashboard review and named sandbox checks. Before execution,
+the prepared source/test manifest was recomputed unchanged:
+`8342ed5f7ca6c13038f2073f2565cad5a8930bf7a4f9952c692a866789ac9866` (**83 paths**).
+Base is `0c3f151177d94b97c12548a5410b840afb1a4c22`; changes remain uncommitted on
+`codex/g0-evidence-completion`. No product or test edits were needed during this rerun.
+
+Results on that exact snapshot:
+
+- New 43-case module plus existing dashboard catalog/API tests: **71 passed in 8.26 s**.
+- Full non-browser suite: **331 passed, four browser tests deselected in 31.29 s**,
+  **91.65% coverage** (3,329 statements, 278 missed). The four pre-repair failures are resolved.
+- Existing Chromium suite: **four passed in 6.02 s**, no skips.
+- Ruff format/lint passed; strict MyPy passed for **56 source files**. One upstream
+  Starlette/httpx deprecation warning remains.
+- Offline wheel/sdist build passed from a disposable copy of `src`, `tests`, README and
+  pyproject. Both archives contain all eight Phase 6A resources, three dashboard assets and
+  the repaired catalog; changed catalog/resource bytes match the checkout. The sdist includes
+  the new regression module. Wheel SHA-256:
+  `45cf8c71ddf85f1cdee2bff93a616dcc14054981fd4f4a9dcddb912b5b7038ce`;
+  sdist SHA-256: `ac3fcfb3054f9200dd052f43efb71df28f32a29e9ddca5984696bf5bc1608de7`.
+- The exact wheel installed offline to a fresh core-only environment; FastAPI was absent and
+  package metadata was 0.4.0. With **no repository mount or PYTHONPATH**, installed direct
+  vulnerable/strict CLI runs and investigations passed. The installed catalog accepted each
+  genuine linked investigation, rejected its altered late cutoff, and preserved source hashes.
+  Indirect compatibility, comparison, both **6/6** suites, rule fixtures **4/4**, replay and
+  missing-dashboard-extra hint/exit 2 also passed. The ruleset fingerprint is unchanged.
+
+Commands reuse the previous section's quality/full suite and the existing Chromium command.
+Focused command was:
+
+```text
+python -m pytest -p no:cacheprovider -q tests/test_direct_evidence_boundaries.py tests/test_dashboard_catalog.py tests/test_dashboard_api.py --tb=short
+python -m build --no-isolation --outdir /results/dashboard-20261002/dist
+```
+
+Isolation stayed networkless bubblewrap with cleared environment, read-only repository/task
+runtime and tmpfs working output. Focused/CLI checks retained CPU 90 s, wall 180 s, 1 GiB address,
+128 processes, 256 descriptors and 64 MiB/file; combined static/full checks used CPU 120 s/wall
+240 s. Browser bounds stayed CPU 180 s/wall 240 s, 512 descriptors and 64 MiB/file, with the
+existing WSL memory/swap limits instead of Chromium-incompatible per-process address/count caps.
+Build/install used a 4 GiB address limit, CPU 120 s/wall 240 s and one installer thread. Only
+build/install/CLI exposed task-owned results writable. Retained archives and synthetic CLI
+artifacts are under Ubuntu `/home/godji/agentsec-g0-env.045vOJ/results/dashboard-20261002`.
+No host scenario execution or new dependency/download occurred. The earlier Python dependency
+audit remains historical; it was not repeated and does not audit Chromium, OS libraries or code.
+
+The two demonstrated defects are fixed, not deferred. Passing evidence does not close broader
+redaction/resource/incident/evaluation matrices, correlation enumeration parity, manual
+accessibility, Windows junction/reparse checks, exact-commit Windows/Ubuntu CI or final acceptance.
+No CI dispatch, commit, push, PR, merge or Phase 6B implementation occurred in this rerun.
