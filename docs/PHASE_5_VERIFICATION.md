@@ -365,3 +365,12 @@ sandbox; no host tests or new listener/browser/build/installed-package/audit run
 checks remain historical evidence for the unchanged merged product, not this new test module.
 Exact manifest/commands/limits are in the
 [Phase 6 record](PHASE_6_VERIFICATION.md#post-merge-g0-capture-boundary-batch--2026-10-03).
+
+### Windows CI follow-up — 2026-10-03
+
+Actions run 37096511551 passed Ubuntu verification and both Chromium jobs but failed Windows
+verification on oversized pytest IDs and a clock-coupled linkage fixture. The owner-approved
+test-only fixes preserve payload/assertion coverage and production deadlines. Local sandbox
+verification passed all 446 non-browser tests at 92.13% coverage, with clean quality checks.
+See [the CI fix record](PHASE_6_VERIFICATION.md#windows-ci-test-fixes--2026-10-03) for commands,
+snapshot and failed-run evidence. Fresh Windows CI and other G0 gates remain outstanding.

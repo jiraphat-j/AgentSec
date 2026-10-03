@@ -232,3 +232,14 @@ exclude Windows explicitly; none is claimed as Windows evidence. These tests exe
 synthetic checkpoints and query snapshot reuse, not arbitrary race resistance, WAL writers or
 ongoing file authentication. Public Actions queries found no runs for the reviewed head/merge.
 G0, cross-platform CI, manual accessibility, final owner acceptance and Phase 6B G1 remain open.
+
+### Windows test-only fixes — 2026-10-03
+
+The owner approved fixing the existing Actions branch after run 37096511551 failed Windows
+verification. Short resource-test IDs and a fixed clock in the linkage-fixture helper do not alter
+production deadlines, payloads, rejection/linkage assertions or security surfaces. Separate
+at/over-deadline failure tests remain unchanged and passed. All 446 non-browser checks passed in
+the existing networkless bounded sandbox; supplemental review found no blockers. See
+[the verification record](PHASE_6_VERIFICATION.md#windows-ci-test-fixes--2026-10-03).
+No host scenario execution or CI dispatch occurred. Windows confirmation and final owner review
+remain pending; Ubuntu/both browser jobs passed only on the prior head.
