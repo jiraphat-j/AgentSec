@@ -1,8 +1,9 @@
 # Phase 6A security review
 
-Latest state (2026-10-02): **The dashboard timeline/cutoff repair is owner-approved;
-sandbox quality, regression, browser, build and installed-package checks passed.** See the review below. The C07 repair passed its
-approved sandbox checks and is merged; these new defects are separate.
+Latest state (2026-10-03): **The owner approved the concrete C07 follow-up and its named
+sandbox execution. Applied source matches that proposal; 429 non-browser checks, four Chromium
+checks, quality/build and installed-package checks pass.** The twelve new parity failures are
+repaired. Final owner full-diff acceptance and remaining G0/CI gates stay open.
 Earlier approvals/results below do not establish review or execution of this changed diff.
 
 Status: **C11 repair owner-approved; C02 test execution was owner-authorized after assistant
@@ -158,3 +159,58 @@ profiles accept genuine investigations and reject non-resolving cutoffs without 
 The reviewed source/test manifest stayed unchanged; no extra runtime change was made. Results,
 archive hashes and isolation limits are in the latest verification section. Remaining G0,
 manual accessibility, cross-platform CI and final full-diff acceptance are still open.
+
+## New C07 parity review prerequisite — 2026-10-02
+
+The owner authorized committing/pushing the approved dashboard batch and continuing ordinary
+workflow with a sub-agent reviewer. Commits `df084a0` and `eec09e9` were pushed; the latter passed
+373 non-browser checks, four browser checks, quality/build and installed-package checks.
+No final owner acceptance, human CI dispatch or merge is inferred from that authorization.
+
+Eighteen new test-only cases against unchanged sensitive code found twelve live/offline detector
+discrepancies: later valid chains are hidden by earlier nonmatching candidates, missing digests
+match live, and unsupported event versions match live. The independent reviewer confirmed the
+findings. Canonical snapshot validation already rejects missing required digests; do not claim
+a generated-run host/secret leak or invalid-snapshot acceptance. Details and the direct-only
+bounded repair proposal are in the [C07 record](PHASE_G0_C07_REVIEW.md#additional-liveoffline-parity-findings--2026-10-02).
+Full regression now has 379 passed/twelve failed; the new module/findings remain local.
+
+No detector repair has been implemented. Prepare its exact code and updated resource/selection
+semantics for **human G2 review** before executing, building or testing changed sensitive code.
+Sub-agent review is supplemental, not mandatory human sign-off. Historical approvals remain
+scoped to their concrete earlier diffs. No CI/dependency/network/policy/gateway change is proposed.
+
+### Concrete C07 repair proposal — implementation blocked pending G2
+
+The owner asked to continue. The source-patch attempt was blocked by the tool safety reviewer
+because this new sensitive detector/resource-loading diff lacks concrete human G2 approval.
+Git confirms no detector/resource-loader source changed. The complete **review-only code proposal**,
+compatibility choices and named sandbox checks are now in the existing
+[C07 review](PHASE_G0_C07_REVIEW.md#concrete-repair-proposal-for-g2--review-only-2026-10-02).
+Review shared bounded direct evaluation, fixed packaged-rule loading, input/work-limit exceptions,
+deterministic dedup-key-first result selection and closed direct configuration. Historical indirect
+behavior and rule bytes/version/fingerprint remain unchanged by the proposal. Nothing in the
+proposal is runtime-tested or applied; the latest runtime result is still 379 passed/twelve failed
+against unchanged product code. Approval is requested to apply/prepare it and authorize the named
+sandbox checks after the prepared diff is confirmed to match the review. No source-patch retry,
+workaround, changed-runtime execution, commit/push/merge or CI dispatch occurred this turn.
+
+### Concrete C07 follow-up approved and verified — 2026-10-03
+
+The owner responded explicitly approving application of the concrete proposal and continuation
+with its named sandbox checks. The detector/resource-loader implementation matches the reviewed
+code; the independent reviewer found no blockers after targeted regression improvements.
+Fresh direct selection is dedup-key-first after complete bounded enumeration. Configuration,
+fixed-rule loading and exhaustion fail closed only for fresh evaluation; recorded-result reuse
+and missing alert/incident recovery still bypass fresh checks, as reviewed and tested.
+
+The final 86-path source/test manifest is
+`af80952ae4f8f5ebbaceaf7290cfb3698ab87d407ac88a2734f5d327fec03eb1`.
+All 429 non-browser checks (92.04% coverage), four Chromium checks, quality, offline build and
+fresh core-only installed-package checks pass. Exact commands, archives and resource limits are
+in the [dated verification record](PHASE_6_VERIFICATION.md#approved-c07-liveoffline-repair--2026-10-03).
+Runtime stayed networkless and off the Windows host; no rule-byte/version, dependency, policy,
+gateway, adapter, hash-algorithm, CI, merge or Phase 6B runtime change. This repairs evidence
+interpretation, not evidence authentication or a demonstrated host secret leak.
+The earlier blocked/unexecuted status is historical. This scoped human G2 approval and delegated
+review do not close G0, manual accessibility, exact-commit CI or final full-diff acceptance.

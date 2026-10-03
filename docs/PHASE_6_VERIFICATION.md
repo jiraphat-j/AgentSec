@@ -1,8 +1,8 @@
 # Phase 6A verification record
 
-Status: **The owner-approved dashboard repair and subsequent test-only evidence batch passed
-sandbox verification: 373 non-browser tests, four Chromium checks, 91.95% coverage,
-quality/build and installed-package checks.
+Status: **The owner-approved C07 follow-up passed 429 non-browser tests at 92.04% coverage,
+four Chromium checks, quality, offline build and fresh installed-package checks on 2026-10-03.
+The twelve reproduced live/offline discrepancies are repaired; earlier failed results are historical.
 G0, other residual cases, manual accessibility, exact-commit CI and final review remain open.**
 
 G0 Phase 5 deferral and G1 Phase 6A design approval were provided by the owner on 2026-09-22.
@@ -758,3 +758,99 @@ This closes the demonstrated representative artifact and actual aggregate-accoun
 not the complete G0 inventory. Broader hostile-content/field/failure/mutation and resource-work
 matrices, Windows reparse tests, manual accessibility, human-dispatched exact-commit CI and final
 owner acceptance remain separate open gates. Delegated review does not waive those gates.
+
+## Later C07 parity reproduction — unresolved, 2026-10-02
+
+The verified dashboard batch was pushed as `df084a0203042b9494e6140e5fe456e5a8decfa6`; the
+verified test-only artifact/bounds batch as `eec09e9e0bf5dd3dcb29f5ad567269190cd010e1` on
+`codex/g0-evidence-completion`. An independent sub-agent reviewed both with no blockers.
+
+Continuing the remaining C07 matrix against unchanged product code confirmed twelve failures:
+eight earlier nonmatching candidates hide a later valid direct chain, absent read/sink digests
+produce a live false match, and three unsupported-version variants match live but not offline.
+The [dated C07 review](PHASE_G0_C07_REVIEW.md#additional-liveoffline-parity-findings--2026-10-02)
+records exact assumptions, impact limits, reproduction commands and the next repair proposal.
+These are evidence-interpretation discrepancies, not demonstrated host access or secret leakage.
+
+Focused eighteen-case module: **six passed, twelve failed in 3.84 s**. Full: **379 passed,
+twelve failed, four browser tests deselected in 42.76 s**, **91.98% coverage**; exit 1.
+Format/lint/types passed (58 files). Six passing additions cover offline missing-join rejection,
+exact/reversed two-chain enumeration, actual candidate ceiling/overflow and disclosed reduced
+match ceiling/overflow. The current failed acceptance snapshot has **85 paths**, SHA-256
+`1c09b53a70b77ee7d5aebe302c9e50a08b0735469da104249a0238275af43c08`.
+
+Execution retained the preceding networkless CPU/wall/memory/process/file bounds. No new product,
+resource, dependency or CI change was made. Package/browser checks were not rerun for this
+failing expanded matrix and remain evidence for the earlier passing snapshot. The new reproduction
+module and finding records are uncommitted and not pushed; there is no PR, merge or CI dispatch.
+Prepare a targeted direct-only repair for concrete human G2 review before any changed sensitive
+execution. The skill/workflow human-review gate is not replaced by delegated review or blanket
+continuation approval. G0 and Phase 6B implementation remain open.
+
+### Review-only repair proposal after blocked preparation
+
+On the owner's continuation request, auto-review rejected applying the new detector/resource
+loading patch without concrete human G2 approval. Read-only Git checks confirmed both source
+files are unchanged. A documentation-only code proposal and named sandbox verification plan
+are prepared in the existing [C07 record](PHASE_G0_C07_REVIEW.md#concrete-repair-proposal-for-g2--review-only-2026-10-02).
+No new test, scenario, browser, build or installed CLI ran; the 85-path failed reproduction
+manifest and its 379 passed/twelve failed results above remain current. Proposal review is not
+implementation verification; no source manifest for an applied repair exists yet.
+
+## Approved C07 live/offline repair — 2026-10-03
+
+The owner explicitly approved the concrete proposal and named sandbox checks after reading the
+review request. The applied detector/resource-loader diff matches that proposal; independent
+read-only review found no blockers after strengthening schema-valid canary negatives and live
+limit-boundary parity. Delegated review remains supplemental to that human G2 approval.
+
+Base HEAD: `eec09e9e0bf5dd3dcb29f5ad567269190cd010e1`. Tested source/test manifest: **86 paths**,
+SHA-256 `af80952ae4f8f5ebbaceaf7290cfb3698ab87d407ac88a2734f5d327fec03eb1`, using the existing
+sorted path/content convention. This is local uncommitted-snapshot evidence, not exact-commit CI.
+
+Fresh direct evaluation now uses the fixed bounded packaged rule, completes enumeration before
+selecting the first dedup-key match, rejects absent join digests/unsupported versions and fails
+explicitly on input/work exhaustion. Closed configuration/resource failures do not fall back.
+Recorded-result reuse and missing alert/incident recovery still bypass fresh checks; tests and
+contracts disclose that distinction. Indirect first-candidate behavior, rule bytes/version,
+fingerprint algorithms, policy/gateway/adapters, dependencies and CI remain unchanged.
+
+Final checks inside the existing networkless WSL2 Ubuntu/CPython 3.13.15 sandbox:
+
+- Ruff format/check and strict MyPy: passed, **59 files**.
+- Focused loading/parity/original C07/historical detection modules: **84 passed in 9.41 s**.
+- Full non-browser suite: **429 passed, four browser tests deselected in 47.67 s**;
+  **92.04% coverage**, 3,356 statements/267 missed. One upstream Starlette/httpx warning remains.
+- Existing Chromium suite: **four passed in 6.03 s**, no skips.
+- Offline wheel/sdist build: passed. Every packaged source/resource byte matches the checkout;
+  sdist contains both new direct regression modules byte-for-byte.
+- Fresh offline core-only wheel install, no repository mount/PYTHONPATH and FastAPI absent:
+  all three direct fixtures under both profiles, direct/indirect CLI under both profiles,
+  comparisons, replay, investigation, linked catalog positives/late-cutoff negatives,
+  source database hash preservation, both suites (6/6 children), all four rules and
+  missing-dashboard dependency hint passed. No dashboard listener was started by this smoke.
+
+Commands reuse the concrete proposal's quality/focused/coverage/Chromium commands, adding
+`tests/test_direct_rule_loading.py` to the focused list. Build/install smoke used task-owned
+`g2_verify.py` (SHA-256 `d1c54d6261190ab20091c094b2971f8b8d00f945a581e3367b6f4e8b7359e3c8`):
+`python /checks.py build`, then fresh installed `python /checks.py smoke`. Build uses disposable
+tmpfs copies of source/tests/package metadata, not a writable checkout. Archives/core install/CLI
+artifacts are retained under Ubuntu
+`/home/godji/agentsec-g0-env.045vOJ/results/c07-repair-20261003-final`.
+
+- Wheel SHA-256: `52763975518430dca0dbbcd351777ab149bf6e5ca1a091902ff6382591a94692`.
+- Sdist SHA-256: `ec8979aff7929ef7c226d05a2da162bfcc70a6bb0b741535647fe2e33f5b5a72`.
+
+All runtime checks used bubblewrap `--unshare-all`, cleared environment, read-only source and
+tmpfs. Static/full: CPU 120 s/wall 240 s/address 1 GiB/processes 128/descriptors 256/64 MiB per
+file; browser: CPU 180 s/wall 240 s/descriptors 512/64 MiB per file and existing WSL memory/swap
+bounds. Build/install: address 4 GiB/CPU 120 s/wall 240 s; installed smoke: address 1 GiB/CPU 90 s/
+wall 180 s, otherwise the same process/descriptor/file bounds. Only task results were writable
+for build/install/smoke. No host scenarios/tests, downloads, dependency changes, audit rerun,
+CI dispatch, merge, release or Phase 6B runtime occurred. Static formatting briefly used a
+writable checkout mount, targeting only edited Python files; it did not run project code.
+
+This closes the twelve demonstrated discrepancies and the named repair checks, not complete G0.
+Broader hostile-content/field/failure/mutation/resource-work matrices, Windows junction/reparse
+checks, manual accessibility, human-dispatched exact-reviewed-commit CI and final owner full-diff
+acceptance remain open. Historical 379/twelve-failed results above are superseded, not erased.

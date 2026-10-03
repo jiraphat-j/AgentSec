@@ -39,6 +39,18 @@ Rule content and its ruleset fingerprint change despite retention of the identit
 old persisted alerts are not rewritten. These labels/fingerprints establish internal consistency,
 not authenticity or causation. Historical indirect correlation is unchanged.
 
+The owner-approved C07 follow-up (2026-10-03) routes fresh direct live evaluation through the
+fixed packaged declarative rule. It finishes bounded enumeration before selecting the first
+dedup-key-sorted match, not the earliest chronological chain. Fresh evaluation rejects more
+than 10,000 input events, candidate visits or matches explicitly; exhaustion cannot produce
+partial success or successful no-match. Missing digests and event schema 0.1 cannot match.
+The direct rule ID/version/channel configuration is closed; missing, invalid, oversized or
+metadata-mismatched packaged rule data fails without fallback. No rule bytes/version or ruleset
+fingerprint change in this follow-up. `evaluate_and_record()` still reuses recorded results
+before fresh evaluation, bypassing those new checks; missing alert/incident recovery remains
+unchanged. This does not authenticate recorded evidence. Indirect first-candidate behavior stays
+on its historical Python path. See [the concrete G2 review](PHASE_G0_C07_REVIEW.md).
+
 ## Tool contract
 
 The closed registry contains `read_file` and `http_post`.

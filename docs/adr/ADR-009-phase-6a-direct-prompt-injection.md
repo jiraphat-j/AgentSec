@@ -17,5 +17,16 @@ will cease matching, and rule-content/ruleset fingerprints change. Persisted ale
 rules remain unchanged; this is metadata consistency checking, not evidence authentication.
 See [C07 review](../PHASE_G0_C07_REVIEW.md) for the approved snapshot and sandbox execution scope.
 
+On 2026-10-03 the owner approved the concrete C07 follow-up and its named networkless sandbox
+checks. Fresh direct live evaluation uses the fixed packaged declarative rule and finishes
+bounded enumeration before selecting its first dedup-key-sorted match (not chronological-first).
+Input, candidate and match exhaustion fails explicitly without partial success. Fresh direct
+configuration and packaged rule metadata are closed; invalid/missing resources fail without
+fallback. Rule bytes/version/fingerprint remain unchanged by this follow-up. Recorded-result
+reuse and missing alert/incident recovery bypass fresh checks as before; they are not evidence
+authentication. The ADR-006 historical indirect Python path remains unchanged. See the concrete
+C07 proposal for the approved resource and execution limits; this approval does not cover CI
+dispatch, merge, release or Phase 6B runtime.
+
 No real model, host resource, OS socket, DNS lookup, process, arbitrary input, or external service
 is introduced. This decision does not approve security-sensitive test execution or merge.

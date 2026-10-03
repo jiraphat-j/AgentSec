@@ -1,6 +1,7 @@
 # Phase 5 verification record
 
-Status: latest local regression is 373 non-browser tests and four Chromium checks passed;
+Status: the owner-approved C07 follow-up passed 429 non-browser tests at 92.04% coverage and
+four Chromium checks on 2026-10-03, repairing the twelve later parity failures;
 complete C01–C13 acceptance evidence, a final
 reviewed revision, Windows/Linux CI, and project-owner acceptance remain pending.
 
@@ -306,3 +307,20 @@ all-field, hostile-content, mutation and resource-work matrices. See the
 for the exact 84-path snapshot, commands, archive hashes and sandbox bounds.
 Manual accessibility, Windows reparse evidence, human-dispatched exact-commit CI and final owner
 acceptance remain open. No new product/dependency/CI change or phase-completion claim is made.
+
+### Later C07 parity findings — not a passing acceptance gate
+
+Further unchanged-code sandbox tests confirmed twelve direct detector live/offline discrepancies.
+The latest full expanded suite is 379 passed/twelve failed at 91.98% coverage; the earlier
+373/four passing batch remains historical verified evidence, not complete acceptance of this
+expanded matrix. No new detector repair has been implemented or executed. See the
+[C07 review](PHASE_G0_C07_REVIEW.md#additional-liveoffline-parity-findings--2026-10-02)
+and latest Phase 6 verification section; concrete human G2 review is required for a future repair.
+
+### C07 follow-up — 2026-10-03
+
+The owner reviewed and approved the concrete direct-only repair and named sandbox checks.
+All twelve reproduced discrepancies now pass; final full suite has 429 passed at 92.04% coverage,
+four Chromium checks and clean quality/build/installed checks. The prior failed snapshot is
+historical. See [Phase 6 verification](PHASE_6_VERIFICATION.md#approved-c07-liveoffline-repair--2026-10-03)
+for the exact 86-path snapshot and remaining G0/manual/platform/CI/owner-acceptance gates.
