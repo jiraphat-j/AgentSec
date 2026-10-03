@@ -37,7 +37,8 @@ RULES = Path(__file__).parents[1] / "src/agentsec/resources/rules"
 
 
 def direct_investigation_files(tmp_path: Path, profile: PolicyProfile) -> tuple[Path, Path, Path]:
-    run = ScenarioRunner(id_factory=sequential_ids()).run(
+    # Linkage tests check evidence, not wall time; deadline boundaries have separate tests.
+    run = ScenarioRunner(id_factory=sequential_ids(), monotonic_clock=lambda: 0.0).run(
         DIRECT_PROMPT_SCENARIO_ID, tmp_path / "runs", profile=profile
     )
     source = run.run_directory / "events.sqlite3"

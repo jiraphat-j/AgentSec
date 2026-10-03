@@ -115,6 +115,7 @@ def test_scenario_loader_rejects_ambiguous_invalid_or_substituted_resources(
 @pytest.mark.parametrize(
     ("data", "message"),
     [(b"\xff", "UTF-8"), (b"x" * (MAX_DOCUMENT_BYTES + 1), "size limit")],
+    ids=["invalid-utf8", "oversized"],
 )
 def test_prompt_loader_rejects_invalid_or_oversized_text(
     data: bytes, message: str, monkeypatch: pytest.MonkeyPatch
@@ -135,6 +136,7 @@ def test_prompt_loader_rejects_invalid_or_oversized_text(
 @pytest.mark.parametrize(
     ("data", "message"),
     [(b"\xff", "UTF-8"), (b"x" * (MAX_DOCUMENT_BYTES + 1), "size limit")],
+    ids=["invalid-utf8", "oversized"],
 )
 def test_legacy_document_loader_rejects_invalid_or_oversized_text(
     data: bytes, message: str, monkeypatch: pytest.MonkeyPatch
