@@ -214,3 +214,21 @@ gateway, adapter, hash-algorithm, CI, merge or Phase 6B runtime change. This rep
 interpretation, not evidence authentication or a demonstrated host secret leak.
 The earlier blocked/unexecuted status is historical. This scoped human G2 approval and delegated
 review do not close G0, manual accessibility, exact-commit CI or final full-diff acceptance.
+
+### Post-merge test-only capture evidence — 2026-10-03
+
+PR #9 merged at `c165b3d203998585193711e67895e64bf4321258`; the owner requested continuation.
+The new `codex/g0-dashboard-evidence` branch adds seventeen capture/cleanup/snapshot tests
+against unchanged merged production code. No paths, loaders, query logic, hash functions,
+gateway/policy/adapters, dependencies, listener/browser or CI implementation changed. Execution
+stayed in the existing networkless resource-bounded sandbox under the G0 evidence authorization.
+
+The final 87-path manifest is
+`3a261dfb7f7472cb271867f872542d0bbddb30fb2c1df0249ba159f10547e983`.
+Seventeen focused checks and all 446 non-browser tests pass at 92.13% coverage; quality and
+supplemental independent review pass. The [verification record](PHASE_6_VERIFICATION.md#post-merge-g0-capture-boundary-batch--2026-10-03)
+states commands and limits. Four open-descriptor JSON replace/delete cases and one symlink case
+exclude Windows explicitly; none is claimed as Windows evidence. These tests exercise selected
+synthetic checkpoints and query snapshot reuse, not arbitrary race resistance, WAL writers or
+ongoing file authentication. Public Actions queries found no runs for the reviewed head/merge.
+G0, cross-platform CI, manual accessibility, final owner acceptance and Phase 6B G1 remain open.

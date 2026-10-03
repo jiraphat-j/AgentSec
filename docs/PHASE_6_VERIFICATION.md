@@ -1,7 +1,8 @@
 # Phase 6A verification record
 
-Status: **The owner-approved C07 follow-up passed 429 non-browser tests at 92.04% coverage,
-four Chromium checks, quality, offline build and fresh installed-package checks on 2026-10-03.
+Status: **The latest test-only G0 capture batch passed 446 non-browser checks at 92.13% coverage
+and quality on 2026-10-03. The merged C07 repair's four Chromium/build/installed checks are
+historical evidence for unchanged product code, not rerun results for the new test module.
 The twelve reproduced live/offline discrepancies are repaired; earlier failed results are historical.
 G0, other residual cases, manual accessibility, exact-commit CI and final review remain open.**
 
@@ -854,3 +855,49 @@ This closes the twelve demonstrated discrepancies and the named repair checks, n
 Broader hostile-content/field/failure/mutation/resource-work matrices, Windows junction/reparse
 checks, manual accessibility, human-dispatched exact-reviewed-commit CI and final owner full-diff
 acceptance remain open. Historical 379/twelve-failed results above are superseded, not erased.
+
+## Post-merge G0 capture-boundary batch — 2026-10-03
+
+The owner reported merging PR #9 and asked to continue. GitHub confirmed merge
+`c165b3d203998585193711e67895e64bf4321258`; fetched `origin/main` matched. The existing clean
+managed worktree was reused on `codex/g0-dashboard-evidence`, preserving unrelated primary
+checkout edits. Public Actions queries for reviewed head `507e1fd585bc11040ab7df1af41795eb4e63d555`
+and merge returned zero runs. Neither merge nor local results establishes exact-commit CI.
+
+The next batch adds only `tests/test_dashboard_capture_boundaries.py` plus evidence records.
+Production source/resources, browser tests, dependencies and CI remain byte-for-byte unchanged
+from that merge. The [Phase 5 record](PHASE_5_VERIFICATION.md#capture-boundary-continuation-after-pr-9--2026-10-03)
+maps the seventeen public-loader/descriptor/SQLite-cleanup/snapshot cases and explicit limits.
+This is continued G0 evidence completion under the existing sandbox-only authorization, not
+Phase 6B G1/G2 approval or a new sensitive runtime repair.
+
+Final source/test manifest: **87 paths**, SHA-256
+`3a261dfb7f7472cb271867f872542d0bbddb30fb2c1df0249ba159f10547e983`.
+New module SHA-256: `aebc5e74b552e5d148bc7e789455f35e70c23d7d426ab7293fdf76a6b572bad8`.
+Use the existing sorted path/content manifest convention; this is local snapshot evidence.
+
+The new focused command is:
+
+```text
+python -m pytest -p no:cacheprovider -q tests/test_dashboard_capture_boundaries.py --tb=short
+```
+
+Quality/full regression reuse the preceding section's commands. All execution remains inside
+the cleared-environment networkless WSL2 bubblewrap sandbox, read-only checkout/tmpfs outputs:
+CPU 120 s/wall 240 s/address 1 GiB/processes 128/descriptors 256/64 MiB per file. Static formatting
+targeted only the new module through a temporary writable mount; no product code ran in that
+step. No host tests/scenarios, downloads, dependency changes, audit, listener/browser/build/
+installed rerun, CI dispatch, merge or Phase 6B runtime occurred in this continuation. Earlier
+package/four-browser results remain historical evidence for the merged product snapshot; they
+do not demonstrate inclusion of this new test module in a fresh sdist.
+
+Final results on that 87-path snapshot: **17 focused passed in 2.78 s**, **446 non-browser
+passed, four browser tests deselected in 60.98 s**, **92.13% coverage** (3,356 statements/264
+missed). Ruff format/lint and strict MyPy passed (60 files). One upstream Starlette/httpx warning
+remains. Initial strict typing identified two imported-alias accesses in the new test module;
+explicit imports resolved them before the final run. Independent review requested timestamp-
+isolated inode controls and Unix-only open-file annotations; both were added, and final review
+reported no blockers. No production defect or sensitive source change was found in this batch.
+
+Broader G0 hostile/field/error/resource/concurrency cases, Windows reparse evidence, manual
+accessibility, human-dispatched exact-reviewed-commit CI and final owner acceptance remain open.

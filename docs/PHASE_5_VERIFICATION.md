@@ -1,7 +1,7 @@
 # Phase 5 verification record
 
-Status: the owner-approved C07 follow-up passed 429 non-browser tests at 92.04% coverage and
-four Chromium checks on 2026-10-03, repairing the twelve later parity failures;
+Status: the latest test-only capture-boundary batch passed 446 non-browser tests at 92.13%
+coverage on 2026-10-03. The merged C07 follow-up separately passed four Chromium checks;
 complete C01–C13 acceptance evidence, a final
 reviewed revision, Windows/Linux CI, and project-owner acceptance remain pending.
 
@@ -324,3 +324,44 @@ All twelve reproduced discrepancies now pass; final full suite has 429 passed at
 four Chromium checks and clean quality/build/installed checks. The prior failed snapshot is
 historical. See [Phase 6 verification](PHASE_6_VERIFICATION.md#approved-c07-liveoffline-repair--2026-10-03)
 for the exact 86-path snapshot and remaining G0/manual/platform/CI/owner-acceptance gates.
+
+### Capture-boundary continuation after PR #9 — 2026-10-03
+
+PR #9 is verified merged at `c165b3d203998585193711e67895e64bf4321258`; continuation uses the
+existing clean managed worktree on `codex/g0-dashboard-evidence`. Public GitHub Actions queries
+for reviewed head `507e1fd585bc11040ab7df1af41795eb4e63d555` and merge returned zero runs.
+No CI dispatch or cross-platform acceptance is inferred from the merge.
+
+`tests/test_dashboard_capture_boundaries.py` is test-only; product, packaged resources, browser
+tests, dependencies and CI are unchanged. It supplements P5 C04/P5-03 with public-loader
+positive controls and precise synthetic mutation checkpoints:
+
+- Ten JSON cases: manifest/report post-read append, mtime change, same-byte inode replacement,
+  deletion and mismatched opened descriptor. Replacement fixtures preserve bytes, size and
+  nanosecond mtime while differing in inode. Wrong descriptors are rejected before any read;
+  opened handles close on every tested failure. Open-descriptor replacement/deletion is Unix
+  evidence; its four variants explicitly skip on Windows rather than claim sharing-mode parity.
+- Four SQLite cases: post-read mtime change, same-byte inode replacement, deletion and Linux
+  symlink substitution. The real reader finishes and closes before injection; tracked queries
+  use read-only URI/query-only mode and contain only SELECT/PRAGMA/BEGIN. Linux symlink evidence
+  explicitly skips on Windows. Windows junction/reparse checks remain separate.
+- Three post-capture cases: replace/delete/append selected SQLite/JSON inputs, then compare
+  service catalog/events/detail/exact-event results with captured positives while forbidding
+  file reopening. Queries do not alter the injected files. This demonstrates snapshot reuse,
+  not continued authentication of selected files after startup.
+
+These deterministic hooks do not prove arbitrary scheduling races, same-inode size/mtime-
+preserving edits, SQLite WAL/concurrent-writer behavior, parent-directory races, every artifact
+kind/query or the complete resource/concurrency matrix. Hostile browser matrices, manual
+accessibility, Windows paths, human-dispatched exact-commit CI and final owner review stay open.
+The independent reviewer requested timestamp-isolated inode negatives and Unix annotations;
+both test-only improvements were applied before final verification. No new product fix needed.
+
+Final local results: **17 focused passed in 2.78 s; 446 non-browser passed, four browser tests
+deselected in 60.98 s; 92.13% coverage** (3,356 statements/264 missed). Ruff format/lint and
+strict MyPy (60 files) passed. One upstream Starlette/httpx warning remains. Final read-only
+independent review found no blockers. Runtime used the existing bounded networkless WSL2
+sandbox; no host tests or new listener/browser/build/installed-package/audit run. The latter
+checks remain historical evidence for the unchanged merged product, not this new test module.
+Exact manifest/commands/limits are in the
+[Phase 6 record](PHASE_6_VERIFICATION.md#post-merge-g0-capture-boundary-batch--2026-10-03).
