@@ -1,8 +1,9 @@
 # Phase 6A verification record
 
-Status: **C07 repair owner-reviewed and sandbox-verified: 288 non-browser tests passed at
-91.36% coverage, four Chromium tests passed, and quality/build/installed-CLI checks passed.
-G0, remaining cases, manual accessibility, exact-commit CI and final full-diff review remain open.**
+Status: **The owner-approved C07 follow-up passed 429 non-browser tests at 92.04% coverage,
+four Chromium checks, quality, offline build and fresh installed-package checks on 2026-10-03.
+The twelve reproduced live/offline discrepancies are repaired; earlier failed results are historical.
+G0, other residual cases, manual accessibility, exact-commit CI and final review remain open.**
 
 G0 Phase 5 deferral and G1 Phase 6A design approval were provided by the owner on 2026-09-22.
 On 2026-09-24 the owner authorized G2 test execution only inside a sandbox. On 2026-09-27 the owner
@@ -552,3 +553,304 @@ close G0/G3/G4 or freeze Phase 6B G1. No commit, push, PR, merge, CI dispatch or
 After reviewing the results, the owner approved committing and pushing this verified G0/C07
 batch on 2026-10-01. Local Phase 6B planning and agent-workflow edits are excluded. CI dispatch,
 PR creation, merge and phase acceptance remain separate steps.
+
+## G0 direct evidence continuation — 2026-10-02
+
+PR #8 merged as `0c3f151177d94b97c12548a5410b840afb1a4c22`; the owner asked to continue.
+Work uses the existing isolated worktree on `codex/g0-evidence-completion` at that merge.
+No Actions run was found for either the PR head or merge during the read-only GitHub check.
+The primary checkout's Phase 6B planning and agent-workflow edits remain separate and untouched.
+
+`tests/test_direct_evidence_boundaries.py` adds direct-specific incident/evaluation checks.
+On the test-only snapshot, focused execution returned **34 passed, four failed in 7.20 s**;
+the full non-browser suite returned **322 passed, four failed, four browser tests deselected in
+31.06 s**, **91.66% coverage** (3,322 statements, 277 missed). Coverage passed but pytest exited
+1: this is not a green acceptance gate. Ruff format/lint and strict MyPy (56 source files) passed.
+One upstream Starlette/httpx deprecation warning remains. Product/resources/CI were unchanged.
+
+Passing additions cover missing/wrong incident references, nested-alert and timeline alterations,
+early cutoffs, failed/incomplete direct lifecycles, exact snapshot/reference cutoffs, seven invalid
+historical-link/clock cases, local versus global evaluation failures, skipped-child accounting,
+metric exclusions/zero denominators/incomplete pairs, synthetic exception redaction, assertion
+failure exit 2 without exclusion, and the actual 300-second deadline at/over boundary. The latter
+uses a cooperative fake clock, not a wall-time or preemptive-timeout claim.
+
+The four failures are two defects under both profiles:
+
+- A genuine direct investigation cannot load in the dashboard. Its strict timeline metadata has
+  `event_type: agent.context.prompt_added` but no event payload; the recursive prompt validator
+  wrongly requires the full prompt payload there. The positive fails before any tampering.
+- The linked-investigation verification helper accepts a cutoff one sequence beyond the source's
+  final event. It fingerprints the filtered captured snapshot but never checks the declared cutoff
+  equals that snapshot's actual final sequence. This was isolated below the failing projection;
+  it is not a claim that the full public loader accepted the artifact.
+
+The first test layout hit the same positive-load defect in eighteen parameter cases (18 failed,
+18 passed in 9.00 s). The public positive was separated into two explicit tests and linkage checks
+were isolated against the genuine captured source; no failure was skipped or marked xfail.
+
+Executed test-only manifest: **83 paths**, SHA-256
+`68fb0365261b92e0bd2a4e8523bced33f4949ff16b10ccae7edd818b0a6c8170`;
+test module SHA-256 `7903e112e3ef83cf804cf1484397b27905029fa43dc40517e3c06bdb4e3628ab`.
+Use the manifest convention defined in the preceding C07 section.
+
+Commands inside the same networkless WSL2 bubblewrap boundary:
+
+```text
+python -m pytest -p no:cacheprovider -q tests/test_direct_evidence_boundaries.py --tb=line
+python -m ruff format --check --no-cache src tests
+python -m ruff check --no-cache src tests
+python -m mypy --no-incremental --cache-dir /tmp/mypy src tests
+COVERAGE_FILE=/tmp/.coverage python -m pytest -p no:cacheprovider -p pytest_cov.plugin --cov=agentsec --cov-report=term --cov-fail-under=90 -q --tb=line
+```
+
+Cleared environment, read-only task/repository mounts, no host home/drive or external network,
+tmpfs output, 1 GiB address limit, 128 processes, 256 descriptors, 64 MiB/file. Focused checks
+used CPU 90 s/wall 180 s; the combined quality/full check used CPU 120 s/wall 240 s. No host
+scenario execution, new dependencies, browser/build/audit rerun, CI dispatch or publication.
+
+### Prepared dashboard repair — not runtime-tested
+
+The minimal diff permits a no-payload prompt timeline entry only after strict `TimelineEntry`
+validation; actual event payloads keep the existing exact closed prompt-field checks. Linked
+investigations also require the declared cutoff to resolve to the captured snapshot's last
+sequence. Five additional malformed-shape/payload regressions are prepared, bringing the module
+to **43 cases**, all unexecuted on this changed product snapshot. See the concrete
+[G2 review](PHASE_6_SECURITY_REVIEW.md#g0-dashboard-repair-review--2026-10-02).
+
+Prepared manifest: **83 paths**, SHA-256
+`8342ed5f7ca6c13038f2073f2565cad5a8930bf7a4f9952c692a866789ac9866`;
+catalog SHA-256 `762f31cf5e4e868538080ac6ed0746459346d91e5df9359a70c57c9657716722`;
+test module SHA-256 `8950c584779f261971f8d5ef22b01b0e7600c5c03d78ed50b5793be5ac3e93df`.
+Only static formatting/lint/types and diff checks apply to this new snapshot. Earlier runtime
+results do not establish its correctness. New G2 review is required before executing it.
+Other G0 cases, manual accessibility, cross-platform CI and Phase 6B G1 remain open; nothing
+was committed or pushed in this continuation.
+
+## Approved dashboard repair verification — 2026-10-02
+
+The owner approved the concrete dashboard review and named sandbox checks. Before execution,
+the prepared source/test manifest was recomputed unchanged:
+`8342ed5f7ca6c13038f2073f2565cad5a8930bf7a4f9952c692a866789ac9866` (**83 paths**).
+Base is `0c3f151177d94b97c12548a5410b840afb1a4c22`; changes remain uncommitted on
+`codex/g0-evidence-completion`. No product or test edits were needed during this rerun.
+
+Results on that exact snapshot:
+
+- New 43-case module plus existing dashboard catalog/API tests: **71 passed in 8.26 s**.
+- Full non-browser suite: **331 passed, four browser tests deselected in 31.29 s**,
+  **91.65% coverage** (3,329 statements, 278 missed). The four pre-repair failures are resolved.
+- Existing Chromium suite: **four passed in 6.02 s**, no skips.
+- Ruff format/lint passed; strict MyPy passed for **56 source files**. One upstream
+  Starlette/httpx deprecation warning remains.
+- Offline wheel/sdist build passed from a disposable copy of `src`, `tests`, README and
+  pyproject. Both archives contain all eight Phase 6A resources, three dashboard assets and
+  the repaired catalog; changed catalog/resource bytes match the checkout. The sdist includes
+  the new regression module. Wheel SHA-256:
+  `45cf8c71ddf85f1cdee2bff93a616dcc14054981fd4f4a9dcddb912b5b7038ce`;
+  sdist SHA-256: `ac3fcfb3054f9200dd052f43efb71df28f32a29e9ddca5984696bf5bc1608de7`.
+- The exact wheel installed offline to a fresh core-only environment; FastAPI was absent and
+  package metadata was 0.4.0. With **no repository mount or PYTHONPATH**, installed direct
+  vulnerable/strict CLI runs and investigations passed. The installed catalog accepted each
+  genuine linked investigation, rejected its altered late cutoff, and preserved source hashes.
+  Indirect compatibility, comparison, both **6/6** suites, rule fixtures **4/4**, replay and
+  missing-dashboard-extra hint/exit 2 also passed. The ruleset fingerprint is unchanged.
+
+Commands reuse the previous section's quality/full suite and the existing Chromium command.
+Focused command was:
+
+```text
+python -m pytest -p no:cacheprovider -q tests/test_direct_evidence_boundaries.py tests/test_dashboard_catalog.py tests/test_dashboard_api.py --tb=short
+python -m build --no-isolation --outdir /results/dashboard-20261002/dist
+```
+
+Isolation stayed networkless bubblewrap with cleared environment, read-only repository/task
+runtime and tmpfs working output. Focused/CLI checks retained CPU 90 s, wall 180 s, 1 GiB address,
+128 processes, 256 descriptors and 64 MiB/file; combined static/full checks used CPU 120 s/wall
+240 s. Browser bounds stayed CPU 180 s/wall 240 s, 512 descriptors and 64 MiB/file, with the
+existing WSL memory/swap limits instead of Chromium-incompatible per-process address/count caps.
+Build/install used a 4 GiB address limit, CPU 120 s/wall 240 s and one installer thread. Only
+build/install/CLI exposed task-owned results writable. Retained archives and synthetic CLI
+artifacts are under Ubuntu `/home/godji/agentsec-g0-env.045vOJ/results/dashboard-20261002`.
+No host scenario execution or new dependency/download occurred. The earlier Python dependency
+audit remains historical; it was not repeated and does not audit Chromium, OS libraries or code.
+
+The two demonstrated defects are fixed, not deferred. Passing evidence does not close broader
+redaction/resource/incident/evaluation matrices, correlation enumeration parity, manual
+accessibility, Windows junction/reparse checks, exact-commit Windows/Ubuntu CI or final acceptance.
+No CI dispatch, commit, push, PR, merge or Phase 6B implementation occurred in this rerun.
+
+## Continued artifact and aggregate-limit evidence — 2026-10-02
+
+The owner authorized committing/pushing the reviewed repair and continuing the workflow with
+a sub-agent reviewer. The repair was committed and pushed as
+`df084a0203042b9494e6140e5fe456e5a8decfa6` (`Fix dashboard investigation validation`) on
+`codex/g0-evidence-completion`. The independent read-only review found no actionable blocker;
+it supplements the preceding concrete owner G2 approval, not a replacement human sign-off.
+An attempted draft PR creation returned GitHub integration HTTP 403; no PR was created.
+
+The next batch changes tests and evidence documentation only. Product source, resources,
+dependency contracts and CI configuration remain identical to the approved repair. It adds:
+
+- Fourteen public-loader/CLI checks: seven genuine JSON artifact kinds, each contaminated in
+  one permitted string field using either literal or JSON-Unicode-escaped synthetic canary.
+  Every case first loads the genuine artifact, independently validates the contaminated schema,
+  proves JSON decoding reveals the canary, and requires rejection without listener startup,
+  output disclosure or input mutation. These are representative fields/encodings, not an
+  all-field or arbitrary-secret scan. The contaminated fixtures intentionally contain a fake
+  canary in task-local temporary files; no real credential is used.
+- Six supported API detail routes each pass a clean 200 control before returning fixed 503 for
+  a contaminated in-memory artifact. Captured output/logs and response/security headers are
+  checked. A separate replay detail-route 404 is route-contract evidence, not an API redaction
+  scan; replay is covered by the public-loader/CLI matrix.
+- Eighteen additional investigation cases exercise the public loader alongside independent
+  linkage-helper checks, with a genuine public positive before each mutation under both direct
+  profiles. The direct evidence module now has 61 cases.
+- Three actual dashboard aggregate-bound checks without patching constants: 256 MiB selected
+  input, 100,000 retained events, and 64 MiB retained projections. Repeated selected paths/run
+  identities exercise per-entry accounting, not that many distinct physical files, unique events
+  or runs. Input uses one 64 MiB padded canonical SQLite source plus 192 one-MiB JSON entries;
+  events use ten selections of one 10,000-event source; projections use 64 selections of one
+  schema-valid one-MiB report. Extra valid entries trigger each specific limit. Event overflow is
+  exactly one event; byte/projection overflow is an extra valid small report, not one byte.
+  Source bytes/hashes and selected report bytes remain unchanged after accepted/rejected loads.
+
+The reviewer suggested clean API controls, separating replay 404 evidence, and source hash
+checks; those improvements were applied before the final rerun. Initial static checks caught
+four import/list lint issues and two test-only type errors in the new cap tests; they were fixed
+before runtime execution of those tests. No product repair was needed.
+
+Final source/test manifest: **84 paths**, SHA-256
+`7a07a8a978cf9431a06c0949ddaa4c0ab8f46858ddb5e74c92a8d6c3f074c2f1`.
+Results on this snapshot:
+
+- Ruff format/lint passed; strict MyPy passed for 57 source files.
+- Focused three-module batch: **102 passed in 17.55 s**.
+- Full non-browser suite: **373 passed, four browser tests deselected in 40.01 s**,
+  **91.95% coverage** (3,329 statements, 268 missed). One upstream Starlette/httpx warning remains.
+- Unchanged Chromium suite: **four passed in 5.83 s**, no skips.
+- Offline wheel/sdist build passed. Every packaged source/resource byte matches the checkout;
+  sdist includes all three changed regression modules. Wheel SHA-256:
+  `a5d02b001634648d62853fdd2cd78ce6cbbb1f5096a8fa0bf02fa5717d39fcf4`;
+  sdist SHA-256: `ae6b2dc8cd336f51328f1ba6bbe33023059cf88ed8061f259a28450d6e637860`.
+- The exact wheel installed offline into a fresh core-only environment (FastAPI absent,
+  metadata 0.4.0). With no repository mount/PYTHONPATH, both direct profile CLI flows,
+  investigations and replay passed; genuine linked investigations load, late cutoffs reject,
+  and source hashes remain unchanged. Indirect compatibility, comparison, both 6/6 suites,
+  rule fixtures 4/4, missing-dashboard hint/exit 2 and unchanged ruleset fingerprint passed.
+
+Focused command:
+
+```text
+python -m pytest -p no:cacheprovider -q tests/test_dashboard_artifact_redaction.py tests/test_direct_evidence_boundaries.py tests/test_dashboard_g0_boundaries.py --tb=short
+```
+
+Quality/coverage, Chromium and installed smoke reuse the commands and isolation in the preceding
+section. All runtime execution stayed in networkless bubblewrap; no host scenario ran. Combined
+checks used CPU 120 s, wall 240 s, 1 GiB address limit, 128 processes, 256 descriptors and
+64 MiB/file; Chromium retained its existing WSL memory/swap and CPU/wall/descriptor bounds.
+Build/install retained the 4 GiB address bound and existing staged dependency wheels only.
+Archives, core environment and synthetic CLI results are retained under Ubuntu
+`/home/godji/agentsec-g0-env.045vOJ/results/g0-artifact-20261002`.
+No downloads, dependency changes, audit rerun, CI dispatch, merge or Phase 6B runtime change.
+
+This closes the demonstrated representative artifact and actual aggregate-accounting cases,
+not the complete G0 inventory. Broader hostile-content/field/failure/mutation and resource-work
+matrices, Windows reparse tests, manual accessibility, human-dispatched exact-commit CI and final
+owner acceptance remain separate open gates. Delegated review does not waive those gates.
+
+## Later C07 parity reproduction — unresolved, 2026-10-02
+
+The verified dashboard batch was pushed as `df084a0203042b9494e6140e5fe456e5a8decfa6`; the
+verified test-only artifact/bounds batch as `eec09e9e0bf5dd3dcb29f5ad567269190cd010e1` on
+`codex/g0-evidence-completion`. An independent sub-agent reviewed both with no blockers.
+
+Continuing the remaining C07 matrix against unchanged product code confirmed twelve failures:
+eight earlier nonmatching candidates hide a later valid direct chain, absent read/sink digests
+produce a live false match, and three unsupported-version variants match live but not offline.
+The [dated C07 review](PHASE_G0_C07_REVIEW.md#additional-liveoffline-parity-findings--2026-10-02)
+records exact assumptions, impact limits, reproduction commands and the next repair proposal.
+These are evidence-interpretation discrepancies, not demonstrated host access or secret leakage.
+
+Focused eighteen-case module: **six passed, twelve failed in 3.84 s**. Full: **379 passed,
+twelve failed, four browser tests deselected in 42.76 s**, **91.98% coverage**; exit 1.
+Format/lint/types passed (58 files). Six passing additions cover offline missing-join rejection,
+exact/reversed two-chain enumeration, actual candidate ceiling/overflow and disclosed reduced
+match ceiling/overflow. The current failed acceptance snapshot has **85 paths**, SHA-256
+`1c09b53a70b77ee7d5aebe302c9e50a08b0735469da104249a0238275af43c08`.
+
+Execution retained the preceding networkless CPU/wall/memory/process/file bounds. No new product,
+resource, dependency or CI change was made. Package/browser checks were not rerun for this
+failing expanded matrix and remain evidence for the earlier passing snapshot. The new reproduction
+module and finding records are uncommitted and not pushed; there is no PR, merge or CI dispatch.
+Prepare a targeted direct-only repair for concrete human G2 review before any changed sensitive
+execution. The skill/workflow human-review gate is not replaced by delegated review or blanket
+continuation approval. G0 and Phase 6B implementation remain open.
+
+### Review-only repair proposal after blocked preparation
+
+On the owner's continuation request, auto-review rejected applying the new detector/resource
+loading patch without concrete human G2 approval. Read-only Git checks confirmed both source
+files are unchanged. A documentation-only code proposal and named sandbox verification plan
+are prepared in the existing [C07 record](PHASE_G0_C07_REVIEW.md#concrete-repair-proposal-for-g2--review-only-2026-10-02).
+No new test, scenario, browser, build or installed CLI ran; the 85-path failed reproduction
+manifest and its 379 passed/twelve failed results above remain current. Proposal review is not
+implementation verification; no source manifest for an applied repair exists yet.
+
+## Approved C07 live/offline repair — 2026-10-03
+
+The owner explicitly approved the concrete proposal and named sandbox checks after reading the
+review request. The applied detector/resource-loader diff matches that proposal; independent
+read-only review found no blockers after strengthening schema-valid canary negatives and live
+limit-boundary parity. Delegated review remains supplemental to that human G2 approval.
+
+Base HEAD: `eec09e9e0bf5dd3dcb29f5ad567269190cd010e1`. Tested source/test manifest: **86 paths**,
+SHA-256 `af80952ae4f8f5ebbaceaf7290cfb3698ab87d407ac88a2734f5d327fec03eb1`, using the existing
+sorted path/content convention. This is local uncommitted-snapshot evidence, not exact-commit CI.
+
+Fresh direct evaluation now uses the fixed bounded packaged rule, completes enumeration before
+selecting the first dedup-key match, rejects absent join digests/unsupported versions and fails
+explicitly on input/work exhaustion. Closed configuration/resource failures do not fall back.
+Recorded-result reuse and missing alert/incident recovery still bypass fresh checks; tests and
+contracts disclose that distinction. Indirect first-candidate behavior, rule bytes/version,
+fingerprint algorithms, policy/gateway/adapters, dependencies and CI remain unchanged.
+
+Final checks inside the existing networkless WSL2 Ubuntu/CPython 3.13.15 sandbox:
+
+- Ruff format/check and strict MyPy: passed, **59 files**.
+- Focused loading/parity/original C07/historical detection modules: **84 passed in 9.41 s**.
+- Full non-browser suite: **429 passed, four browser tests deselected in 47.67 s**;
+  **92.04% coverage**, 3,356 statements/267 missed. One upstream Starlette/httpx warning remains.
+- Existing Chromium suite: **four passed in 6.03 s**, no skips.
+- Offline wheel/sdist build: passed. Every packaged source/resource byte matches the checkout;
+  sdist contains both new direct regression modules byte-for-byte.
+- Fresh offline core-only wheel install, no repository mount/PYTHONPATH and FastAPI absent:
+  all three direct fixtures under both profiles, direct/indirect CLI under both profiles,
+  comparisons, replay, investigation, linked catalog positives/late-cutoff negatives,
+  source database hash preservation, both suites (6/6 children), all four rules and
+  missing-dashboard dependency hint passed. No dashboard listener was started by this smoke.
+
+Commands reuse the concrete proposal's quality/focused/coverage/Chromium commands, adding
+`tests/test_direct_rule_loading.py` to the focused list. Build/install smoke used task-owned
+`g2_verify.py` (SHA-256 `d1c54d6261190ab20091c094b2971f8b8d00f945a581e3367b6f4e8b7359e3c8`):
+`python /checks.py build`, then fresh installed `python /checks.py smoke`. Build uses disposable
+tmpfs copies of source/tests/package metadata, not a writable checkout. Archives/core install/CLI
+artifacts are retained under Ubuntu
+`/home/godji/agentsec-g0-env.045vOJ/results/c07-repair-20261003-final`.
+
+- Wheel SHA-256: `52763975518430dca0dbbcd351777ab149bf6e5ca1a091902ff6382591a94692`.
+- Sdist SHA-256: `ec8979aff7929ef7c226d05a2da162bfcc70a6bb0b741535647fe2e33f5b5a72`.
+
+All runtime checks used bubblewrap `--unshare-all`, cleared environment, read-only source and
+tmpfs. Static/full: CPU 120 s/wall 240 s/address 1 GiB/processes 128/descriptors 256/64 MiB per
+file; browser: CPU 180 s/wall 240 s/descriptors 512/64 MiB per file and existing WSL memory/swap
+bounds. Build/install: address 4 GiB/CPU 120 s/wall 240 s; installed smoke: address 1 GiB/CPU 90 s/
+wall 180 s, otherwise the same process/descriptor/file bounds. Only task results were writable
+for build/install/smoke. No host scenarios/tests, downloads, dependency changes, audit rerun,
+CI dispatch, merge, release or Phase 6B runtime occurred. Static formatting briefly used a
+writable checkout mount, targeting only edited Python files; it did not run project code.
+
+This closes the twelve demonstrated discrepancies and the named repair checks, not complete G0.
+Broader hostile-content/field/failure/mutation/resource-work matrices, Windows junction/reparse
+checks, manual accessibility, human-dispatched exact-reviewed-commit CI and final owner full-diff
+acceptance remain open. Historical 379/twelve-failed results above are superseded, not erased.

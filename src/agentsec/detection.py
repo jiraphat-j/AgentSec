@@ -8,10 +8,12 @@ from .constants import (
     CORRELATION_RULE_VERSION,
     DIRECT_PROMPT_CORRELATION_RULE_ID,
     DIRECT_PROMPT_CORRELATION_RULE_VERSION,
-    VIRTUAL_SECRET_PATH,
+    MAX_REPLAY_EVENTS,
 )
 from .events import EventCollector
 from .models import DetectionResult, Event, InputChannel
+from .resource_loader import load_direct_detection_rule
+from .rule_engine import RuleEvaluationLimitExceeded, evaluate_rule
 
 
 def _first_after(
@@ -67,14 +69,14 @@ class CorrelationDetector:
         raise ValueError("unknown input channel")
 
     def evaluate(self, events: list[Event]) -> DetectionResult:
-        direct = self._context_event_type == "agent.context.prompt_added"
+        if self._context_event_type == "agent.context.prompt_added":
+            return self._evaluate_direct(events)
         context = next(
             (
                 event
                 for event in events
                 if event.event_type == self._context_event_type
                 and event.payload.get("trust") == "untrusted"
-                and (not direct or event.source_component == "scenario-controller")
                 and (
                     self._context_delivery_channel is None
                     or event.payload.get("delivery_channel") == self._context_delivery_channel
@@ -90,8 +92,6 @@ class CorrelationDetector:
             context.sequence,
             context.run_id,
             context.trace_id,
-            source_component="fake-file-adapter" if direct else None,
-            resource=VIRTUAL_SECRET_PATH if direct else None,
         )
         if (
             secret_read is None
@@ -105,7 +105,6 @@ class CorrelationDetector:
             secret_read.sequence,
             context.run_id,
             context.trace_id,
-            source_component="lab-http-sink-adapter" if direct else None,
         )
         if (
             sink is None
@@ -121,6 +120,32 @@ class CorrelationDetector:
             detected=True,
             severity="critical",
             evidence_event_ids=(context.event_id, secret_read.event_id, sink.event_id),
+        )
+
+    def _evaluate_direct(self, events: list[Event]) -> DetectionResult:
+        if (
+            self._rule_id,
+            self._rule_version,
+            self._context_delivery_channel,
+        ) != (
+            DIRECT_PROMPT_CORRELATION_RULE_ID,
+            DIRECT_PROMPT_CORRELATION_RULE_VERSION,
+            "direct_prompt",
+        ):
+            raise ValueError("unsupported direct detector configuration")
+        if len(events) > MAX_REPLAY_EVENTS:
+            raise RuleEvaluationLimitExceeded("direct detector event count exceeds fixed limit")
+        evaluation = evaluate_rule(load_direct_detection_rule(), events)
+        if not evaluation.matches:
+            return self._no_match()
+        # The evaluator orders matches by dedup key, not by earliest event sequence.
+        match = evaluation.matches[0]
+        return DetectionResult(
+            rule_id=self._rule_id,
+            rule_version=self._rule_version,
+            detected=True,
+            severity="critical",
+            evidence_event_ids=match.evidence_event_ids,
         )
 
     def evaluate_and_record(

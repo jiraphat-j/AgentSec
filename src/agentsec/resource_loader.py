@@ -8,8 +8,11 @@ from importlib.resources.abc import Traversable
 from typing import Any
 
 from .constants import (
+    DIRECT_PROMPT_CORRELATION_RULE_ID,
+    DIRECT_PROMPT_CORRELATION_RULE_VERSION,
     DIRECT_PROMPT_SCENARIO_ID,
     MAX_DOCUMENT_BYTES,
+    MAX_RULE_BYTES,
     MAX_SCENARIO_BYTES,
     SCENARIO_ID,
 )
@@ -20,6 +23,7 @@ from .models import (
     Scenario,
     ScenarioDefinition,
 )
+from .rule_models import DetectionRule, RuleKind
 
 _DOCUMENTS = {
     DocumentFixture.MALICIOUS: "malicious.txt",
@@ -104,3 +108,37 @@ def load_canary() -> str:
     if not value.startswith("LAB_FAKE_CANARY_"):
         raise ValueError("fixture is not an explicit fake canary")
     return value
+
+
+def load_direct_detection_rule() -> DetectionRule:
+    """Load only the fixed packaged direct rule; never accept a path or selector."""
+    resource = files("agentsec.resources").joinpath("rules", "asl-corr-003-v1.json")
+    data = _read_bounded_utf8(resource, MAX_RULE_BYTES, "direct detection rule")
+    try:
+        decoded = json.loads(
+            data,
+            object_pairs_hook=_reject_duplicate_keys,
+            parse_constant=_reject_nonfinite,
+        )
+        if load_canary() in json.dumps(decoded, ensure_ascii=False):
+            raise ValueError("direct detection rule contains the lab canary")
+        rule = DetectionRule.model_validate_json(data)
+    except ValueError as error:
+        raise ValueError("direct detection rule failed validation") from error
+    if (
+        rule.rule_id,
+        rule.rule_version,
+        rule.kind,
+        rule.severity,
+        rule.supported_event_versions,
+        tuple(step.name for step in rule.steps),
+    ) != (
+        DIRECT_PROMPT_CORRELATION_RULE_ID,
+        DIRECT_PROMPT_CORRELATION_RULE_VERSION,
+        RuleKind.CORRELATION,
+        "critical",
+        ("0.2",),
+        ("prompt", "read", "sink"),
+    ):
+        raise ValueError("packaged direct detection rule does not match its contract")
+    return rule
