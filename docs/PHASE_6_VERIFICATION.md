@@ -1,8 +1,9 @@
 # Phase 6A verification record
 
-Status: **The Windows CI test-only fixes passed 446 non-browser checks at 92.13% coverage
-and quality in the Linux sandbox on 2026-10-03. Actions run 37096511551 passed Ubuntu verification
-and both browser jobs but failed Windows verification. The repaired branch needs fresh CI.
+Status: **The latest Windows timing fixture fixes passed 446 non-browser checks at 92.13% coverage
+and quality in the Linux sandbox on 2026-10-06. Actions run 37429535768 passed Ubuntu verification
+and both browser jobs but failed Windows verification on three timing-dependent tests. The repaired
+branch needs fresh CI.
 The twelve reproduced live/offline discrepancies are repaired; earlier failed results are historical.
 G0, other residual cases, manual accessibility, exact-commit CI and final review remain open.**
 
@@ -945,3 +946,36 @@ read-only checkout and tmpfs outputs: CPU 120 s/wall 240 s/address 1 GiB/process
 code. No host tests/scenarios, downloads, browser/build/install/audit rerun, CI dispatch, merge or
 Phase 6B runtime occurred. Source, dependencies, CI and browser tests are unchanged. Windows repair
 confirmation requires a fresh human-dispatched run on the pushed head. Other G0 gates remain open.
+
+## Windows timing fixture follow-up — 2026-10-06
+
+The owner's next human-dispatched [Actions run 37429535768](https://github.com/jiraphat-j/AgentSec/actions/runs/37429535768)
+tested `51ad4bba22e2863dcb9be030ebf867c44f8a949f`. Ubuntu verification and both browser jobs
+passed. Windows format/lint/type passed, then tests reported **3 failed, 436 passed, 7 skipped,
+4 deselected, one warning**. Build/audit were skipped. The earlier oversized pytest IDs now ran
+without environment-value errors.
+
+The failed suite expectation test returned `status=partial`, `children=5/6`, and CLI exit 1 rather
+than the expected completed assertion failure and exit 2. Two other fixture runs raised
+`ScenarioDeadlineExceeded` before reaching their overwrite and historical timing assertions.
+The three tests now inject a fixed monotonic clock through the existing runner/evaluation
+dependency; the CLI test patches only its `EvaluationService` construction. Test payloads,
+expectations and production limits are unchanged. Dedicated scenario and evaluation deadline
+boundary tests still use controlled at/over-limit clocks.
+
+Tested base: `51ad4bba22e2863dcb9be030ebf867c44f8a949f`. Local source/test manifest: **87 paths**,
+SHA-256 `129ad6bec9eedde06c6e0eb323509cfed46f0d4c94d8e2a80b13e85907945684` under the sorted
+path/content convention. In the established cleared-environment, networkless WSL2 Ubuntu/CPython
+3.13.15 bubblewrap sandbox, the three repaired cases plus eight dedicated deadline cases passed
+(**11 passed in 3.77 s**). The full non-browser suite passed **446 tests, four browser tests
+deselected in 63.04 s**, with **92.13% coverage** (3,356 statements/264 missed) and the existing
+Starlette/httpx warning. Ruff format/lint and strict MyPy passed for 60 files. Ruff normalized
+the two edited files' line endings before the final check; that formatter did not execute code.
+
+The focused command selected those three failing node IDs and these existing boundary cases:
+`test_direct_deadline_at_and_over_bound_has_safe_finalization`,
+`test_direct_suite_deadline_at_and_over_actual_bound`,
+`test_deadline_failure_records_no_successful_report`, and
+`test_evaluation_deadline_accounts_for_every_not_run_child`. Full/quality commands and sandbox
+bounds match the preceding section. No host scenario execution, browser/build/install/audit rerun,
+CI dispatch or merge occurred. Windows confirmation and the other G0 gates remain open.

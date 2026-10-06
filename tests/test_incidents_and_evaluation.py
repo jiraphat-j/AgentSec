@@ -247,7 +247,7 @@ def test_relevant_payload_types_are_not_coerced() -> None:
 
 
 def test_historical_timing_rejects_reversed_clocks_and_missing_links(tmp_path: Path) -> None:
-    run = ScenarioRunner(id_factory=sequential_ids()).run(
+    run = ScenarioRunner(id_factory=sequential_ids(), monotonic_clock=lambda: 0.0).run(
         "indirect-injection-secret-exfiltration", tmp_path
     )
     store = EventStore(run.run_directory / "events.sqlite3")

@@ -9,6 +9,7 @@ from typing import Any
 import pytest
 from pydantic import ValidationError
 
+import agentsec.cli as cli_module
 import agentsec.evaluation as evaluation_module
 from agentsec.cli import main
 from agentsec.constants import DIRECT_PROMPT_SCENARIO_ID, MAX_EVALUATION_SECONDS
@@ -384,6 +385,11 @@ def test_direct_suite_wrong_expectation_is_failure_not_exclusion(
         evaluation_module,
         "load_evaluation_suite",
         lambda _suite_id: (changed_suite, changed_suite.model_dump(mode="json")),
+    )
+    monkeypatch.setattr(
+        cli_module,
+        "EvaluationService",
+        lambda: EvaluationService(monotonic_clock=lambda: 0.0),
     )
     assert main(["evaluate", "--suite", "direct-injection-v1", "--output-dir", str(tmp_path)]) == 2
     output = capsys.readouterr()
