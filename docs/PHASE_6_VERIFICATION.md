@@ -1,9 +1,8 @@
 # Phase 6A verification record
 
-Status: **The latest Windows timing fixture fixes passed 446 non-browser checks at 92.13% coverage
-and quality in the Linux sandbox on 2026-10-06. Actions run 37429535768 passed Ubuntu verification
-and both browser jobs but failed Windows verification on three timing-dependent tests. The repaired
-branch needs fresh CI.
+Status: **Actions run 37431200546 passed all four Windows/Ubuntu verification and browser jobs on
+`ba9b9f1` on 2026-10-06. The new test-only Windows reparse batch passed Linux sandbox checks;
+the Windows-only cases await Actions on the new head. The earlier passing run does not cover them.
 The twelve reproduced live/offline discrepancies are repaired; earlier failed results are historical.
 G0, other residual cases, manual accessibility, exact-commit CI and final review remain open.**
 
@@ -979,3 +978,33 @@ The focused command selected those three failing node IDs and these existing bou
 `test_evaluation_deadline_accounts_for_every_not_run_child`. Full/quality commands and sandbox
 bounds match the preceding section. No host scenario execution, browser/build/install/audit rerun,
 CI dispatch or merge occurred. Windows confirmation and the other G0 gates remain open.
+
+## Green CI and prepared Windows reparse evidence — 2026-10-06
+
+[Actions run 37431200546](https://github.com/jiraphat-j/AgentSec/actions/runs/37431200546)
+tested `ba9b9f1307affb88c617fc36e1a6cf4a4fd2c160`. The Ubuntu and Windows `verify` jobs and
+both `dashboard-browser` jobs completed successfully, including build/audit in both verify jobs.
+PR #10 remains open. This confirms the previous timing-fixture fix on that head; it does not
+retroactively validate earlier merged revisions or close the remaining G0 acceptance matrix.
+
+The next batch prepares only `tests/test_dashboard_g0_boundaries.py` Windows cases and evidence
+records. The positive case accepts a regular selected file. The negatives select a file symlink
+and a parent junction to synthetic targets outside the manifest root but inside `tmp_path`;
+they assert link/reparse rejection, unchanged target bytes and link-node cleanup. Junction setup
+uses `subprocess.run` with fixed `cmd /d /c mklink /J` arguments, a ten-second bound, captured
+output, and no `shell=True`. Setup failures remain failures rather than skips. Linux explicitly
+skips these Windows-only cases. The [security review](PHASE_6_SECURITY_REVIEW.md#windows-reparse-test-proposal--2026-10-06)
+contains the human gate for this new command invocation.
+
+Prepared base HEAD: `ba9b9f1307affb88c617fc36e1a6cf4a4fd2c160`. The source/test manifest has
+87 paths, SHA-256 `f627f25fde272337d920b33dd509d98ca848710a7b449062c70e9ff3724a999c` under the
+same sorted path/content convention. Static preflight passed: Ruff format (60 files), Ruff lint,
+strict MyPy (60 files), and `git diff --check`. The owner authorized the concrete test diff on
+2026-10-06. In the isolated networkless Linux sandbox, the focused G0 boundary file passed
+with 20 passed and 3 Windows-only skips. The full nonbrowser suite passed with 446 passed,
+3 skips, 4 browser deselections, one upstream Starlette/httpx deprecation warning and 92.13%
+coverage. Neither run invoked `cmd` or tested Windows reparse behavior. No new scenario,
+browser, build, installed-package check or CI run has executed on this diff. The owner must
+dispatch Actions on the new PR head; record all four job results before crediting Windows evidence.
+Windows reparse, broader hostile/resource matrices, manual accessibility and final owner acceptance
+remain open until that evidence is observed.

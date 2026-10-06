@@ -243,3 +243,20 @@ the existing networkless bounded sandbox; supplemental review found no blockers.
 [the verification record](PHASE_6_VERIFICATION.md#windows-ci-test-fixes--2026-10-03).
 No host scenario execution or CI dispatch occurred. Windows confirmation and final owner review
 remain pending; Ubuntu/both browser jobs passed only on the prior head.
+
+### Windows reparse test proposal — 2026-10-06
+
+⚠️ Security Sensitive: Requires Mandatory Human Review. The prepared Windows-only test diff in
+`tests/test_dashboard_g0_boundaries.py` adds `subprocess.run` for the fixed `cmd /d /c mklink /J`
+command. Both link and target are constructed under pytest's synthetic `tmp_path`; the target
+is outside the manifest directory. The command has `check=True`, captured output, a ten-second
+timeout and no `shell=True`. The junction node is removed with `Path.rmdir()` after checking it
+is a junction; the target is checked unchanged. File-symlink setup and cleanup are separate.
+No product source, dependency, policy, gateway, socket or CI workflow is changed.
+
+The owner reviewed the concrete diff and authorized continuing on 2026-10-06. The focused and
+full nonbrowser suites then ran only inside the isolated networkless Linux sandbox; the Windows
+command was not invoked there. A green prior run on `ba9b9f1` does not cover
+these tests. The linked targets are synthetic only; a passing result would demonstrate selected
+Windows link/junction rejection on the CI runner, not all reparse tags, race schedules or host
+files. G0 and final owner acceptance remain open.

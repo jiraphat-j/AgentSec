@@ -374,3 +374,22 @@ test-only fixes preserve payload/assertion coverage and production deadlines. Lo
 verification passed all 446 non-browser tests at 92.13% coverage, with clean quality checks.
 See [the CI fix record](PHASE_6_VERIFICATION.md#windows-ci-test-fixes--2026-10-03) for commands,
 snapshot and failed-run evidence. Fresh Windows CI and other G0 gates remain outstanding.
+
+### PR #10 CI and Windows reparse checks — 2026-10-06
+
+The owner dispatched [Actions run 37431200546](https://github.com/jiraphat-j/AgentSec/actions/runs/37431200546)
+on `ba9b9f1307affb88c617fc36e1a6cf4a4fd2c160`: Windows/Ubuntu verification and both Chromium
+jobs passed. PR #10 remains open. This closes the cross-platform CI check for that branch revision,
+but does not supply the skipped Windows junction/reparse evidence or manual accessibility review.
+
+Three Windows-only public-catalog cases are now added on the same branch: a regular selected
+file, a selected file symlink, and a parent directory junction. The targets and manifest live
+inside one synthetic pytest temporary directory; link rejection, unchanged target bytes and
+link-node cleanup are explicit. Junction setup invokes `cmd /d /c mklink /J` from a test, so its
+concrete diff received human review authorization before sandbox execution. The focused Linux
+sandbox suite passed (20 passed, 3 Windows-only skips); the full nonbrowser suite passed (446
+passed, 3 skips, 4 browser deselections, 92.13% coverage). The Windows cases have **not** run
+and are not credited to P5 C04/P5-03 until the new PR head passes Windows Actions. See the
+[Phase 6 review](PHASE_6_SECURITY_REVIEW.md#windows-reparse-test-proposal--2026-10-06).
+Other hostile-content/resource matrices, manual accessibility and final owner acceptance remain
+open. New edits will require a fresh reviewed-commit Actions run.
