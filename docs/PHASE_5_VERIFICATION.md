@@ -393,3 +393,40 @@ and are not credited to P5 C04/P5-03 until the new PR head passes Windows Action
 [Phase 6 review](PHASE_6_SECURITY_REVIEW.md#windows-reparse-test-proposal--2026-10-06).
 Other hostile-content/resource matrices, manual accessibility and final owner acceptance remain
 open. New edits will require a fresh reviewed-commit Actions run.
+
+## Human accessibility walkthrough — prepared 2026-10-06
+
+### Evaluation Record
+- **Tested Commit SHA:** [Full SHA of reviewed checkout]
+- **Environment:** [OS/version, browser/version, desktop viewport and zoom]
+- **Screen Reader:** [Name/version; record unperformed screen-reader checks as PENDING]
+- **Tester / Date:** [Human tester] / [Actual review date]
+- **Synthetic Fixture Manifest:** [Path to reviewed multi-page fixture manifest]
+
+### Prerequisites and fixtures
+Use existing approved sandbox loopback viewer and reviewed synthetic manifests. Fixtures must provide more than one page for catalog, timeline, and nested collections within the fixed resource limits, plus empty, loading, error, unavailable, and report-only states. If any synthetic fixture is absent, record status as **BLOCKED**; never pass missing test data. For error and loading states, use approved local browser fixture tooling without changing host network settings. For every check record PASS/FAIL/BLOCKED, the observed behavior, and a screenshot or other evidence reference; all checks below are PENDING.
+
+### Inspection Checklist
+
+#### C12-01: Narrow width and real 200% zoom (PENDING)
+At 100% browser zoom, record a 320–390 CSS-pixel viewport. Separately repeat the desktop flow at real browser 200% zoom; record the resulting CSS-pixel viewport. Do not substitute CSS zoom or device scaling. Verify layout responds without unintended content clipping or horizontal page scroll. Intentional horizontal scrolling within `<nav>` and data tables is allowed provided controls and cell data remain operable.
+*Result / Measured Width:* PENDING
+
+#### C12-02: Contrast and status presentation (PENDING)
+Sample foreground/background pairs with a color contrast analyzer. Measure `#e8f4ef` body text, `#65e6ae` accent, `#9db8ad` muted labels, and `#dc7b7b` failure borders against background `#08110f` and panel `#10201c`. Record the accessibility threshold used for each measured pair. Confirm provenance/status tags, "Reported only" rows, and failure states convey meaning through text as well as color.
+*Result / Measured Ratios:* PENDING
+
+#### C11-01: Keyboard navigation and restored state (PENDING)
+Use `Tab`, `Shift+Tab`, and `Enter`/`Space`. Verify visible, unobscured focus on links, buttons, and filter inputs across all seven views: "Overview", "Runs", "Investigations", "Comparisons", "Evaluations", "Rules", and "Rule tests". Confirm "Skip to content" jumps to `<main id="content">`. On multi-page catalog, advance with "Next" / "Previous", select an item, and verify "Back" preserves catalog pagination. In "Runs", apply "Exact trace ID" and "Exact event type" filters, paginate timeline, activate "Open evidence", and verify "Back" restores focus to originating `data-evidence-id` button, filters, and timeline offset. Verify nested investigation pagination and evidence back-navigation. Activate different views rapidly by keyboard; confirm asynchronous updates settle on the latest selected view.
+*Result / Evidence:* PENDING
+
+#### C12-03: Labels, tables, and screen-reader meaning (PENDING)
+Execute with a named screen reader. Verify landmarks (`<nav aria-label="Artifact views">`, `<main>`, `<footer>`) and live polite updates (`#status`). Inspect persistent filter-input labels and their accessible names; placeholders alone must not be assumed sufficient. Confirm the empty paragraph text is read within normal DOM flow rather than an asserted live announcement. Verify semantic tables contain explicit headers and captions ("Recorded fields", "Recorded attack-chain stages and evidence", "Exact metric values: <fraction>"). Ensure the attack chain image (`role="img"`) announces stages via its `aria-label`, buttons read "Event <sequence>: <event_id>", incident outcome and remediation lists are announced, and `<progress>` elements convey fractional values or "Unavailable". Confirm `report_only` provenance stays visibly unverified and "Reported only" timeline rows offer no verified evidence drill-down. Read comparison outcomes/divergence and evaluation progress alongside exact-value tables; zero denominators must remain unavailable, not become zero.
+*Result / Evidence:* PENDING
+
+#### C12-04: Empty, loading, error, and unavailable states (PENDING)
+Use each prepared fixture and the approved local browser fixture controls. Inspect the empty explanation and selected-count announcement; loading status; "Unable to load view" and "The requested view is unavailable." after a failed request; and disabled or unavailable evidence references. Check focus and readable explanations at narrow width and 200% zoom, including report-only timelines. Record missing fixtures as BLOCKED.
+*Result / Fixture / Evidence:* PENDING
+
+### Handoff and G0 boundary
+All failures remain open findings under G0. Final G0 completion requires successful full-SHA Windows and Ubuntu CI runs alongside formal human owner acceptance, which remain independent of this manual walkthrough.

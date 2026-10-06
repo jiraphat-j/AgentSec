@@ -1008,3 +1008,44 @@ browser, build, installed-package check or CI run has executed on this diff. The
 dispatch Actions on the new PR head; record all four job results before crediting Windows evidence.
 Windows reparse, broader hostile/resource matrices, manual accessibility and final owner acceptance
 remain open until that evidence is observed.
+
+## Gemini high delegation trial — 2026-10-06
+
+The owner requested a second `agy` trial to reduce Codex usage while retaining quality and
+potentially improving turnaround. PR #10 was still open at
+`4db44b7e8c203c7c9ce6d44d796570b75abf325c`; a read-only Actions query found no manual run on
+that SHA at the time of this trial. This batch prepares documentation, not Phase 6B runtime.
+
+The delegated task reviewed the three Windows catalog tests and drafted the remaining human
+C11/C12 walkthrough from supplied dashboard HTML/CSS/JavaScript and test/resolver snippets.
+The first call used `gemini-3.1-pro-high`, `--effort high`, `--mode plan`, `--sandbox`, JSON
+output and a 180-second print timeout. The supplied bundle was 29,889 characters. Prompts
+required advisory output only, with no additional file reads, editing, commands or tests.
+No test execution was requested or reported by `agy`; the CLI's `--sandbox` flag was not used
+as evidence of the repository's networkless WSL isolation.
+
+| CLI report | Duration (s) | Input tokens | Output tokens | Thinking tokens | Total tokens |
+|---|---:|---:|---:|---:|---:|
+| Earlier Flash Low proposal, separate smaller task | 7.54 | 14,180 | 736 | Not recorded | 14,916 |
+| Initial Pro High response, one turn | 155.49 | 24,284 | 20,439 | 18,874 | 44,723 |
+| Resumed conversation after Flash High correction, two turns | 353.74 | 76,425 | 28,131 | 25,678 | 104,556 |
+
+These are CLI-reported fields. The resumed response reports two conversation turns; do not add
+its counters to the first response or treat its duration as an independently timed correction
+call. Thinking tokens are shown separately as reported, not added to the total. A rejected
+attempt to combine `gemini-3.1-pro-high` with medium effort reported zero tokens; the correction
+used `gemini-3.8-flash-high` with high effort instead.
+
+Codex checked the caller and UI source, rejected the unresolved-manifest-root finding (the
+caller already resolves the manifest), and corrected the draft's reflow, state coverage,
+labels, report-only behavior and C11/C12 classification. The Windows symlink privilege note
+describes a setup limitation; setup failures must still fail visibly. The unusual temporary-path
+command parsing concern is retained in the [security review](PHASE_6_SECURITY_REVIEW.md#gemini-review-follow-up--2026-10-06),
+without applying the unverified quoting suggestion or invoking Windows commands.
+
+The reviewed draft is now the [prepared human walkthrough](PHASE_5_VERIFICATION.md#human-accessibility-walkthrough--prepared-2026-10-06).
+All its results are PENDING; missing fixtures must be BLOCKED. This trial produced a useful
+document but needed correction. Different task sizes and unavailable comparable Codex token
+counts prevent a token-savings or speedup claim. No product performance changed. Runtime and
+tests are unchanged from `4db44b7`; documentation links and `git diff --check` are the applicable
+checks. Windows evidence, manual checks, other G0 rows and owner acceptance remain open.

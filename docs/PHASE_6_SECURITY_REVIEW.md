@@ -260,3 +260,21 @@ command was not invoked there. A green prior run on `ba9b9f1` does not cover
 these tests. The linked targets are synthetic only; a passing result would demonstrate selected
 Windows link/junction rejection on the CI runner, not all reparse tags, race schedules or host
 files. G0 and final owner acceptance remain open.
+
+### Gemini review follow-up — 2026-10-06
+
+The high-model advisory review raised a temporary-path parsing concern for the Windows junction
+fixture. Python converts a Windows argument sequence using Microsoft C runtime quoting rules;
+`cmd /c` then parses its own command syntax. Passing `shell=False` does not bypass that explicitly
+invoked interpreter. See the [Python argument conversion rules](https://docs.python.org/3.13/library/subprocess.html#converting-an-argument-sequence-to-a-string-on-windows)
+and [Microsoft command quoting rules](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/cmd).
+A temporary base containing unquoted command metacharacters could therefore be misparsed.
+This is a source-based concern for unusual test roots, not an observed failure on the normal
+Windows CI temporary path. No metacharacter command was executed, and the suggested string/manual
+quoting repair has not been verified or applied. Keep this residual row open; do not use this
+fixture with such a temporary base before a concrete remediation is reviewed.
+
+The separate unresolved-root finding was rejected: `DashboardCatalog.load` resolves the manifest
+before taking its parent and passing that root to `_resolve_artifact`. No product path change is
+warranted by that finding. The batch only prepares the human accessibility walkthrough and records
+the review; it does not alter or expand the approved command invocation.
