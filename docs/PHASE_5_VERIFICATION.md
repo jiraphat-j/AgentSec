@@ -1,9 +1,9 @@
 # Phase 5 verification record
 
-Status: GitHub Actions run 37439310170 (workflow_dispatch, attempt 1) passed Windows and Ubuntu verification and browser jobs on full SHA `7ab1b1c556e3a00649b826018cffa98f6935d961` (PR #10, open) on 2026-10-06, confirming named NTFS boundary cases (P5 C04 / P5-03). Itemized G0 disposition, manual accessibility, and project-owner acceptance remain open.
-
-The additional 22-case nested-response batch passed local sandbox verification on 2026-10-07;
-fresh Windows/Ubuntu CI remains pending for that batch.
+Status: Actions run 37566851220 passed all four Windows/Ubuntu verification and browser jobs on
+full SHA `453bc1c91c3e33a53ba946d1ae0f9ea763b2bd68` (PR #10, open) on 2026-10-07.
+The 22 nested-response cases passed on both platforms. Itemized G0 disposition, remaining
+boundary evidence, manual accessibility and final owner acceptance remain open.
 
 ## Verification completion plan
 
@@ -456,3 +456,33 @@ for the test-file identity, commands, isolation, delegation usage and limitation
 
 Fresh full-SHA Windows/Ubuntu CI and owner acceptance remain pending for this new batch.
 The prepared human walkthrough remains PENDING; no Phase 5, G0 or Phase 6B completion is claimed.
+
+## Nested response CI confirmation — 2026-10-07
+
+Owner-dispatched [Actions run 37566851220](https://github.com/jiraphat-j/AgentSec/actions/runs/37566851220)
+(attempt 1) passed all four jobs on full SHA `453bc1c91c3e33a53ba946d1ae0f9ea763b2bd68`.
+Windows verification: 464 passed, 7 platform skips, 4 browser deselected; Ubuntu: 468 passed,
+3 platform skips, 4 deselected. Each had 92.13% coverage and one upstream deprecation warning.
+Both logs show all 22 new nested-response cases passed; each browser job passed four tests.
+Ruff, strict MyPy, package build and dependency audit also passed on both verification jobs.
+See the [full Phase 6 CI matrix](PHASE_6_VERIFICATION.md#nested-response-ci-confirmation--2026-10-07).
+
+This supersedes the preceding batch's CI-pending status for the tested SHA only. PR #10 is
+open, not merged; final owner review, remaining G0 evidence and the prepared human accessibility
+walkthrough remain open. No new test execution or CI dispatch was performed during recording.
+
+## Public response-byte limit evidence — 2026-10-07
+
+agy implemented and repaired the approved test-only batch; Codex reviewed the saved code and
+independently verified 22 ASCII/UTF-8 cases across nine paginated routes and two child routes.
+Exact 1 MiB responses preserve complete content; one byte over returns the fixed bounded error.
+Neighbors, headers, request recovery, error/log omission and unchanged catalog data passed.
+This adds partial P5 C10/P5-03 response-boundary evidence, not complete large-artifact
+retrievability, schema-valid loading, concurrency or accessibility acceptance.
+
+Final local snapshot: `453bc1c91c3e33a53ba946d1ae0f9ea763b2bd68` plus uncommitted
+`tests/test_dashboard_response_limits.py`, with no tracked runtime/dependency/CI changes.
+Networkless sandbox checks: 74 focused tests and 490 full nonbrowser tests passed; 92.13%
+coverage; final Ruff format/lint and strict MyPy passed. Platform skips and the upstream warning
+remain explicit in the [detailed record](PHASE_6_VERIFICATION.md#public-response-byte-verification--2026-10-07).
+New-head CI, final owner review, remaining G0 cases and the human walkthrough remain open.

@@ -1,13 +1,11 @@
 # Phase 6A verification record
 
-Status: **Actions run 37439310170 passed all four Windows/Ubuntu verification and browser jobs on
-full SHA `7ab1b1c556e3a00649b826018cffa98f6935d961` (PR #10, open) on 2026-10-06, confirming
-the three Windows reparse boundary test cases. The twelve reproduced live/offline discrepancies are
-repaired; earlier failures and Windows-CI pending statements are historical. Itemized G0 disposition, unusual cmd
-metacharacter temp-root residual, manual accessibility, Phase 6B G1, and final owner review remain open.**
-
-The additional 22-case nested-response batch passed local sandbox verification on 2026-10-07;
-fresh Windows/Ubuntu CI remains pending for that batch.
+Status: **Actions run 37566851220 passed all four Windows/Ubuntu verification and browser jobs on
+full SHA `453bc1c91c3e33a53ba946d1ae0f9ea763b2bd68` (PR #10, open) on 2026-10-07.
+All 22 nested-response cases passed on both platforms; Windows reparse cases remain passing.
+The twelve reproduced live/offline discrepancies are repaired; earlier failures and CI-pending
+statements are historical. Itemized G0 disposition, unusual cmd metacharacter temp-root residual,
+remaining boundary evidence, manual accessibility, Phase 6B G1 and final owner review remain open.**
 
 G0 Phase 5 deferral and G1 Phase 6A design approval were provided by the owner on 2026-09-22.
 On 2026-09-24 the owner authorized G2 test execution only inside a sandbox. On 2026-09-27 the owner
@@ -1110,8 +1108,8 @@ establish billed usage, Codex savings, or a speedup.
 
 ## Next G0 batch: nested response projection tests — prepared 2026-10-06
 
-Status: implemented and locally verified on 2026-10-07; fresh CI and owner acceptance remain
-open. See the dated completion record below. Existing artifact-redaction tests exercise
+Status: implemented, locally verified and confirmed by Windows/Ubuntu CI on 2026-10-07;
+owner acceptance remains open. See the dated completion and CI records below. Existing artifact-redaction tests exercise
 whole-artifact detail rejection; the API tests exercise successful nested pages and child
 lookups, but do not provide the dedicated unsafe nested-page/child-route matrix below.
 This is additional P5 C08/P5-02 and P6A C11 evidence, not completion of either row.
@@ -1254,3 +1252,122 @@ Actions and record each Windows/Ubuntu verify and browser job at its full SHA. M
 real 200% zoom, focus, contrast, screen-reader checks, remaining hostile/resource/mutation
 matrices, the `cmd` metacharacter temp-root residual, itemized G0 disposition and final owner
 acceptance remain open. This batch does not close G0 or authorize Phase 6B runtime/G1 work.
+
+## Nested response CI confirmation — 2026-10-07
+
+Verified [Actions run 37566851220](https://github.com/jiraphat-j/AgentSec/actions/runs/37566851220):
+owner `workflow_dispatch`, attempt 1, completed successfully on full SHA
+`453bc1c91c3e33a53ba946d1ae0f9ea763b2bd68`. PR #10 remains open and not merged.
+The tested commit includes the new test file from the recorded local snapshot; the preceding
+CI-pending statements are superseded for this exact SHA, not erased or extended to future heads.
+
+| Job | Job ID | Result | Pytest duration |
+|---|---|---|---|
+| `verify (windows-latest)` | 112616423306 | 464 passed, 7 platform skips, 4 browser deselected, 1 upstream warning; 92.13% coverage | 147.23s |
+| `verify (ubuntu-latest)` | 112616423326 | 468 passed, 3 platform skips, 4 browser deselected, 1 upstream warning; 92.13% coverage | 27.86s |
+| `dashboard-browser (windows-latest)` | 112616423124 | 4 passed | 5.37s |
+| `dashboard-browser (ubuntu-latest)` | 112616423334 | 4 passed | 5.49s |
+
+Both verification logs show `test_dashboard_nested_projection.py ......................`:
+all 22 new cases executed without skips on both platforms. Windows again ran the three named
+NTFS cases; its boundary module shows `.............ss........`, with only the two Linux symlink
+cases skipped there. Ubuntu skips the three Windows-only NTFS cases. The remaining Windows
+skips are existing Unix descriptor/capture symlink cases. The nonbrowser warning is the existing
+upstream Starlette/httpx deprecation, not a failed test.
+
+Each verification job also passed Ruff formatting (109 files), lint, strict MyPy (61 source
+files), wheel/sdist build and Python dependency audit (no known vulnerabilities found).
+Codex checked the public run metadata, four job conclusions and logs; no new tests, listener,
+CI dispatch, runtime modification or merge was performed while recording this evidence.
+
+Credit remains limited to the named test cases. Final owner full-diff acceptance, remaining
+hostile/field/error/resource/mutation evidence, unusual `cmd` metacharacter temp-root residual,
+human keyboard/zoom/focus/contrast/screen-reader walkthrough, itemized G0 disposition and Phase
+6B G1 remain open. A passing CI matrix does not close G0 or authorize Phase 6B implementation.
+
+## Next G0 batch: public nested response-byte limits — prepared 2026-10-07
+
+Status: implemented and locally verified below; fresh CI and final owner acceptance remain open.
+
+The owner requested continued G0 evidence completion. Existing exact/over response-byte tests
+call the private JSON helper; the public nested-route matrix checks redaction, not byte limits.
+Delegate only a new staged `tests/test_dashboard_response_limits.py` to agy, under the existing
+standing approval for verified non-sensitive scope and exact-file access. No source/dependency,
+socket, command-execution, hashing or policy changes are included.
+
+Planned checks: nine paginated routes and two child routes, each with ASCII and multibyte UTF-8
+text (22 cases). Construct synthetic in-memory catalogs; independently calculate compact JSON
+UTF-8 response bytes. Exactly 1 MiB must return the complete expected JSON without truncation;
+one additional ASCII byte must return HTTP 503 and the fixed `response_limit_exceeded` error.
+Assert security headers, safe neighbors with exact pagination/child IDs, recovery after repeated
+rejection, error/output/log omission of the large synthetic field and unchanged catalog data.
+Do not reduce the production bound, call private helpers, run a listener, or load host artifacts.
+
+Codex reviews the saved diff before focused/full nonbrowser, Ruff and strict MyPy checks in the
+existing networkless resource-bounded sandbox. Any needed sensitive product repair stops for
+concrete human review. This is partial P5 C10/P5-03 response-boundary evidence, not complete
+large-artifact retrievability, schema-valid loader, concurrency, hostile-content, accessibility
+or G0 acceptance. Preserve the uncommitted CI-record updates; no publication or CI dispatch.
+
+### Public response-byte verification — 2026-10-07
+
+agy implemented the staged test file and self-reviewed it. The initial 180-second call timed
+out without an edit; one resumed 300-second call saved the module and returned its review.
+Codex found missing context-managed client cleanup and incorrect imports, returned those
+narrow repairs to agy, and reviewed the resulting saved code before applying it. agy used only
+file tools, not commands or checks. Temporary exact-file grants were removed; original settings
+and trusted workspaces were verified unchanged. No broad trust or permission bypass was used.
+
+The 22 new cases independently measure compact JSON UTF-8 bytes through nine public paginated
+routes and two child routes, each with ASCII and multibyte text. All return exact, untruncated
+content at the actual 1 MiB response limit and fixed HTTP 503 `response_limit_exceeded` errors
+at one byte over. Safe neighbors, pagination/IDs, headers, repeated-rejection recovery, omitted
+large-field markers in errors/output/logs and unchanged catalog data passed. No private encoding
+helper or reduced cap is used. These are synthetic in-memory response tests, not loader/schema,
+all-large-artifact retrievability, concurrency, browser or human accessibility evidence.
+
+Tested snapshot: base `453bc1c91c3e33a53ba946d1ae0f9ea763b2bd68` plus the new uncommitted
+`tests/test_dashboard_response_limits.py`. Final test-file SHA-256:
+`8ef4d8bc83d2cbbf10532e10d9e59bddf08cd514fe62e8e954158cb909e8fc5c`.
+Tracked runtime, pre-existing tests, dependencies and CI are unchanged. Earlier uncommitted
+CI-record updates in these two verification documents are preserved.
+
+Checks ran in the same networkless WSL Ubuntu sandbox described in the preceding
+[local snapshot/isolation record](#tested-local-snapshot-and-isolation), with Python 3.13.15,
+read-only repository/environment mounts, private temporary files, 240-second wall/120-second
+CPU bounds, 1 GiB address-space limit and existing process/file-size/descriptor limits.
+
+```text
+/sandbox/venv/bin/python -m pytest -p no:cacheprovider -q --tb=short tests/test_dashboard_response_limits.py tests/test_dashboard_nested_projection.py tests/test_dashboard_api.py tests/test_dashboard_g0_boundaries.py
+/sandbox/venv/bin/python -m pytest -p no:cacheprovider -p pytest_cov.plugin --cov=agentsec --cov-report=term --cov-fail-under=90 -q --tb=short
+/sandbox/venv/bin/python -m ruff format --check --no-cache src tests
+/sandbox/venv/bin/python -m ruff check --no-cache src tests
+/sandbox/venv/bin/python -m mypy --cache-dir /tmp/mypy_cache
+```
+
+| Check | Observed result |
+|---|---|
+| Focused public-route/resource regressions | 74 passed, 3 Windows-only skips, 1 upstream warning; 10.15s |
+| Final full nonbrowser suite | 490 passed, 3 Windows-only skips, 4 browser deselected, 1 upstream warning; 44.11s |
+| Coverage | 92.13%, exceeding required 90% |
+| Final Ruff format / lint | 62 files already formatted / all checks passed |
+| Final strict MyPy | No issues in 62 source files |
+
+The first format/lint checks found a 101-column assertion. Codex applied only its mechanical
+line wrap after focused tests finished; the final full suite and all quality checks above
+include that wrap. Skips are the three NTFS cases; the warning is the existing Starlette/httpx
+deprecation. No browser, build, audit, host test or CI dispatch was run for this test-only batch.
+
+agy conversation `88aa8a82-d216-42e1-b958-cdf913b660e2` reports 166,078 cumulative total tokens
+over three turns (125,714 input, 40,364 output, including 33,359 thinking; 204,376 cache-read),
+and a cumulative CLI duration of 528.78s. Do not add the earlier 16,893 or 139,705 cumulative
+reports, or add thinking to output. These figures are not billed usage; no matched Codex-only
+benchmark exists, so no savings or speedup is claimed.
+
+The owner authorized committing and pushing this batch with the preceding CI-record updates.
+New-head Windows/Ubuntu CI,
+owner full-diff acceptance, remaining G0 matrices, the `cmd` temporary-path residual and human
+walkthrough remain open. Repository inspection found a manifest template and transient browser
+fixtures, not a retained reviewed multi-page manual fixture set; no dashboard was started.
+Prepare and review those fixtures before crediting manual checks. Phase 6B remains gated by
+itemized G0 disposition and its G1 design decision.
