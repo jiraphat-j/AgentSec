@@ -1,9 +1,9 @@
 # Phase 5 verification record
 
-Status: the latest test-only capture-boundary batch passed 446 non-browser tests at 92.13%
-coverage on 2026-10-03. The merged C07 follow-up separately passed four Chromium checks;
-complete C01–C13 acceptance evidence, a final
-reviewed revision, Windows/Linux CI, and project-owner acceptance remain pending.
+Status: GitHub Actions run 37439310170 (workflow_dispatch, attempt 1) passed Windows and Ubuntu verification and browser jobs on full SHA `7ab1b1c556e3a00649b826018cffa98f6935d961` (PR #10, open) on 2026-10-06, confirming named NTFS boundary cases (P5 C04 / P5-03). Itemized G0 disposition, manual accessibility, and project-owner acceptance remain open.
+
+The additional 22-case nested-response batch passed local sandbox verification on 2026-10-07;
+fresh Windows/Ubuntu CI remains pending for that batch.
 
 ## Verification completion plan
 
@@ -430,3 +430,29 @@ Use each prepared fixture and the approved local browser fixture controls. Inspe
 
 ### Handoff and G0 boundary
 All failures remain open findings under G0. Final G0 completion requires successful full-SHA Windows and Ubuntu CI runs alongside formal human owner acceptance, which remain independent of this manual walkthrough.
+
+## Windows reparse CI confirmation — 2026-10-06
+
+Public evidence from GitHub Actions [run 37439310170](https://github.com/jiraphat-j/AgentSec/actions/runs/37439310170) (`workflow_dispatch`, attempt 1, success) confirmed full SHA `7ab1b1c556e3a00649b826018cffa98f6935d961` on open PR #10 (source and tests unchanged since `4db44b7`). The Windows run passed all non-skipped tests in `tests/test_dashboard_g0_boundaries.py` (`.............ss........`), with the only two skips being Linux-only cases. All three Windows boundary cases passed: regular selected file acceptance, file symlink rejection, parent junction rejection, unchanged synthetic target bytes, and link cleanup. Credit is strictly limited to named NTFS cases P5 C04 / P5-03, not all reparse tags, filesystem races, or resource limits. For the full four-job CI matrix and exact evidence limitations, see [PHASE_6_VERIFICATION.md#windows-reparse-ci-confirmation--2026-10-06](PHASE_6_VERIFICATION.md#windows-reparse-ci-confirmation--2026-10-06).
+
+Remaining human, accessibility, and governance gates are kept open; neither Phase 5 nor G0 is complete. Itemized G0 disposition, complete C01–C13 acceptance evidence, final project-owner full-diff acceptance, Phase 6B G1, the unresolved unusual `cmd` metacharacter temp-root residual, the broader hostile/field/error/resource/mutation matrix, and manual accessibility verification (keyboard, narrow width, real 200% zoom, focus, contrast, screen-reader) remain open. Recorded CI results apply strictly to tested SHA `7ab1b1c556e3a00649b826018cffa98f6935d961` and do not apply to future documentation commits or merge; no new host tests or CI dispatch were performed. Historical pending statements are superseded, not erased.
+
+## Nested response projection evidence — 2026-10-07
+
+agy implemented and self-reviewed the approved 22-case nested API matrix; Codex reviewed the
+saved code, corrected import ordering and independently verified it in the existing networkless
+resource-bounded sandbox. Nine paginated routes and two child routes reject the synthetic
+packaged canary or forged closed prompt metadata while preserving exact safe responses,
+neighboring pages/children, request availability after repeated rejection, security headers,
+captured-output/log redaction and unchanged catalog data. Evidence is limited to in-memory
+response guards (P5 C08/P5-02), not loader/schema/provenance validation, DOM or accessibility.
+
+The tested local snapshot is base full SHA `7ab1b1c556e3a00649b826018cffa98f6935d961` plus
+the then-uncommitted `tests/test_dashboard_nested_projection.py`; tracked runtime/dependency/CI
+files are unchanged. Focused tests: 53 passed. Full nonbrowser suite: 468 passed, 3 Windows-only
+skips, 4 browser deselected, 1 upstream warning, 92.13% coverage. Ruff format/lint and strict
+MyPy passed. See the [Phase 6 verification record](PHASE_6_VERIFICATION.md#implementation-and-independent-sandbox-verification--2026-10-07)
+for the test-file identity, commands, isolation, delegation usage and limitations.
+
+Fresh full-SHA Windows/Ubuntu CI and owner acceptance remain pending for this new batch.
+The prepared human walkthrough remains PENDING; no Phase 5, G0 or Phase 6B completion is claimed.
