@@ -136,22 +136,22 @@ def create_dashboard_app(catalog: DashboardCatalog, *, port: int = 8765) -> Fast
     ) -> JSONResponse:
         return _json({"error": {"code": "resource_limit_exceeded"}}, 503)
 
-    @app.get("/", include_in_schema=False)
+    @app.api_route("/", methods=["GET", "HEAD"], include_in_schema=False)
     async def index() -> Response:
         return _asset("index.html", "text/html")
 
-    @app.get("/assets/styles.css", include_in_schema=False)
+    @app.api_route("/assets/styles.css", methods=["GET", "HEAD"], include_in_schema=False)
     async def styles() -> Response:
         return _asset("styles.css", "text/css")
 
-    @app.get("/assets/app.js", include_in_schema=False)
+    @app.api_route("/assets/app.js", methods=["GET", "HEAD"], include_in_schema=False)
     async def script() -> Response:
         return _asset("app.js", "text/javascript")
 
     def page(offset: int, limit: int) -> tuple[int, int]:
         return offset, limit
 
-    @app.get("/api/v1/catalog")
+    @app.api_route("/api/v1/catalog", methods=["GET", "HEAD"])
     async def catalog_route(
         offset: int = Query(0, ge=0), limit: int = Query(50, ge=1, le=200)
     ) -> JSONResponse:
@@ -166,7 +166,7 @@ def create_dashboard_app(catalog: DashboardCatalog, *, port: int = 8765) -> Fast
         "rule-tests": (ArtifactKind.RULE_TEST,),
     }
 
-    @app.get("/api/v1/{collection}")
+    @app.api_route("/api/v1/{collection}", methods=["GET", "HEAD"])
     async def list_records(
         collection: str,
         offset: int = Query(0, ge=0),
@@ -177,14 +177,14 @@ def create_dashboard_app(catalog: DashboardCatalog, *, port: int = 8765) -> Fast
             raise DashboardNotFoundError("collection not found")
         return _json(service.list_kind(kinds, offset, limit))
 
-    @app.get("/api/v1/{collection}/{item_id}")
+    @app.api_route("/api/v1/{collection}/{item_id}", methods=["GET", "HEAD"])
     async def record_detail(collection: str, item_id: str) -> JSONResponse:
         kinds = route_kinds.get(collection)
         if kinds is None:
             raise DashboardNotFoundError("collection not found")
         return _json(service.detail(item_id, kinds))
 
-    @app.get("/api/v1/runs/{item_id}/events")
+    @app.api_route("/api/v1/runs/{item_id}/events", methods=["GET", "HEAD"])
     async def events_route(
         item_id: str,
         offset: int = Query(0, ge=0),
@@ -196,11 +196,11 @@ def create_dashboard_app(catalog: DashboardCatalog, *, port: int = 8765) -> Fast
             service.events(item_id, offset, limit, trace_id=trace_id, event_type=event_type)
         )
 
-    @app.get("/api/v1/runs/{item_id}/events/{event_id}")
+    @app.api_route("/api/v1/runs/{item_id}/events/{event_id}", methods=["GET", "HEAD"])
     async def event_route(item_id: str, event_id: str) -> JSONResponse:
         return _json(service.event(item_id, event_id))
 
-    @app.get("/api/v1/runs/{item_id}/timeline")
+    @app.api_route("/api/v1/runs/{item_id}/timeline", methods=["GET", "HEAD"])
     async def report_timeline_route(
         item_id: str,
         offset: int = Query(0, ge=0),
@@ -208,15 +208,17 @@ def create_dashboard_app(catalog: DashboardCatalog, *, port: int = 8765) -> Fast
     ) -> JSONResponse:
         return _json(service.report_timeline(item_id, offset, limit))
 
-    @app.get("/api/v1/investigations/{item_id}/alerts/{alert_id}")
+    @app.api_route("/api/v1/investigations/{item_id}/alerts/{alert_id}", methods=["GET", "HEAD"])
     async def alert_route(item_id: str, alert_id: str) -> JSONResponse:
         return _json(service.investigation_child(item_id, "alerts", alert_id))
 
-    @app.get("/api/v1/investigations/{item_id}/incidents/{incident_id}")
+    @app.api_route(
+        "/api/v1/investigations/{item_id}/incidents/{incident_id}", methods=["GET", "HEAD"]
+    )
     async def incident_route(item_id: str, incident_id: str) -> JSONResponse:
         return _json(service.investigation_child(item_id, "incidents", incident_id))
 
-    @app.get("/api/v1/{collection}/{item_id}/{nested_collection}")
+    @app.api_route("/api/v1/{collection}/{item_id}/{nested_collection}", methods=["GET", "HEAD"])
     async def nested_route(
         collection: str,
         item_id: str,

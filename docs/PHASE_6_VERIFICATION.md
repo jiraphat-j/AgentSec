@@ -1,9 +1,17 @@
 # Phase 6A verification record
 
-Status: **The owner-approved C07 follow-up passed 429 non-browser tests at 92.04% coverage,
-four Chromium checks, quality, offline build and fresh installed-package checks on 2026-10-03.
-The twelve reproduced live/offline discrepancies are repaired; earlier failed results are historical.
-G0, other residual cases, manual accessibility, exact-commit CI and final review remain open.**
+Status: **Actions run 37628097651 passed all four Windows/Ubuntu verification and browser jobs on
+full SHA `6aa9735ad273d9c2b93ee6943df8bdb814a1a7f2` (PR #10, open) on 2026-10-07.
+All 22 public response-byte cases passed on both platforms; Windows reparse cases remain passing.
+The twelve reproduced live/offline discrepancies are repaired; earlier failures and CI-pending
+statements are historical. Itemized G0 disposition, unusual cmd metacharacter temp-root residual,
+remaining boundary evidence, manual accessibility, Phase 6B G1 and final owner review remain open.**
+
+Latest local update (2026-10-10): the owner approved the concrete HEAD routing repair for
+networkless sandbox execution. All 45 focused cases and 535 full nonbrowser tests pass;
+coverage is 92.13%. Final formatting, lint and strict MyPy pass. The original HEAD failure is
+fixed on this tested snapshot. New-head CI, Host-port wording and remaining G0 gates
+remain open; earlier green CI does not cover this batch.
 
 G0 Phase 5 deferral and G1 Phase 6A design approval were provided by the owner on 2026-09-22.
 On 2026-09-24 the owner authorized G2 test execution only inside a sandbox. On 2026-09-27 the owner
@@ -854,3 +862,776 @@ This closes the twelve demonstrated discrepancies and the named repair checks, n
 Broader hostile-content/field/failure/mutation/resource-work matrices, Windows junction/reparse
 checks, manual accessibility, human-dispatched exact-reviewed-commit CI and final owner full-diff
 acceptance remain open. Historical 379/twelve-failed results above are superseded, not erased.
+
+## Post-merge G0 capture-boundary batch — 2026-10-03
+
+The owner reported merging PR #9 and asked to continue. GitHub confirmed merge
+`c165b3d203998585193711e67895e64bf4321258`; fetched `origin/main` matched. The existing clean
+managed worktree was reused on `codex/g0-dashboard-evidence`, preserving unrelated primary
+checkout edits. Public Actions queries for reviewed head `507e1fd585bc11040ab7df1af41795eb4e63d555`
+and merge returned zero runs. Neither merge nor local results establishes exact-commit CI.
+
+The next batch adds only `tests/test_dashboard_capture_boundaries.py` plus evidence records.
+Production source/resources, browser tests, dependencies and CI remain byte-for-byte unchanged
+from that merge. The [Phase 5 record](PHASE_5_VERIFICATION.md#capture-boundary-continuation-after-pr-9--2026-10-03)
+maps the seventeen public-loader/descriptor/SQLite-cleanup/snapshot cases and explicit limits.
+This is continued G0 evidence completion under the existing sandbox-only authorization, not
+Phase 6B G1/G2 approval or a new sensitive runtime repair.
+
+Final source/test manifest: **87 paths**, SHA-256
+`3a261dfb7f7472cb271867f872542d0bbddb30fb2c1df0249ba159f10547e983`.
+New module SHA-256: `aebc5e74b552e5d148bc7e789455f35e70c23d7d426ab7293fdf76a6b572bad8`.
+Use the existing sorted path/content manifest convention; this is local snapshot evidence.
+
+The new focused command is:
+
+```text
+python -m pytest -p no:cacheprovider -q tests/test_dashboard_capture_boundaries.py --tb=short
+```
+
+Quality/full regression reuse the preceding section's commands. All execution remains inside
+the cleared-environment networkless WSL2 bubblewrap sandbox, read-only checkout/tmpfs outputs:
+CPU 120 s/wall 240 s/address 1 GiB/processes 128/descriptors 256/64 MiB per file. Static formatting
+targeted only the new module through a temporary writable mount; no product code ran in that
+step. No host tests/scenarios, downloads, dependency changes, audit, listener/browser/build/
+installed rerun, CI dispatch, merge or Phase 6B runtime occurred in this continuation. Earlier
+package/four-browser results remain historical evidence for the merged product snapshot; they
+do not demonstrate inclusion of this new test module in a fresh sdist.
+
+Final results on that 87-path snapshot: **17 focused passed in 2.78 s**, **446 non-browser
+passed, four browser tests deselected in 60.98 s**, **92.13% coverage** (3,356 statements/264
+missed). Ruff format/lint and strict MyPy passed (60 files). One upstream Starlette/httpx warning
+remains. Initial strict typing identified two imported-alias accesses in the new test module;
+explicit imports resolved them before the final run. Independent review requested timestamp-
+isolated inode controls and Unix-only open-file annotations; both were added, and final review
+reported no blockers. No production defect or sensitive source change was found in this batch.
+
+Broader G0 hostile/field/error/resource/concurrency cases, Windows reparse evidence, manual
+accessibility, human-dispatched exact-reviewed-commit CI and final owner acceptance remain open.
+
+## Windows CI test fixes — 2026-10-03
+
+The owner approved applying and pushing these fixes on `codex/g0-dashboard-evidence`, the
+existing PR #10 branch. Human-dispatched [Actions run 37096511551](https://github.com/jiraphat-j/AgentSec/actions/runs/37096511551)
+tested `70e36c69d5557fe38710e112c3e74cd4b91680c3`: Ubuntu verification and both Chromium jobs
+passed; Windows verification failed with **1 failed, 436 passed, 7 skipped, 4 deselected,
+4 errors and one warning**. Windows build/audit were skipped after the test failure.
+
+Two oversized resource cases generated byte-filled pytest IDs exceeding Windows' 32,767-character
+environment-value limit. Their setup and teardown raised while assigning `PYTEST_CURRENT_TEST`,
+before the rejection assertions could run. Both resource decorators now use `invalid-utf8` and
+`oversized` IDs; payloads and assertions are unchanged. The linked direct-investigation positive
+also exceeded the real five-second scenario deadline. Its evidence-fixture helper now injects a
+fixed monotonic clock through the existing runner API. Production clocks and limits are unchanged;
+separate 5.0/5.001-second tests still check completion and safe deadline failure under both profiles.
+
+Tested base: `70e36c69d5557fe38710e112c3e74cd4b91680c3`. Final source/test manifest: **87 paths**,
+SHA-256 `339d27a794108795044867b0dc85f21341f8a7f2f588075d07d30567919bcd79`, using the existing
+sorted path/content convention. This identifies the local snapshot, not a Windows CI result.
+
+Commands inside the established sandbox:
+
+```text
+python -m pytest -p no:cacheprovider --collect-only -q tests/test_contracts_and_events.py -k rejects_invalid_or_oversized_text
+python -m pytest -p no:cacheprovider -q tests/test_contracts_and_events.py tests/test_direct_evidence_boundaries.py tests/test_phase6a_g0_failures.py::test_direct_deadline_at_and_over_bound_has_safe_finalization --tb=short
+python -m pytest -p no:cacheprovider -p pytest_cov.plugin --cov=agentsec --cov-report=term --cov-fail-under=90 -q --tb=short
+python -m ruff format --check --no-cache src tests
+python -m ruff check --no-cache src tests
+python -m mypy --no-incremental --cache-dir /tmp/mypy src tests
+```
+
+All four resource node IDs collected with short labels. Focused checks: **83 passed in 9.39 s**.
+Full non-browser: **446 passed, four browser tests deselected in 51.00 s**, **92.13% coverage**
+(3,356 statements/264 missed), one upstream Starlette/httpx warning. Format/lint and strict MyPy
+(60 files) passed. Initial format check found mixed line endings from the patch; Ruff normalized
+only the edited test files before the full run. Supplemental read-only review found no blockers.
+
+Runtime remained inside networkless WSL2 Ubuntu/CPython 3.13.15 bubblewrap with cleared environment,
+read-only checkout and tmpfs outputs: CPU 120 s/wall 240 s/address 1 GiB/processes 128/descriptors
+256/64 MiB per file. Formatting alone used a temporary writable mount without executing project
+code. No host tests/scenarios, downloads, browser/build/install/audit rerun, CI dispatch, merge or
+Phase 6B runtime occurred. Source, dependencies, CI and browser tests are unchanged. Windows repair
+confirmation requires a fresh human-dispatched run on the pushed head. Other G0 gates remain open.
+
+## Windows timing fixture follow-up — 2026-10-06
+
+The owner's next human-dispatched [Actions run 37429535768](https://github.com/jiraphat-j/AgentSec/actions/runs/37429535768)
+tested `51ad4bba22e2863dcb9be030ebf867c44f8a949f`. Ubuntu verification and both browser jobs
+passed. Windows format/lint/type passed, then tests reported **3 failed, 436 passed, 7 skipped,
+4 deselected, one warning**. Build/audit were skipped. The earlier oversized pytest IDs now ran
+without environment-value errors.
+
+The failed suite expectation test returned `status=partial`, `children=5/6`, and CLI exit 1 rather
+than the expected completed assertion failure and exit 2. Two other fixture runs raised
+`ScenarioDeadlineExceeded` before reaching their overwrite and historical timing assertions.
+The three tests now inject a fixed monotonic clock through the existing runner/evaluation
+dependency; the CLI test patches only its `EvaluationService` construction. Test payloads,
+expectations and production limits are unchanged. Dedicated scenario and evaluation deadline
+boundary tests still use controlled at/over-limit clocks.
+
+Tested base: `51ad4bba22e2863dcb9be030ebf867c44f8a949f`. Local source/test manifest: **87 paths**,
+SHA-256 `129ad6bec9eedde06c6e0eb323509cfed46f0d4c94d8e2a80b13e85907945684` under the sorted
+path/content convention. In the established cleared-environment, networkless WSL2 Ubuntu/CPython
+3.13.15 bubblewrap sandbox, the three repaired cases plus eight dedicated deadline cases passed
+(**11 passed in 3.77 s**). The full non-browser suite passed **446 tests, four browser tests
+deselected in 63.04 s**, with **92.13% coverage** (3,356 statements/264 missed) and the existing
+Starlette/httpx warning. Ruff format/lint and strict MyPy passed for 60 files. Ruff normalized
+the two edited files' line endings before the final check; that formatter did not execute code.
+
+The focused command selected those three failing node IDs and these existing boundary cases:
+`test_direct_deadline_at_and_over_bound_has_safe_finalization`,
+`test_direct_suite_deadline_at_and_over_actual_bound`,
+`test_deadline_failure_records_no_successful_report`, and
+`test_evaluation_deadline_accounts_for_every_not_run_child`. Full/quality commands and sandbox
+bounds match the preceding section. No host scenario execution, browser/build/install/audit rerun,
+CI dispatch or merge occurred. Windows confirmation and the other G0 gates remain open.
+
+## Green CI and prepared Windows reparse evidence — 2026-10-06
+
+[Actions run 37431200546](https://github.com/jiraphat-j/AgentSec/actions/runs/37431200546)
+tested `ba9b9f1307affb88c617fc36e1a6cf4a4fd2c160`. The Ubuntu and Windows `verify` jobs and
+both `dashboard-browser` jobs completed successfully, including build/audit in both verify jobs.
+PR #10 remains open. This confirms the previous timing-fixture fix on that head; it does not
+retroactively validate earlier merged revisions or close the remaining G0 acceptance matrix.
+
+The next batch prepares only `tests/test_dashboard_g0_boundaries.py` Windows cases and evidence
+records. The positive case accepts a regular selected file. The negatives select a file symlink
+and a parent junction to synthetic targets outside the manifest root but inside `tmp_path`;
+they assert link/reparse rejection, unchanged target bytes and link-node cleanup. Junction setup
+uses `subprocess.run` with fixed `cmd /d /c mklink /J` arguments, a ten-second bound, captured
+output, and no `shell=True`. Setup failures remain failures rather than skips. Linux explicitly
+skips these Windows-only cases. The [security review](PHASE_6_SECURITY_REVIEW.md#windows-reparse-test-proposal--2026-10-06)
+contains the human gate for this new command invocation.
+
+Prepared base HEAD: `ba9b9f1307affb88c617fc36e1a6cf4a4fd2c160`. The source/test manifest has
+87 paths, SHA-256 `f627f25fde272337d920b33dd509d98ca848710a7b449062c70e9ff3724a999c` under the
+same sorted path/content convention. Static preflight passed: Ruff format (60 files), Ruff lint,
+strict MyPy (60 files), and `git diff --check`. The owner authorized the concrete test diff on
+2026-10-06. In the isolated networkless Linux sandbox, the focused G0 boundary file passed
+with 20 passed and 3 Windows-only skips. The full nonbrowser suite passed with 446 passed,
+3 skips, 4 browser deselections, one upstream Starlette/httpx deprecation warning and 92.13%
+coverage. Neither run invoked `cmd` or tested Windows reparse behavior. No new scenario,
+browser, build, installed-package check or CI run has executed on this diff. The owner must
+dispatch Actions on the new PR head; record all four job results before crediting Windows evidence.
+Windows reparse, broader hostile/resource matrices, manual accessibility and final owner acceptance
+remain open until that evidence is observed.
+
+## Gemini high delegation trial — 2026-10-06
+
+The owner requested a second `agy` trial to reduce Codex usage while retaining quality and
+potentially improving turnaround. PR #10 was still open at
+`4db44b7e8c203c7c9ce6d44d796570b75abf325c`; a read-only Actions query found no manual run on
+that SHA at the time of this trial. This batch prepares documentation, not Phase 6B runtime.
+
+The delegated task reviewed the three Windows catalog tests and drafted the remaining human
+C11/C12 walkthrough from supplied dashboard HTML/CSS/JavaScript and test/resolver snippets.
+The first call used `gemini-3.1-pro-high`, `--effort high`, `--mode plan`, `--sandbox`, JSON
+output and a 180-second print timeout. The supplied bundle was 29,889 characters. Prompts
+required advisory output only, with no additional file reads, editing, commands or tests.
+No test execution was requested or reported by `agy`; the CLI's `--sandbox` flag was not used
+as evidence of the repository's networkless WSL isolation.
+
+| CLI report | Duration (s) | Input tokens | Output tokens | Thinking tokens | Total tokens |
+|---|---:|---:|---:|---:|---:|
+| Earlier Flash Low proposal, separate smaller task | 7.54 | 14,180 | 736 | Not recorded | 14,916 |
+| Initial Pro High response, one turn | 155.49 | 24,284 | 20,439 | 18,874 | 44,723 |
+| Resumed conversation after Flash High correction, two turns | 353.74 | 76,425 | 28,131 | 25,678 | 104,556 |
+
+These are CLI-reported fields. The resumed response reports two conversation turns; do not add
+its counters to the first response or treat its duration as an independently timed correction
+call. Thinking tokens are shown separately as reported, not added to the total. A rejected
+attempt to combine `gemini-3.1-pro-high` with medium effort reported zero tokens; the correction
+used `gemini-3.8-flash-high` with high effort instead.
+
+Codex checked the caller and UI source, rejected the unresolved-manifest-root finding (the
+caller already resolves the manifest), and corrected the draft's reflow, state coverage,
+labels, report-only behavior and C11/C12 classification. The Windows symlink privilege note
+describes a setup limitation; setup failures must still fail visibly. The unusual temporary-path
+command parsing concern is retained in the [security review](PHASE_6_SECURITY_REVIEW.md#gemini-review-follow-up--2026-10-06),
+without applying the unverified quoting suggestion or invoking Windows commands.
+
+The reviewed draft is now the [prepared human walkthrough](PHASE_5_VERIFICATION.md#human-accessibility-walkthrough--prepared-2026-10-06).
+All its results are PENDING; missing fixtures must be BLOCKED. This trial produced a useful
+document but needed correction. Different task sizes and unavailable comparable Codex token
+counts prevent a token-savings or speedup claim. No product performance changed. Runtime and
+tests are unchanged from `4db44b7`; documentation links and `git diff --check` are the applicable
+checks. Windows evidence, manual checks, other G0 rows and owner acceptance remain open.
+
+## Windows reparse CI confirmation — 2026-10-06
+
+Verified public evidence: [GitHub Actions run 37439310170](https://github.com/jiraphat-j/AgentSec/actions/runs/37439310170) (`workflow_dispatch`, attempt 1, success); tested full SHA `7ab1b1c556e3a00649b826018cffa98f6935d961`; PR #10 open (not merged). Tested source and tests are unchanged since `4db44b7`. Historical pending statements are superseded, not erased.
+
+### Four-job CI matrix
+
+| Job | Job ID | Status | Pytest duration | Details |
+|---|---|---|---|---|
+| `verify (windows-latest)` | 112188820811 | Success | 113.70s | 442 passed, 7 Linux/Unix-only skips, 4 browser deselected, 1 upstream Starlette/httpx warning, 92.13% coverage. Ruff format (108 files), Ruff lint, MyPy (60 files), wheel/sdist build, Python audit (no known vulnerabilities) all pass. |
+| `verify (ubuntu-latest)` | 112188821045 | Success | 29.75s | 446 passed, 3 Windows-only skips, 4 deselected, 1 upstream warning, 92.13% coverage. Ruff format (108 files), Ruff lint, MyPy (60 files), wheel/sdist build, Python audit (no known vulnerabilities) all pass. |
+| `dashboard-browser (windows-latest)` | 112188821176 | Success | 5.34s | 4 passed |
+| `dashboard-browser (ubuntu-latest)` | 112188821023 | Success | 5.57s | 4 passed |
+
+### Windows reparse test log confirmation
+
+Windows test log execution: `tests/test_dashboard_g0_boundaries.py .............ss........`
+
+- Only skips in module are 2 Linux cases.
+- All 3 Windows cases therefore passed:
+  1. Regular selected file acceptance
+  2. File symlink rejection
+  3. Parent junction rejection
+- Unchanged synthetic target bytes and link cleanup confirmed.
+
+### Exact evidence limitations and open gates
+
+- **Credit boundary**: Credit only named NTFS cases P5 C04 / P5-03 (the 3 named Windows cases); does not credit all reparse tags, filesystem races, or resource exhaustion.
+- **Unresolved residuals**: Unusual `cmd` metacharacter temp-root residual remains unresolved.
+- **Testing matrix gaps**: Broader hostile, field, error, resource, and mutation matrix remains open.
+- **Accessibility**: Manual keyboard navigation, narrow width, real 200% zoom, focus, contrast, and screen-reader testing remain open.
+- **Governance / Gate state**:
+  - Do not mark phases or G0 complete.
+  - Final owner full-diff acceptance, itemized G0 disposition, and Phase 6B G1 remain open.
+  - Run evidence applies to tested SHA `7ab1b1c556e3a00649b826018cffa98f6935d961`, not future doc commits or merge; no new host tests or CI dispatch.
+- **Related Phase 5 record**: [PHASE_5_VERIFICATION.md#windows-reparse-ci-confirmation--2026-10-06](PHASE_5_VERIFICATION.md#windows-reparse-ci-confirmation--2026-10-06).
+
+### Delegation and documentation verification
+
+agy implemented the approved status/evidence excerpts in a staging folder and returned a
+self-review; Codex reviewed the saved changes against the public run and job logs, corrected
+the table heading to identify pytest durations rather than whole-job durations, and applied
+only the accepted sections while preserving historical records. Exact-file read/write grants
+were owner-approved and removed after the task; existing settings and trusted workspaces were
+preserved. No permission bypass, repository trust grant, host test, scenario execution or new
+CI dispatch was used. `git diff --check` and the new relative-link/heading checks passed;
+only the two verification documents changed. Runtime/tests/CI files remain unchanged from
+the tested revision, so this documentation-only batch did not rerun runtime checks.
+
+The initial full-document attempt timed out, the smaller retry was denied a file-read permission,
+and the first approved edit turn timed out with a partial Phase 5 edit. Those attempts are not
+successful evidence updates. The resumed repair completed both files and self-review. Its CLI
+reported two conversation turns and 171,458 total tokens; that cumulative value must not be
+added to the prior 50,031-token partial report from the same conversation. These reports do not
+establish billed usage, Codex savings, or a speedup.
+
+## Next G0 batch: nested response projection tests — prepared 2026-10-06
+
+Status: implemented, locally verified and confirmed by Windows/Ubuntu CI on 2026-10-07;
+owner acceptance remains open. See the dated completion and CI records below. Existing artifact-redaction tests exercise
+whole-artifact detail rejection; the API tests exercise successful nested pages and child
+lookups, but do not provide the dedicated unsafe nested-page/child-route matrix below.
+This is additional P5 C08/P5-02 and P6A C11 evidence, not completion of either row.
+
+Delegate only `tests/test_dashboard_nested_projection.py` to agy for implementation and
+self-review in a staging folder, with Codex reviewing and applying the accepted diff and
+performing final verification. The earlier file-access approval covered only two staged
+verification documents. On 2026-10-06 the owner additionally gave standing approval for scoped,
+non-sensitive agy delegation/access after Codex verifies the scope. That covers this single
+staged test file, not broad repository trust, shell permissions or a waiver of sensitive G2
+review. Supply only relevant public source/test context; no dependency installation or sensitive
+implementation. Remove the temporary exact-file grants after the task.
+
+Planned observable checks (22 parameterized cases):
+
+- Nine paginated routes: investigation alerts/incidents/rule-evaluations, evaluation
+  children/metrics/pairs/confusion-counts/timing, and report-only run timeline. Test each with
+  a packaged synthetic canary and separately forged closed prompt metadata in a nested value.
+- Two individual child routes: investigation alert and incident, with both unsafe variants.
+- For every case, first demonstrate the equivalent safe response, then require HTTP 503 and
+  the exact `unsafe_projection_rejected` error for the selected unsafe response. Check security
+  headers and absence of the synthetic unsafe value from response, captured output and logs.
+- For paginated routes, safe neighboring pages must retain exact offsets/limits/counts and
+  values before and after the rejected page. Repeated failures must not exhaust request capacity.
+  Confirm the in-memory input catalog remains unchanged throughout.
+
+Use directly constructed synthetic catalogs and in-process `TestClient`, not a real listener,
+scenario execution, live credential, host resource, shell or external request. These checks
+exercise API response guards after in-memory construction; they do not establish public-loader
+schema/provenance validity, browser DOM behavior or manual accessibility.
+
+Codex verification will use the existing networkless resource-bounded sandbox: focused new
+tests with existing API/artifact-redaction regressions, full nonbrowser tests, Ruff format/lint
+and strict MyPy. Existing sandbox-only G0 authorization covers unchanged-product checks;
+any demonstrated sensitive product repair stops for a concrete human review before execution.
+Record actual commands, snapshot identity and outcomes after verification. No new runtime
+execution, CI dispatch, publication or Phase 6B implementation is claimed by this plan.
+
+### Bounded delegation attempt — 2026-10-06
+
+The initial agy call and one resumed retry both reached their 180-second print timeout
+without saving test code or returning a self-review. The staged file remained an 85-byte
+docstring stub; no test file was applied to the repository and no project tests were run.
+An empty response with CLI status `SUCCESS` is not implementation or verification evidence.
+
+Both calls used `gemini-3.8-flash-high`, high effort, `accept-edits`, terminal sandbox mode
+and only two exact-file read/write grants. The log confirmed those grants loaded but did
+not establish why the task stalled. No broader permission or bypass was attempted. The
+temporary grants were removed, and the original settings values were verified unchanged.
+
+Conversation `6d219198-0c94-4599-ba3a-baeb3c4fe4c7` reported 30,722 cumulative total tokens
+across two turns, including the earlier 15,404-token report; do not add those reports
+together. This unsuccessful attempt provides no savings or speedup claim. The planned
+22-case batch remains unimplemented, pending an agy configuration diagnosis or an
+owner-selected implementation fallback.
+
+### Implementation and independent sandbox verification — 2026-10-07
+
+The owner selected agy rather than Codex implementation. Read-only diagnosis found that the
+earlier conversation reached a file-read tool, then stalled without an edit. Startup sign-in
+warnings were followed by successful silent authentication; they do not establish a persistent
+authentication failure. A fresh no-tool response succeeded, then a bounded file-tool probe
+read and saved a harmless comment in the same approved staging file. A fresh implementation
+conversation subsequently saved the complete module and returned a self-review. The successful
+retry used live `stream-json` output and omitted `--disable-slash-commands`; this sequence does
+not prove which difference, if any, caused recovery.
+
+Codex inspected the saved implementation against the public API and projection guard, corrected
+one import-order issue missed by agy's self-review, and applied only
+`tests/test_dashboard_nested_projection.py`. The 22 collected cases cover the planned nine
+paginated routes and two child routes with both unsafe variants, exact safe controls and
+neighbors, ten fixed-response rejections per case, security headers, captured-output/log leak
+checks, and unchanged in-memory catalog data. This is response-guard evidence using synthetic
+directly constructed catalogs, not public-loader/schema/provenance or browser evidence.
+
+Temporary exact-file permissions were removed after delegation. Original settings values and
+trusted workspaces were verified unchanged. agy used only file inspection/edit tools; it did
+not run checks. No broad trust, shell grant, permission bypass, live secret, listener, dependency
+installation, sensitive runtime change, publication or CI dispatch was introduced.
+
+#### Tested local snapshot and isolation
+
+- Base full SHA: `7ab1b1c556e3a00649b826018cffa98f6935d961` on
+  `codex/g0-dashboard-evidence` (PR #10), plus the then-uncommitted new test file.
+- New test file SHA-256:
+  `92bfffa146d9414a87876bece2e6929db5782055a2f0418cb3409c6b8976f538`.
+- Tracked source, pre-existing tests, dependencies and CI configuration are unchanged from
+  that base. Two verification documents are also modified; they are not executable inputs.
+- Existing WSL Ubuntu sandbox, Python 3.13.15; `bwrap --unshare-all --clearenv`, read-only
+  `/work` repository and `/sandbox` existing dependency environment, private temporary
+  filesystem, no host home, credentials or network namespace access.
+- Each check used the existing wrapper: `timeout -k 5 240`, `prlimit --cpu=120
+  --as=1073741824 --nproc=128 --nofile=256 --fsize=67108864`. Python bytecode/cache writes
+  disabled or directed into private `/tmp`; pytest plugin autoload disabled.
+
+Commands below ran inside that sandbox from `/work` (not on the Windows host):
+
+```text
+/sandbox/venv/bin/python -m pytest -p no:cacheprovider -q --tb=short tests/test_dashboard_nested_projection.py tests/test_dashboard_api.py tests/test_dashboard_artifact_redaction.py
+/sandbox/venv/bin/python -m pytest -p no:cacheprovider -p pytest_cov.plugin --cov=agentsec --cov-report=term --cov-fail-under=90 -q --tb=short
+/sandbox/venv/bin/python -m ruff format --check --no-cache src tests
+/sandbox/venv/bin/python -m ruff check --no-cache src tests
+/sandbox/venv/bin/python -m mypy --cache-dir /tmp/mypy_cache
+```
+
+| Check | Observed result |
+|---|---|
+| Focused API/redaction regressions, including new matrix | 53 passed, 1 upstream warning, 5.11s |
+| Full nonbrowser suite | 468 passed, 3 Windows-only skips, 4 browser deselected, 1 upstream warning, 40.94s |
+| Coverage | 92.13%; required 90% passed |
+| Ruff format / lint | 61 files already formatted / all checks passed |
+| Strict MyPy | No issues in 61 source files |
+| Diff whitespace | `git diff --check` passed |
+
+The warning is the existing upstream Starlette/httpx deprecation. The three skips are the
+NTFS regular-file, selected-file-link and parent-junction cases, previously exercised by the
+recorded Windows CI on the base SHA; this Linux run is not fresh Windows evidence. No new
+browser/build/audit checks were required by this test-only change and none are claimed.
+
+#### Delegation usage and remaining gates
+
+CLI-reported totals for separate conversations (not billing or Codex usage):
+
+| Attempt | Conversation | Total tokens |
+|---|---|---|
+| Earlier two timed-out turns, cumulative | `6d219198-0c94-4599-ba3a-baeb3c4fe4c7` | 30,722 |
+| No-tool health check | `a47005ff-5aa8-466d-b8b7-c44322c28cc9` | 13,987 |
+| File-tool diagnostic | `59b59f75-1bed-42b7-93e2-ae88ed7f316f` | 45,668 |
+| Successful implementation and self-review | `109d5499-8154-464a-b447-f9b3e143fed0` | 102,177 |
+
+The successful implementation reported 177.95s, 74,482 input tokens, 27,695 output tokens
+(including 21,849 thinking tokens), and 36,751 cache-read tokens. Do not add thinking tokens
+to output or infer billed usage from these fields. The separate conversation totals sum to
+192,554, including diagnostics and failed attempts; no matched Codex-only benchmark exists
+for this batch, so no savings or speedup is claimed.
+
+The owner authorized committing and pushing this verified batch on 2026-10-07. After the new
+head is published, the owner must dispatch
+Actions and record each Windows/Ubuntu verify and browser job at its full SHA. Manual keyboard,
+real 200% zoom, focus, contrast, screen-reader checks, remaining hostile/resource/mutation
+matrices, the `cmd` metacharacter temp-root residual, itemized G0 disposition and final owner
+acceptance remain open. This batch does not close G0 or authorize Phase 6B runtime/G1 work.
+
+## Nested response CI confirmation — 2026-10-07
+
+Verified [Actions run 37566851220](https://github.com/jiraphat-j/AgentSec/actions/runs/37566851220):
+owner `workflow_dispatch`, attempt 1, completed successfully on full SHA
+`453bc1c91c3e33a53ba946d1ae0f9ea763b2bd68`. PR #10 remains open and not merged.
+The tested commit includes the new test file from the recorded local snapshot; the preceding
+CI-pending statements are superseded for this exact SHA, not erased or extended to future heads.
+
+| Job | Job ID | Result | Pytest duration |
+|---|---|---|---|
+| `verify (windows-latest)` | 112616423306 | 464 passed, 7 platform skips, 4 browser deselected, 1 upstream warning; 92.13% coverage | 147.23s |
+| `verify (ubuntu-latest)` | 112616423326 | 468 passed, 3 platform skips, 4 browser deselected, 1 upstream warning; 92.13% coverage | 27.86s |
+| `dashboard-browser (windows-latest)` | 112616423124 | 4 passed | 5.37s |
+| `dashboard-browser (ubuntu-latest)` | 112616423334 | 4 passed | 5.49s |
+
+Both verification logs show `test_dashboard_nested_projection.py ......................`:
+all 22 new cases executed without skips on both platforms. Windows again ran the three named
+NTFS cases; its boundary module shows `.............ss........`, with only the two Linux symlink
+cases skipped there. Ubuntu skips the three Windows-only NTFS cases. The remaining Windows
+skips are existing Unix descriptor/capture symlink cases. The nonbrowser warning is the existing
+upstream Starlette/httpx deprecation, not a failed test.
+
+Each verification job also passed Ruff formatting (109 files), lint, strict MyPy (61 source
+files), wheel/sdist build and Python dependency audit (no known vulnerabilities found).
+Codex checked the public run metadata, four job conclusions and logs; no new tests, listener,
+CI dispatch, runtime modification or merge was performed while recording this evidence.
+
+Credit remains limited to the named test cases. Final owner full-diff acceptance, remaining
+hostile/field/error/resource/mutation evidence, unusual `cmd` metacharacter temp-root residual,
+human keyboard/zoom/focus/contrast/screen-reader walkthrough, itemized G0 disposition and Phase
+6B G1 remain open. A passing CI matrix does not close G0 or authorize Phase 6B implementation.
+
+## Next G0 batch: public nested response-byte limits — prepared 2026-10-07
+
+Status: implemented, locally verified and confirmed by Windows/Ubuntu CI below;
+final owner acceptance remains open.
+
+The owner requested continued G0 evidence completion. Existing exact/over response-byte tests
+call the private JSON helper; the public nested-route matrix checks redaction, not byte limits.
+Delegate only a new staged `tests/test_dashboard_response_limits.py` to agy, under the existing
+standing approval for verified non-sensitive scope and exact-file access. No source/dependency,
+socket, command-execution, hashing or policy changes are included.
+
+Planned checks: nine paginated routes and two child routes, each with ASCII and multibyte UTF-8
+text (22 cases). Construct synthetic in-memory catalogs; independently calculate compact JSON
+UTF-8 response bytes. Exactly 1 MiB must return the complete expected JSON without truncation;
+one additional ASCII byte must return HTTP 503 and the fixed `response_limit_exceeded` error.
+Assert security headers, safe neighbors with exact pagination/child IDs, recovery after repeated
+rejection, error/output/log omission of the large synthetic field and unchanged catalog data.
+Do not reduce the production bound, call private helpers, run a listener, or load host artifacts.
+
+Codex reviews the saved diff before focused/full nonbrowser, Ruff and strict MyPy checks in the
+existing networkless resource-bounded sandbox. Any needed sensitive product repair stops for
+concrete human review. This is partial P5 C10/P5-03 response-boundary evidence, not complete
+large-artifact retrievability, schema-valid loader, concurrency, hostile-content, accessibility
+or G0 acceptance. Preserve the uncommitted CI-record updates; no publication or CI dispatch.
+
+### Public response-byte verification — 2026-10-07
+
+agy implemented the staged test file and self-reviewed it. The initial 180-second call timed
+out without an edit; one resumed 300-second call saved the module and returned its review.
+Codex found missing context-managed client cleanup and incorrect imports, returned those
+narrow repairs to agy, and reviewed the resulting saved code before applying it. agy used only
+file tools, not commands or checks. Temporary exact-file grants were removed; original settings
+and trusted workspaces were verified unchanged. No broad trust or permission bypass was used.
+
+The 22 new cases independently measure compact JSON UTF-8 bytes through nine public paginated
+routes and two child routes, each with ASCII and multibyte text. All return exact, untruncated
+content at the actual 1 MiB response limit and fixed HTTP 503 `response_limit_exceeded` errors
+at one byte over. Safe neighbors, pagination/IDs, headers, repeated-rejection recovery, omitted
+large-field markers in errors/output/logs and unchanged catalog data passed. No private encoding
+helper or reduced cap is used. These are synthetic in-memory response tests, not loader/schema,
+all-large-artifact retrievability, concurrency, browser or human accessibility evidence.
+
+Tested snapshot: base `453bc1c91c3e33a53ba946d1ae0f9ea763b2bd68` plus the new uncommitted
+`tests/test_dashboard_response_limits.py`. Final test-file SHA-256:
+`8ef4d8bc83d2cbbf10532e10d9e59bddf08cd514fe62e8e954158cb909e8fc5c`.
+Tracked runtime, pre-existing tests, dependencies and CI are unchanged. Earlier uncommitted
+CI-record updates in these two verification documents are preserved.
+
+Checks ran in the same networkless WSL Ubuntu sandbox described in the preceding
+[local snapshot/isolation record](#tested-local-snapshot-and-isolation), with Python 3.13.15,
+read-only repository/environment mounts, private temporary files, 240-second wall/120-second
+CPU bounds, 1 GiB address-space limit and existing process/file-size/descriptor limits.
+
+```text
+/sandbox/venv/bin/python -m pytest -p no:cacheprovider -q --tb=short tests/test_dashboard_response_limits.py tests/test_dashboard_nested_projection.py tests/test_dashboard_api.py tests/test_dashboard_g0_boundaries.py
+/sandbox/venv/bin/python -m pytest -p no:cacheprovider -p pytest_cov.plugin --cov=agentsec --cov-report=term --cov-fail-under=90 -q --tb=short
+/sandbox/venv/bin/python -m ruff format --check --no-cache src tests
+/sandbox/venv/bin/python -m ruff check --no-cache src tests
+/sandbox/venv/bin/python -m mypy --cache-dir /tmp/mypy_cache
+```
+
+| Check | Observed result |
+|---|---|
+| Focused public-route/resource regressions | 74 passed, 3 Windows-only skips, 1 upstream warning; 10.15s |
+| Final full nonbrowser suite | 490 passed, 3 Windows-only skips, 4 browser deselected, 1 upstream warning; 44.11s |
+| Coverage | 92.13%, exceeding required 90% |
+| Final Ruff format / lint | 62 files already formatted / all checks passed |
+| Final strict MyPy | No issues in 62 source files |
+
+The first format/lint checks found a 101-column assertion. Codex applied only its mechanical
+line wrap after focused tests finished; the final full suite and all quality checks above
+include that wrap. Skips are the three NTFS cases; the warning is the existing Starlette/httpx
+deprecation. No browser, build, audit, host test or CI dispatch was run for this test-only batch.
+
+agy conversation `88aa8a82-d216-42e1-b958-cdf913b660e2` reports 166,078 cumulative total tokens
+over three turns (125,714 input, 40,364 output, including 33,359 thinking; 204,376 cache-read),
+and a cumulative CLI duration of 528.78s. Do not add the earlier 16,893 or 139,705 cumulative
+reports, or add thinking to output. These figures are not billed usage; no matched Codex-only
+benchmark exists, so no savings or speedup is claimed.
+
+The owner authorized committing and pushing this batch with the preceding CI-record updates.
+New-head Windows/Ubuntu CI,
+owner full-diff acceptance, remaining G0 matrices, the `cmd` temporary-path residual and human
+walkthrough remain open. Repository inspection found a manifest template and transient browser
+fixtures, not a retained reviewed multi-page manual fixture set; no dashboard was started.
+Prepare and review those fixtures before crediting manual checks. Phase 6B remains gated by
+itemized G0 disposition and its G1 design decision.
+
+## Public response-byte CI confirmation — 2026-10-07
+
+Codex verified the public metadata, four job conclusions and logs for owner-dispatched
+[Actions run 37628097651](https://github.com/jiraphat-j/AgentSec/actions/runs/37628097651),
+attempt 1, completed successfully on full SHA `6aa9735ad273d9c2b93ee6943df8bdb814a1a7f2`.
+PR #10 remains open and not merged. Earlier CI-pending statements are superseded for this
+exact commit, not extended to future heads or untested acceptance criteria.
+
+| Job | Job ID | Result | Pytest duration |
+|---|---|---|---|
+| `verify (windows-latest)` | 112815003301 | 486 passed, 7 platform skips, 4 browser deselected, 1 upstream warning; 92.13% coverage | 150.53s |
+| `verify (ubuntu-latest)` | 112815003477 | 490 passed, 3 platform skips, 4 browser deselected, 1 upstream warning; 92.13% coverage | 33.92s |
+| `dashboard-browser (windows-latest)` | 112815003021 | 4 passed | 6.59s |
+| `dashboard-browser (ubuntu-latest)` | 112815003388 | 4 passed | 4.24s |
+
+Both verification logs show all 22 cases in `test_dashboard_response_limits.py` passed without
+skips. Windows boundary evidence again includes the three NTFS cases; Ubuntu skips those
+Windows-only cases. Windows skips seven existing Unix descriptor/symlink cases. The warning
+is the existing upstream Starlette/httpx deprecation, not a test failure.
+Both verification jobs also passed Ruff formatting (110 files), lint, strict MyPy (62 source
+files), wheel/sdist build and dependency audit (no known vulnerabilities found).
+
+Recording these results involved no test execution, listener, CI dispatch, runtime change or
+merge. These documentation updates remain uncommitted. Final owner full-diff acceptance,
+remaining hostile/field/error/resource/mutation matrices, the unusual `cmd` temporary-path
+residual, human keyboard/zoom/focus/contrast/screen-reader walkthrough, itemized G0 disposition
+and Phase 6B G1 remain open. Green CI does not close G0 or authorize Phase 6B implementation.
+
+## A1 request-boundary verification — 2026-10-10
+
+Status: **Test implementation saved and independently verified; A1 acceptance fails on HEAD.
+Not ready for publication or G0 closure.** Earlier green CI applies only to its recorded commit.
+
+The owner explicitly approved sending A1 internal interfaces and synthetic test specifications
+to Google Antigravity/Gemini, and allowed a longer generation window. Codex delegated only the
+staged `tests/test_dashboard_acceptance_matrix.py`, with no test execution or product edits.
+The 900-second print window completed rather than timing out. agy implemented and self-reviewed
+the file using file tools only. Codex reviewed its actual saved code and returned narrow repairs:
+the positive detail control must compare the full `{summary, data}` envelope; the catalog
+snapshot must use `tuple[CatalogRecord, ...]`; catalog output must match the exact expected page.
+agy saved those repairs. Codex then applied the file and only Ruff's mechanical assertion layout.
+No skip, xfail, alternate-shape fallback or product-boundary change was added.
+
+All 17 cases use a schema-valid synthetic failed `RuleTestReport` under pytest's temporary
+directory, validated through the public loader. Each has a successful detail GET control with
+exact summary/data equality. Probes cover configured and wrong-port Origin, absent/none/
+same-origin/same-site Fetch Metadata, HEAD, OPTIONS preflight, PUT/PATCH/DELETE, disabled docs/
+OpenAPI, raw-file paths and encoded static traversal. Before probe-status assertions, tests
+check fixed security headers, unchanged artifact/manifest bytes and whole-catalog snapshots.
+Rejected/raw responses omit the synthetic marker; preflight grants no CORS allow headers.
+Host hostname validation is not an exact Host-port check; that policy ambiguity remains separate.
+
+### Tested snapshot and commands
+
+- Base: `6aa9735ad273d9c2b93ee6943df8bdb814a1a7f2`, branch `codex/g0-dashboard-evidence`,
+  plus the new uncommitted test file. Existing verification-record edits are preserved.
+- Final test SHA-256: `e41f692e7515d0ae8117e97b496fe88c3f76ea8d8feddf3d8db34ce4f15b1cce`.
+- Runtime, pre-existing tests, dependencies and CI configuration are unchanged from that base.
+- Existing WSL Ubuntu environment `/home/godji/agentsec-g0-env.045vOJ`, Python 3.13.15;
+  `bwrap --unshare-all --clearenv`, read-only `/work` and `/sandbox`, private `/tmp`, no host
+  home/credential mounts or network access. Existing limits: 240s wall, 120s CPU, 1 GiB address
+  space, 128 processes, 256 descriptors and 64 MiB file size. No host scenario tests or listener.
+
+Commands ran from `/work` with `/sandbox/venv/bin/python` inside that wrapper:
+
+```text
+python -m pytest -p no:cacheprovider -q --tb=short tests/test_dashboard_acceptance_matrix.py
+python -m pytest -p no:cacheprovider -p pytest_cov.plugin --cov=agentsec --cov-report=term --cov-fail-under=90 -q --tb=short
+python -m ruff format --check --no-cache src tests
+python -m ruff check --no-cache src tests
+python -m mypy --cache-dir /tmp/mypy_cache
+```
+
+| Check | Observed result |
+|---|---|
+| Focused A1 | 16 passed, 1 failed, 1 upstream warning; 2.44s |
+| Full nonbrowser, including final formatting | 506 passed, 1 failed, 3 NTFS skips, 4 browser deselected, 1 upstream warning; 92.13% coverage; 57.22s |
+| Final Ruff format/lint | Pass; 63 files formatted, no lint findings |
+| Strict MyPy | Pass; 63 source files |
+
+The initial format check found two assertion-layout differences; the final checks and full
+suite include only those mechanical corrections. The warning is the existing upstream
+Starlette/httpx deprecation. No browser, build, dependency audit or fresh CI was run for A1.
+
+### Open HEAD disposition and delegation record
+
+Both pytest runs fail only `test_dashboard_a1_request_boundary[head-catalog]`: expected 200,
+observed 405. Its valid GET control, security headers and source/catalog immutability checks
+passed before that assertion. The middleware permits GET/HEAD, but the catalog route is
+registered using `@app.get`; source inspection supports a missing HEAD route, not a data leak
+or new host-execution surface. ADR-008 says the dashboard exposes GET/HEAD only; the prepared
+A1 contract expects a successful HEAD response. Keep this failed criterion visible until the
+owner approves a reviewed routing repair or explicitly clarifies/disposes of that expectation.
+Agy self-review and the owner's temporary delegation authority are not human review of a
+concrete HTTP-adapter repair. No product repair was implemented or executed.
+
+Conversation `fb43a95a-f789-4201-b2a8-50df768de087`, model `gemini-3.8-flash-high`, high effort:
+final CLI report 262,407 cumulative total tokens over two turns (214,758 input, 47,649 output
+including 38,537 thinking; 237,461 cache-read), cumulative reported duration 365.60s. Do not
+sum earlier cumulative reports, count thinking twice or infer billed cost/Codex savings.
+Temporary exact-file permission configuration was removed; original settings and existing
+trusted-workspace values were verified unchanged. Two normal read-only shell launches failed
+in MXC startup while enumerating `D:`; approved scoped reads succeeded afterward. No drive
+inspection/repair, host test or relaxation of the WSL test isolation occurred.
+
+A1 is partial, not accepted. A2–A8, the Windows command-root decision, manual accessibility,
+installed-package disposition, final owner acceptance and Phase 6B G1 remain open. The test
+and verification records remain uncommitted; no push, CI dispatch, PR mutation or merge.
+
+## A1 HEAD repair prepared — 2026-10-10
+
+**⚠️ Security Sensitive: Requires Mandatory Human Review. Historical preparation record;
+the owner subsequently approved networkless execution, recorded below.**
+
+The owner authorized continuing until the commit/push handoff. Codex prepared and reviewed
+the concrete routing repair below. Under ADR-008 and the repository security guide, approval
+to continue preparation does not replace human sign-off on this HTTP-adapter diff before
+execution. No pytest, listener or browser was run against the modified adapter. This sensitive
+repair stays with Codex, outside agy's approved non-sensitive implementation scope.
+
+### Concrete runtime diff for sign-off
+
+Only `src/agentsec/dashboard_api.py` changes at runtime: replace the twelve existing
+`@app.get(...)` decorators with the following registrations, in their existing order:
+
+```python
+@app.api_route("/", methods=["GET", "HEAD"], include_in_schema=False)
+@app.api_route("/assets/styles.css", methods=["GET", "HEAD"], include_in_schema=False)
+@app.api_route("/assets/app.js", methods=["GET", "HEAD"], include_in_schema=False)
+@app.api_route("/api/v1/catalog", methods=["GET", "HEAD"])
+@app.api_route("/api/v1/{collection}", methods=["GET", "HEAD"])
+@app.api_route("/api/v1/{collection}/{item_id}", methods=["GET", "HEAD"])
+@app.api_route("/api/v1/runs/{item_id}/events", methods=["GET", "HEAD"])
+@app.api_route("/api/v1/runs/{item_id}/events/{event_id}", methods=["GET", "HEAD"])
+@app.api_route("/api/v1/runs/{item_id}/timeline", methods=["GET", "HEAD"])
+@app.api_route("/api/v1/investigations/{item_id}/alerts/{alert_id}", methods=["GET", "HEAD"])
+@app.api_route(
+    "/api/v1/investigations/{item_id}/incidents/{incident_id}", methods=["GET", "HEAD"]
+)
+@app.api_route("/api/v1/{collection}/{item_id}/{nested_collection}", methods=["GET", "HEAD"])
+```
+
+This is a list of replacement decorators, not a runnable module. The actual source diff
+retains all handlers, route order, hidden-asset schema flags and response implementations.
+The method gate, Host/Origin/Fetch Metadata checks, query validation, concurrency accounting,
+file/path restrictions, projection/response limits and security headers are unchanged.
+No new route path, dependency, file access, socket, subprocess, external HTTP client or write
+operation is introduced. HEAD uses the existing GET handler, so it still performs the bounded
+read/projection work; this is not a new cheaper metadata-only endpoint. Empty response bodies
+and matching status/headers are acceptance assertions, not yet observed results for this patch.
+
+Prepared snapshot on `codex/g0-dashboard-evidence`, base
+`6aa9735ad273d9c2b93ee6943df8bdb814a1a7f2`, plus preserved uncommitted evidence edits:
+
+- Adapter SHA-256 (CRLF bytes): `35e2e151f969764f15bbbf8a437c0aa2f5482acd95cf3ff6f36f6158b1aed86e`.
+- Test SHA-256: `a6ec43b3864a3046f7f60ab24429b50bdadcbdd40bb55c9b38b4a55673bf45d8`.
+
+### Prepared regressions and static checks
+
+The original 17 A1 cases, including the failing HEAD assertion, remain without skip/xfail.
+Codex added 28 GET/HEAD comparison cases using the same synthetic temporary catalog:
+all twelve route patterns, correct Origin and same-origin Fetch Metadata, rejected foreign/
+wrong-port Origin, same-site/cross-site Fetch Metadata, foreign Host, unknown/duplicate query
+keys, excessive page size, disabled docs/OpenAPI/raw-file paths and encoded traversal.
+Each compares expected status, all response headers and content length, requires an empty
+HEAD body and fixed security headers, rejects CORS allow headers, and checks unchanged source
+bytes and whole-catalog data. Each first validates a successful full-detail GET control.
+Six route cases use genuine 404 missing-record controls; these prove intended error routing,
+not successful HEAD retrieval of run/investigation records. Those happy-path fixture rows
+remain distinct from this bounded repair and are not claimed complete.
+
+Only static commands ran in the previously documented networkless WSL/bwrap environment:
+
+```text
+python -m ruff format --check --no-cache src tests
+python -m ruff check --no-cache src tests
+python -m mypy --cache-dir /tmp/mypy_cache
+git diff --check
+```
+
+Final results: formatting passed (63 files), lint passed, MyPy passed (63 source files),
+and diff whitespace check passed. The initial formatter check requested a wrapped decorator
+and consistent existing CRLF endings; both mechanical corrections are included. Git's
+documentation LF-to-CRLF notices are not test failures. The test file is still untracked,
+so ordinary `git diff --stat` omits its additions.
+
+After concrete human sign-off, run the 45 focused cases and full nonbrowser coverage suite
+with the same networkless wrapper, followed by static checks on the final snapshot. Record
+actual results and any repairs; do not carry forward the earlier green CI to this new code.
+Commit/push requires separate owner authorization. G0 closure, new-head Windows/Ubuntu CI,
+manual accessibility, remaining A2–A8 evidence and Phase 6B G1 are still open.
+
+## A1 HEAD repair verification — 2026-10-10
+
+The owner replied **"approve"** to the concrete HTTP-adapter diff and networkless sandbox
+execution request. This satisfies the execution sign-off for the prepared repair, not commit,
+push, CI dispatch or merge authority. Codex verified the approved adapter and test SHA-256
+values above before and after execution; neither file changed and no repair was needed.
+
+The original 17 A1 cases and 28 additional GET/HEAD cases all passed. HEAD now reaches the
+existing handlers, returns the expected status and headers with an empty body, and preserves
+artifact/manifest bytes and whole-catalog data. Negative Host/Origin/Fetch Metadata/query
+checks still reject requests; unsupported methods remain rejected and disabled paths remain
+unavailable. Six route-pattern controls intentionally exercise missing-record 404 responses,
+not successful HEAD retrieval of run/investigation records.
+
+Commands used `/sandbox/venv/bin/python` from `/work` in the same WSL Ubuntu/bwrap wrapper:
+no network, read-only repository/environment, private temporary storage, no host home or
+credential mounts, and unchanged 240s wall/120s CPU/1 GiB address-space/128-process/
+256-descriptor/64 MiB file-size limits. No host scenario test, listener or browser was started.
+
+```text
+python -m pytest -p no:cacheprovider -q --tb=short tests/test_dashboard_acceptance_matrix.py
+python -m pytest -p no:cacheprovider -p pytest_cov.plugin --cov=agentsec --cov-report=term --cov-fail-under=90 -q --tb=short
+python -m ruff format --check --no-cache src tests
+python -m ruff check --no-cache src tests
+python -m mypy --cache-dir /tmp/mypy_cache
+```
+
+| Check | Observed result |
+|---|---|
+| Focused A1/HEAD | 45 passed, 1 existing upstream warning; 2.78s |
+| Full nonbrowser | 535 passed, 3 NTFS skips, 4 browser deselected, 1 existing upstream warning; 92.13% coverage; 56.81s |
+| Final Ruff format | Pass; 63 files already formatted |
+| Final Ruff lint | Pass |
+| Final strict MyPy | Pass; 63 source files |
+
+The three skips remain Windows-only regular-file/symlink/junction evidence; this Linux run
+does not replace new-head Windows CI. The warning remains the upstream Starlette/httpx
+deprecation; no dependency change or warning suppression was introduced.
+
+The initial parallel final static-check reruns stalled without output, as did a read-only
+Linux process-name query. Codex identified and stopped only its own WSL clients, leaving
+the shared VM and unrelated processes untouched. All three static checks then passed in
+sequential hidden invocations with an additional 30-second host-side deadline for each client
+process tree. The sandbox configuration was unchanged. No VM restart, storage/memory setting
+change or broader process termination was performed; the underlying stall cause is not proven.
+
+This supersedes the earlier HEAD failure and pending-execution statements for the exact
+approved snapshot only. The batch is ready for the owner's commit/push decision, not G0
+closure or Phase 6B implementation. Host hostname versus exact Host-port wording still needs
+owner disposition; no stricter Host-port policy was silently introduced. Remaining A2–A8,
+manual accessibility, installed-package disposition, final owner acceptance and new-head
+Windows/Ubuntu CI remain open. No build, fresh dependency audit, browser run, external model
+call, commit, push, CI dispatch, PR mutation or merge occurred in this verification step.
+
+### Publication approval — 2026-10-10
+
+The owner explicitly approved committing and pushing this verified batch to PR #10.
+The publication scope is only `src/agentsec/dashboard_api.py`,
+`tests/test_dashboard_acceptance_matrix.py`, and the Phase 5/6 verification records.
+Unrelated primary-workspace planning/workflow edits are excluded. Immediately before
+publication, public PR metadata confirmed PR #10 open on `codex/g0-dashboard-evidence`,
+with remote head `6aa9735ad273d9c2b93ee6943df8bdb814a1a7f2`. Only inactive sample hooks
+were present. The workflow remains `workflow_dispatch` only: owner-dispatched new-head CI
+and final merge review are still required. Commit/push approval does not authorize either.
