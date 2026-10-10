@@ -1,9 +1,13 @@
 # Phase 5 verification record
 
-Status: Actions run 37566851220 passed all four Windows/Ubuntu verification and browser jobs on
-full SHA `453bc1c91c3e33a53ba946d1ae0f9ea763b2bd68` (PR #10, open) on 2026-10-07.
-The 22 nested-response cases passed on both platforms. Itemized G0 disposition, remaining
+Status: Actions run 37628097651 passed all four Windows/Ubuntu verification and browser jobs on
+full SHA `6aa9735ad273d9c2b93ee6943df8bdb814a1a7f2` (PR #10, open) on 2026-10-07.
+The 22 public response-byte cases passed on both platforms. Itemized G0 disposition, remaining
 boundary evidence, manual accessibility and final owner acceptance remain open.
+
+Latest local update (2026-10-10): the owner-approved HEAD repair passes all 45 focused cases
+and 535 full nonbrowser tests in the networkless sandbox, with 92.13% coverage. Final quality
+checks pass. October 7 CI does not cover this new batch; remaining G0 gates stay open.
 
 ## Verification completion plan
 
@@ -486,3 +490,59 @@ Networkless sandbox checks: 74 focused tests and 490 full nonbrowser tests passe
 coverage; final Ruff format/lint and strict MyPy passed. Platform skips and the upstream warning
 remain explicit in the [detailed record](PHASE_6_VERIFICATION.md#public-response-byte-verification--2026-10-07).
 New-head CI, final owner review, remaining G0 cases and the human walkthrough remain open.
+
+## Public response-byte CI confirmation — 2026-10-07
+
+Owner-dispatched [Actions run 37628097651](https://github.com/jiraphat-j/AgentSec/actions/runs/37628097651)
+(attempt 1) passed all four jobs on full SHA `6aa9735ad273d9c2b93ee6943df8bdb814a1a7f2`.
+Windows verification: 486 passed, 7 platform skips, 4 browser deselected; Ubuntu: 490 passed,
+3 platform skips, 4 deselected. Both had 92.13% coverage and one existing upstream warning.
+All 22 public response-byte cases passed on each platform; both browser jobs passed four tests.
+Formatting, lint, strict MyPy, package build and dependency audit passed on both platforms.
+See the [detailed CI matrix](PHASE_6_VERIFICATION.md#public-response-byte-ci-confirmation--2026-10-07).
+
+This supersedes the preceding CI-pending statement for this exact commit only. PR #10 remains
+open and not merged. Remaining G0 evidence, manual accessibility and final owner acceptance
+remain open; no tests, dispatch or merge were performed while recording the results.
+
+## A1 request-boundary continuation — 2026-10-10
+
+agy implemented the new A1-only test file under scoped file permissions; Codex reviewed its
+saved code, returned test-harness repairs and independently verified the result in the existing
+networkless sandbox. Focused: 16 passed, 1 failed. Full nonbrowser: 506 passed, 1 failed,
+3 NTFS skips, 4 browser deselected, 1 upstream warning; 92.13% coverage. Final Ruff and strict
+MyPy passed. Existing product code, dependencies and CI remain unchanged.
+
+The new failure is `HEAD /api/v1/catalog`: expected 200 under the prepared GET/HEAD acceptance
+case, observed 405. Positive GET, security-header and source/catalog immutability controls
+passed. The failure is retained without skip/xfail; a reviewed HTTP-routing repair or explicit
+owner contract disposition is required. This batch is not ready for publication and does not
+close A1 or G0. See the [snapshot, commands and open disposition](PHASE_6_VERIFICATION.md#a1-request-boundary-verification--2026-10-10).
+
+## A1 HEAD repair preparation — 2026-10-10
+
+Codex prepared a decorator-only GET/HEAD registration repair for all twelve dashboard routes
+and 28 additional synthetic GET/HEAD comparison cases. Existing handlers, request guards,
+resource limits, paths and dependencies are unchanged. Formatting, lint, strict MyPy and
+diff whitespace checks pass; no runtime tests were executed against this repair.
+
+The concrete HTTP-adapter diff still requires human sign-off before sandbox execution under
+ADR-008. See the [exact registrations, snapshot and planned checks](PHASE_6_VERIFICATION.md#a1-head-repair-prepared--2026-10-10).
+This preparation does not close A1/G0 or authorize commit, push, CI dispatch or Phase 6B runtime work.
+
+## A1 HEAD repair verification — 2026-10-10
+
+The owner approved the concrete routing diff for networkless execution. The approved adapter
+and test fingerprints stayed unchanged. Focused: 45 passed. Full nonbrowser: 535 passed,
+3 Windows-only skips, 4 browser deselected, 1 existing upstream warning; 92.13% coverage.
+Final formatting, lint and strict MyPy pass. The original HEAD 405 failure is fixed without
+relaxing request guards or hiding assertions. Six route-pattern cases test genuine 404 errors,
+not successful run/investigation HEAD retrieval.
+
+See the [snapshot, commands, exclusions and static-check retry record](PHASE_6_VERIFICATION.md#a1-head-repair-verification--2026-10-10).
+Ready for the owner's commit/push decision; no publication occurred. New-head CI, Host-port
+wording, manual accessibility, remaining G0 evidence and Phase 6B G1 remain open.
+
+The owner subsequently approved publishing these four scoped files to PR #10; see the
+[publication approval](PHASE_6_VERIFICATION.md#publication-approval--2026-10-10).
+New-head Actions dispatch and merge are not included in that approval.
