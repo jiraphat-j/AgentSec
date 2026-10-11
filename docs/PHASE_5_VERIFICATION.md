@@ -1,5 +1,11 @@
 # Phase 5 verification record
 
+Current A2 status (2026-10-11): the owner reported a Windows MyPy failure after publishing
+`5d7372f`. The owner approved sandbox retesting and publication of the platform-guard repair.
+All three revised lifecycle cases, 535 nonbrowser tests, both MyPy platform targets and Ruff
+now pass locally; coverage is 92.13%. Publication is authorized, with new-head CI pending.
+Earlier A1 green CI and the original A2 Linux results do not prove the revised fixture passed CI.
+
 Status: Actions run 38038369964 passed all four Windows/Ubuntu verification and browser jobs on
 full SHA `bc430a512f911c1c9f229d4cfbf78f6f47dd284b` (PR #10, open) on 2026-10-10.
 Job/step conclusions are verified; anonymous logs were unavailable for exact remote counts.
@@ -593,3 +599,26 @@ The owner subsequently approved committing and pushing these four scoped files; 
 [A2 publication approval](PHASE_6_VERIFICATION.md#a2-publication-approval--2026-10-11).
 New-head Actions dispatch and final merge review remain separate. The gated Linux lifecycle
 cases are local sandbox evidence, not cases added to the existing CI workflow.
+
+## A2 Windows typing repair review — 2026-10-11
+
+The reported seven `os.killpg`/`signal.SIGKILL` typing errors were reproduced with strict
+MyPy's Windows target. The runtime pytest skip does not prevent static inspection of bodies.
+Six added lines guard the three POSIX-only call sites/functions explicitly with `sys.platform`.
+Both full MyPy platform targets now pass for 64 files; Ruff format/lint and diff whitespace
+pass. No revised lifecycle test or native Windows check has run, and nothing is committed/pushed.
+See the [concrete repair, hash and renewed execution/publication gate](PHASE_6_VERIFICATION.md#a2-windows-typing-repair--2026-10-11).
+The earlier successful Linux snapshot stays credited; remaining G0 gates are not closed.
+
+## A2 typing repair re-verified — 2026-10-11
+
+After reviewing the six-line guard repair, the owner approved renewed sandbox execution and
+commit/push if checks passed. Focused A2: 3 passed in 7.79s. Full nonbrowser: 535 passed,
+3 existing Windows-only skips, 7 deselections, 92.13% coverage in 78.47s. Both pytest runs
+retained the existing upstream warning. Strict MyPy with both `--platform win32` and
+`--platform linux` passed for 64 source files; Ruff formatting/lint passed. No executable
+repair beyond the reviewed six lines was made. See the
+[snapshot, results and conditional publication approval](PHASE_6_VERIFICATION.md#a2-typing-repair-re-verification-and-publication--2026-10-11).
+This supersedes the preceding repair's pending-review/execution status for the reviewed
+Linux sandbox snapshot. Both type-check targets are static, not native Windows runtime
+evidence. New-head Actions dispatch and final merge review remain separate; G0 stays open.

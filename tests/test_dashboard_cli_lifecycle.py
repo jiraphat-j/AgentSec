@@ -107,6 +107,8 @@ def _pids() -> set[int]:
 
 
 def _cleanup(process: subprocess.Popen[bytes]) -> None:
+    if sys.platform != "linux":
+        raise RuntimeError("process-group lifecycle tests require Linux")
     # Only the session/process group created by this Popen is eligible for cleanup.
     with suppress(ProcessLookupError):
         os.killpg(process.pid, signal.SIGTERM)
@@ -125,6 +127,8 @@ def _cleanup(process: subprocess.Popen[bytes]) -> None:
 
 
 def _group_exists(group: int) -> bool:
+    if sys.platform != "linux":
+        raise RuntimeError("process-group lifecycle tests require Linux")
     try:
         os.killpg(group, 0)
     except ProcessLookupError:
@@ -260,6 +264,8 @@ def test_dashboard_cli_occupied_port(manifest: Path) -> None:
 
 
 def test_dashboard_cli_foreground_interrupt(manifest: Path) -> None:
+    if sys.platform != "linux":
+        raise RuntimeError("process-group lifecycle tests require Linux")
     port = _unused_port()
     with _cli(manifest, port) as process:
         _wait_for_catalog(process, port)

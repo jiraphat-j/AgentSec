@@ -1,5 +1,12 @@
 # Phase 6A verification record
 
+Current A2 status (2026-10-11): the owner reported seven Windows MyPy errors after publication
+of `5d7372f`. The owner approved the six-line platform-guard repair for sandbox retesting and
+publication if checks passed. All three revised lifecycle cases and 535 nonbrowser tests now
+pass locally, with 92.13% coverage; Windows-target/Linux-target MyPy and Ruff also pass.
+Publication is authorized; new-head CI remains pending. See the repair re-verification below.
+The successful CI record that follows belongs to the earlier A1 head, not the failing A2 head.
+
 Status: **Actions run 38038369964 passed all four Windows/Ubuntu verification and browser jobs on
 full SHA `bc430a512f911c1c9f229d4cfbf78f6f47dd284b` (PR #10, open) on 2026-10-10.
 Job and step conclusions are verified; exact remote test counts/coverage were not independently
@@ -1878,3 +1885,94 @@ regression and existing browser cases; it does not run the separately gated A2 l
 cases. Their Linux evidence remains the approved local sandbox run. No Windows console
 test, workflow expansion, CI dispatch, merge, G0 closure or Phase 6B approval is authorized
 by this publication request. Final owner review remains required.
+
+## A2 Windows typing repair — 2026-10-11
+
+**⚠️ Security Sensitive fixture: concrete review required before renewed execution.**
+
+Publication succeeded as `5d7372f04125ab788ccc6007a18520a8d16c7975`,
+`Test dashboard CLI lifecycle`, on `codex/g0-dashboard-evidence` (PR #10). The owner then
+reported a failing Windows MyPy step: seven `attr-defined` errors for `os.killpg` and
+`signal.SIGKILL`. No run URL/job ID was supplied; this records the owner report and local
+reproduction, not an independently inspected remote job result.
+
+The pytest Linux-only skip marker is a runtime selection rule, not a static platform guard.
+The previous default Linux MyPy pass did not check Windows-only typeshed availability.
+Codex reproduced all seven reported errors using full strict MyPy with `--platform win32`
+in the existing networkless Linux sandbox before changing the file.
+
+The concrete repair adds only `if sys.platform != "linux": raise RuntimeError(...)` at the
+start of `_cleanup`, `_group_exists` and `test_dashboard_cli_foreground_interrupt`: six
+lines total. MyPy can now recognize the unreachable POSIX calls on Windows; direct helper
+use outside Linux also fails closed. The original pytest skip/opt-in gates, Linux signal
+behavior, process-group ownership, cleanup bounds, socket checks, commands and assertions
+remain unchanged. No type-ignore, cast, dynamic lookup, MyPy exclusion, dependency change,
+runtime product edit or CI workflow change was introduced.
+
+### Static verification only
+
+All checks used the existing read-only/networkless wrapper; no pytest collection, child CLI,
+socket or lifecycle signal was executed for the revised snapshot:
+
+```text
+python -m mypy --platform win32 --cache-dir /tmp/mypy_win32
+python -m mypy --platform linux --cache-dir /tmp/mypy_linux
+python -m ruff format --check --diff --no-cache src tests
+python -m ruff check --no-cache src tests
+```
+
+Both full strict MyPy targets passed for 64 source files. Ruff format passed for 64 files;
+lint and `git diff --check` passed. The Windows target is a static cross-platform check,
+not native Windows execution or a new remote CI pass. Future local verification should
+check both explicit MyPy targets before publication, since default-platform checking missed
+this issue. No dependency installation, external model call, CI dispatch or publication occurred.
+
+Revised working-tree test SHA-256:
+`a31f5902cab10ee6daf30244a5ba556c6c2b46dea3232af51f51ec3b4ac85c57`.
+Unchanged `pyproject.toml` SHA-256:
+`937cb3d05e0aa2eba6231cfa93debf4dce51cb1c4f46b4f6dcdfc1f9ca671460`.
+The prior three-case Linux success remains evidence for the old test hash, not execution
+of this revised fixture. Following the AgentSec security gate, Codex stopped before renewed
+sensitive execution and publication. Requested sign-off: review these three two-line guards,
+then approve rerunning the same focused A2 and nonbrowser regression commands in the same
+networkless Linux sandbox, followed by committing/pushing only this repair and its Phase 5/6
+records if checks pass. Host/Windows lifecycle execution, CI dispatch, merge and G0/Phase 6B
+approval remain excluded.
+
+## A2 typing repair re-verification and publication — 2026-10-11
+
+The owner responded **"yes, then commit and push"** to the reviewed six-line repair and
+request for sandbox retesting followed by conditional publication. Before execution, base
+HEAD was `5d7372f04125ab788ccc6007a18520a8d16c7975`; the revised test and unchanged config
+hashes matched the review record. No further executable edits were made.
+
+Codex ran the same focused A2 command and full nonbrowser coverage command in the existing
+networkless/read-only Linux wrapper, followed by both explicit MyPy platform targets and
+Ruff. The focused opt-in token remained confined to the sandbox. All commands, bounds,
+namespace isolation, mounts and assertions were unchanged from the reviewed proposal.
+
+| Check | Observed result |
+|---|---|
+| Focused revised A2 | 3 passed, 1 existing warning; 7.79s |
+| Full nonbrowser | 535 passed, 3 Windows-only skips, 7 browser/lifecycle deselections, 1 existing warning; 92.13% coverage; 78.47s |
+| Strict MyPy `--platform win32` | Pass; 64 source files |
+| Strict MyPy `--platform linux` | Pass; 64 source files |
+| Ruff format / lint | Pass; 64 files already formatted / all checks passed |
+
+The unchanged upstream Starlette/httpx warning was not suppressed. The focused run had no
+skip or retry; listener closure/rebind, clean exit, child reaping/private PID inventory and
+unchanged synthetic input assertions passed. Both MyPy targets are static verification in
+Linux, not native Windows lifecycle or new-head CI evidence. No deadline expired or forced
+termination was used to obtain a passing lifecycle result. This supersedes the repair's
+pending-execution status for the exact reviewed hash only:
+`a31f5902cab10ee6daf30244a5ba556c6c2b46dea3232af51f51ec3b4ac85c57`.
+
+The publication condition is satisfied. Scope is only the test repair and Phase 5/6 records;
+test configuration, product runtime, dependencies and CI remain unchanged. The remote branch
+still matched base `5d7372f`, the index was empty and only inactive sample hooks were present
+before staging. Commit `Fix Windows typing in dashboard CLI tests` and normal non-force push
+to `codex/g0-dashboard-evidence` are authorized. This entry records approval/results, not a
+preclaimed successful push. The separate primary-workspace planning/workflow edits are excluded.
+Owner-dispatched new-head CI and final merge review remain required. No host/Windows lifecycle
+execution, external model call, workflow expansion, CI dispatch, G0 closure or Phase 6B
+implementation is included in this approval.
