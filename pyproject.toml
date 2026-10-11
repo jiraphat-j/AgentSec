@@ -55,11 +55,12 @@ agentsec = [
 ]
 
 [tool.pytest.ini_options]
-addopts = "-ra --strict-config --strict-markers -m 'not dashboard_e2e'"
+addopts = "-ra --strict-config --strict-markers -m 'not dashboard_e2e and not dashboard_lifecycle'"
 testpaths = ["tests"]
 pythonpath = ["src"]
 markers = [
   "dashboard_e2e: approved local-listener browser tests for the optional dashboard",
+  "dashboard_lifecycle: separately approved Linux networkless CLI process/socket tests",
 ]
 
 [tool.ruff]

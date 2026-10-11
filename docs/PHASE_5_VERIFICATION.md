@@ -1,13 +1,16 @@
 # Phase 5 verification record
 
-Status: Actions run 37628097651 passed all four Windows/Ubuntu verification and browser jobs on
-full SHA `6aa9735ad273d9c2b93ee6943df8bdb814a1a7f2` (PR #10, open) on 2026-10-07.
-The 22 public response-byte cases passed on both platforms. Itemized G0 disposition, remaining
-boundary evidence, manual accessibility and final owner acceptance remain open.
+Status: Actions run 38038369964 passed all four Windows/Ubuntu verification and browser jobs on
+full SHA `bc430a512f911c1c9f229d4cfbf78f6f47dd284b` (PR #10, open) on 2026-10-10.
+Job/step conclusions are verified; anonymous logs were unavailable for exact remote counts.
+Itemized G0 disposition, remaining boundary evidence, manual accessibility and final owner
+acceptance remain open.
 
-Latest local update (2026-10-10): the owner-approved HEAD repair passes all 45 focused cases
-and 535 full nonbrowser tests in the networkless sandbox, with 92.13% coverage. Final quality
-checks pass. October 7 CI does not cover this new batch; remaining G0 gates stay open.
+Latest local update (2026-10-11): the owner-approved A2 Linux CLI lifecycle tests passed all
+three cases in the networkless sandbox. Nonbrowser regression passed 535 tests with 92.13%
+coverage; Ruff and strict MyPy passed. The published A1 HEAD repair retains successful
+four-job CI, which is not new-head A2 CI evidence. The owner approved publishing this verified
+batch; new-head CI and remaining G0 gates stay open.
 
 ## Verification completion plan
 
@@ -546,3 +549,47 @@ wording, manual accessibility, remaining G0 evidence and Phase 6B G1 remain open
 The owner subsequently approved publishing these four scoped files to PR #10; see the
 [publication approval](PHASE_6_VERIFICATION.md#publication-approval--2026-10-10).
 New-head Actions dispatch and merge are not included in that approval.
+
+## A1 HEAD repair CI confirmation — 2026-10-10
+
+Public metadata confirms owner-dispatched [Actions run 38038369964](https://github.com/jiraphat-j/AgentSec/actions/runs/38038369964),
+attempt 1, passed all four Windows/Ubuntu verification and browser jobs on full SHA
+`bc430a512f911c1c9f229d4cfbf78f6f47dd284b`. Both verification jobs have successful
+formatting, lint, type, test, build and audit steps; both approved loopback browser steps pass.
+
+Anonymous job-log requests returned HTTP 403, so exact remote test counts, skips and coverage
+were not independently read or inferred from local results. See the [job IDs and evidence limits](PHASE_6_VERIFICATION.md#a1-head-repair-ci-confirmation--2026-10-10).
+PR #10 remains open and unmerged. This supersedes new-head CI-pending statements for this
+commit only, not the remaining G0 matrix, manual accessibility or Phase 6B G1. No tests,
+dispatch, publication or merge occurred while recording; these edits remain uncommitted.
+
+## A2 CLI lifecycle review draft — 2026-10-10
+
+The next G0 batch is prepared, not executed: three Linux networkless checks for CLI normal
+return, occupied-port failure and foreground SIGINT cleanup. The separate marker is excluded
+from ordinary pytest and is outside browser CI collection. See the
+[concrete A2 diff/command review boundary](PHASE_6_VERIFICATION.md#a2-cli-lifecycle-draft--2026-10-10).
+Mandatory human review is pending; Windows console behavior and G0 closure are not claimed.
+
+## A2 Linux lifecycle verification — 2026-10-11
+
+The owner approved the concrete draft and networkless sandbox execution. All three cases
+passed: normal-return/configuration control, real occupied-port failure and real SIGINT
+shutdown. Listener closure/rebind, child reaping/private PID inventory, bounded captures and
+unchanged input bytes passed. The reviewed test/config hashes were unchanged after execution.
+The full nonbrowser regression passed 535 tests, with 3 existing Windows-only skips,
+7 browser/lifecycle deselections, 1 existing upstream warning and 92.13% coverage in 69.59s.
+Focused A2 passed in 7.34s with the same warning. Final Ruff formatting/lint and strict MyPy
+passed for 64 files; diff whitespace passed. See the
+[exact snapshot, approval, commands and limits](PHASE_6_VERIFICATION.md#a2-approved-sandbox-verification--2026-10-11).
+
+This supersedes the preceding A2 draft's pending-review/not-run status for Linux only.
+Windows console interruption remains open; no host listener or interactive terminal was used.
+No product/dependency/CI change, external model call, publication, dispatch or merge occurred.
+This batch is locally verified and remains uncommitted; existing A1 CI is not new A2 CI.
+Remaining G0 items and Phase 6B G1 are not approved or closed by these results.
+
+The owner subsequently approved committing and pushing these four scoped files; see the
+[A2 publication approval](PHASE_6_VERIFICATION.md#a2-publication-approval--2026-10-11).
+New-head Actions dispatch and final merge review remain separate. The gated Linux lifecycle
+cases are local sandbox evidence, not cases added to the existing CI workflow.

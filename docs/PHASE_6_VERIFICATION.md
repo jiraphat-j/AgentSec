@@ -1,17 +1,19 @@
 # Phase 6A verification record
 
-Status: **Actions run 37628097651 passed all four Windows/Ubuntu verification and browser jobs on
-full SHA `6aa9735ad273d9c2b93ee6943df8bdb814a1a7f2` (PR #10, open) on 2026-10-07.
-All 22 public response-byte cases passed on both platforms; Windows reparse cases remain passing.
-The twelve reproduced live/offline discrepancies are repaired; earlier failures and CI-pending
-statements are historical. Itemized G0 disposition, unusual cmd metacharacter temp-root residual,
+Status: **Actions run 38038369964 passed all four Windows/Ubuntu verification and browser jobs on
+full SHA `bc430a512f911c1c9f229d4cfbf78f6f47dd284b` (PR #10, open) on 2026-10-10.
+Job and step conclusions are verified; exact remote test counts/coverage were not independently
+read because the anonymous log endpoint returned HTTP 403. Earlier CI-pending statements are
+historical for this commit. Itemized G0 disposition, unusual cmd metacharacter temp-root residual,
 remaining boundary evidence, manual accessibility, Phase 6B G1 and final owner review remain open.**
 
-Latest local update (2026-10-10): the owner approved the concrete HEAD routing repair for
-networkless sandbox execution. All 45 focused cases and 535 full nonbrowser tests pass;
-coverage is 92.13%. Final formatting, lint and strict MyPy pass. The original HEAD failure is
-fixed on this tested snapshot. New-head CI, Host-port wording and remaining G0 gates
-remain open; earlier green CI does not cover this batch.
+Latest local update (2026-10-11): after the owner's concrete A2 execution approval, all three
+Linux CLI lifecycle cases passed in the networkless sandbox. The full nonbrowser suite passed
+535 tests with 92.13% coverage; final formatting, lint and strict MyPy passed. The test/config
+hashes remained identical to the reviewed draft. A2 is local Linux evidence only, not new-head
+CI or Windows console coverage. The published A1 HEAD repair retains its earlier successful
+four-job CI. The owner approved publishing the verified A2 batch; new-head CI and remaining
+G0 gates remain open. See the publication approval below.
 
 G0 Phase 5 deferral and G1 Phase 6A design approval were provided by the owner on 2026-09-22.
 On 2026-09-24 the owner authorized G2 test execution only inside a sandbox. On 2026-09-27 the owner
@@ -1635,3 +1637,244 @@ publication, public PR metadata confirmed PR #10 open on `codex/g0-dashboard-evi
 with remote head `6aa9735ad273d9c2b93ee6943df8bdb814a1a7f2`. Only inactive sample hooks
 were present. The workflow remains `workflow_dispatch` only: owner-dispatched new-head CI
 and final merge review are still required. Commit/push approval does not authorize either.
+
+## A1 HEAD repair CI confirmation — 2026-10-10
+
+After the owner reported successful completion, Codex read public Actions run metadata,
+attempt-specific job metadata and individual step conclusions for owner-dispatched
+[run 38038369964](https://github.com/jiraphat-j/AgentSec/actions/runs/38038369964), attempt 1.
+It completed successfully on full SHA `bc430a512f911c1c9f229d4cfbf78f6f47dd284b`;
+event `workflow_dispatch`, started 08:34:50 UTC and completed 08:38:02 UTC on 2026-10-10.
+Public PR metadata confirms PR #10 remains open, unmerged, on `codex/g0-dashboard-evidence`
+with that exact head. The PR worktree was clean before this documentation update.
+
+| Job | Job ID | Observed conclusion |
+|---|---|---|
+| `verify (windows-latest)` | 114173494396 | Success |
+| `verify (ubuntu-latest)` | 114173494475 | Success |
+| `dashboard-browser (windows-latest)` | 114173494281 | Success |
+| `dashboard-browser (ubuntu-latest)` | 114173494372 | Success |
+
+Both verification jobs report successful formatting, lint, type-check, test, package-build
+and dependency-audit steps. Both browser jobs report a successful approved loopback test
+step. The opposite-platform Chromium installation step is intentionally skipped in each
+browser job; that is not a pytest exclusion.
+
+The anonymous public job-log endpoint returned HTTP 403 for all four jobs. No credentials
+were extracted, new login requested or access restriction bypassed. This confirmation proves
+the reported job/step conclusions, not independently inspected remote pytest counts,
+coverage, warnings or named Windows cases. The preceding 45/535 test counts and 92.13%
+coverage remain local sandbox evidence; do not relabel them as remote log observations.
+
+This supersedes CI-pending statements for the published HEAD repair only. Recording it
+executed no tests, listener, external model call or Actions dispatch, and made no PR mutation
+or merge. These evidence edits remain uncommitted. Host-port wording, A2–A8, manual
+accessibility, installed-package disposition, itemized G0/final owner acceptance and Phase 6B
+G1 remain open; successful CI is not a G0 completion or design approval.
+
+## A2 CLI lifecycle draft — 2026-10-10
+
+**⚠️ Security Sensitive: Requires Mandatory Human Review before execution or merge.**
+
+The owner asked to continue after the successful A1 CI confirmation. Codex prepared
+`tests/test_dashboard_cli_lifecycle.py` and a separate `dashboard_lifecycle` marker in
+`pyproject.toml`. This is a concrete test draft, not executed lifecycle evidence or G0 closure.
+No product source, dependency, CLI contract, workflow or network policy changed.
+Codex retained this subprocess/socket work rather than delegating sensitive implementation
+to Antigravity, following the two workflow skills and repository security guide.
+
+### Bounded acceptance cases
+
+| Case | Required observation | Evidence limit |
+|---|---|---|
+| Normal return | Genuine synthetic manifest loads; patched `uvicorn.run` receives only loopback, selected port, one worker, no reload/access log; CLI returns 0 with no output; in-process catalog is exact | Configuration/return control, not proof of a real listener |
+| Occupied port | Test owns an ephemeral loopback listener; real `python -m agentsec dashboard` exits 3 with address-in-use diagnostic; original listener remains; after it closes the port can be rebound | Real Linux bind failure, not a Windows console result |
+| Foreground interrupt | Real CLI serves the exact catalog; owned process group receives SIGINT; exit is 0 within 10s; connection is refused and the port can be rebound | Linux SIGINT only, not Windows Ctrl+C/SIGBREAK |
+
+The expected exit codes follow the inspected installed Uvicorn 0.54.0 startup and signal
+paths; no broad acceptable-code set, xfail, warning suppression or passing retry is used.
+All inputs are synthetic files in pytest's private temporary directory. Each case checks
+unchanged selected input bytes and file inventory. Real CLI cases check bounded log sizes,
+absence of the synthetic raw marker/traceback, child reaping and restoration of the private
+PID inventory. Setup/assertion failures on Linux remain failures, not skips. The explicit
+non-Linux skip documents a separate unimplemented Windows console fixture.
+
+### Execution boundary and cleanup
+
+Ordinary pytest excludes **both** `dashboard_e2e` and `dashboard_lifecycle`. The new file is
+outside `tests/e2e`, so the existing browser Actions command does not collect it. No CI job
+was added or expanded. An explicit marker selection and opt-in environment token are needed.
+The token and loopback-only interface assertion prevent accidental execution; they do not
+establish isolation by themselves. The reviewed wrapper below is the security boundary.
+
+Reuse the existing WSL Ubuntu environment, read-only source/venv, private `/tmp`, private
+PID/network namespaces, cleared environment and unchanged resource limits. Bubblewrap
+0.11.1 initializes loopback in its private network namespace; no `--share-net`, interface
+mutation, capability addition, host listener, proxy, DNS, external HTTP or browser is needed.
+The installed-version implementation is documented in
+[Bubblewrap v0.11.1](https://github.com/containers/bubblewrap/blob/v0.11.1/bubblewrap.c).
+The child uses an argv list with `shell=False`, `start_new_session=True`, closed stdin and
+an explicit minimal environment. Requests use literal `127.0.0.1` via `http.client`, without
+proxy/environment routing. No scenario, agent, tool or attack fixture opens a socket.
+
+Readiness is bounded to 15s; child exit to 10s. Only connection-refused startup readiness is
+polled, never invalid HTTP content/status or repeated fixture launches. Cleanup targets only
+the created process group: SIGTERM, a 5s wait, then SIGKILL if necessary, with a bounded
+descendant-group grace period. Forced cleanup cannot make an unsuccessful lifecycle test
+pass. The private PID inventory detects remaining descendants; namespace teardown is the
+final containment boundary. No host process inventory or broad termination is permitted.
+HTTP/log acceptance is limited to 64 KiB; the existing 64 MiB file-size kernel limit remains
+the hard cap for capture files. These are different limits, not a claim of a 64 KiB write cap.
+
+### Concrete command for review — NOT RUN
+
+After explicit human review of this test/config diff and command, the proposed focused
+invocation is the following, from WSL Ubuntu as `godji`:
+
+```sh
+timeout -k 5 240 prlimit --cpu=120 --as=1073741824 --nproc=128 --nofile=256 --fsize=67108864 \
+  bwrap --unshare-all --clearenv \
+  --setenv HOME /tmp --setenv TMPDIR /tmp \
+  --setenv PATH /sandbox/venv/bin:/usr/bin:/bin \
+  --setenv PYTHONPATH /work/src:/work --setenv PYTHONDONTWRITEBYTECODE 1 \
+  --setenv PYTEST_DISABLE_PLUGIN_AUTOLOAD 1 --setenv COVERAGE_FILE /tmp/.coverage \
+  --setenv AGENTSEC_DASHBOARD_LIFECYCLE_SANDBOX networkless-bwrap-v1 \
+  --ro-bind /usr /usr --ro-bind /bin /bin --ro-bind /lib /lib --ro-bind /lib64 /lib64 \
+  --dir /etc --ro-bind /etc/passwd /etc/passwd --ro-bind /etc/group /etc/group \
+  --dev /dev --proc /proc --tmpfs /tmp \
+  --ro-bind /home/godji/agentsec-g0-env.045vOJ /sandbox \
+  --ro-bind /mnt/c/Users/Feast/.codex/worktrees/phase-g0-verification/AgentSec /work \
+  --chdir /work /sandbox/venv/bin/python -m pytest -p no:cacheprovider \
+  -o addopts='-ra --strict-config --strict-markers' \
+  -m dashboard_lifecycle tests/test_dashboard_cli_lifecycle.py
+```
+
+The requested execution sign-off would cover this focused command, then the existing full
+nonbrowser regression/coverage and static checks in the same networkless wrapper. It would
+not cover host execution, Windows console tests, CI changes/dispatch, external model sharing,
+dependency installation, runtime repairs, commit, push or merge. A sensitive runtime repair
+would require its own concrete review. Final test/config hashes must be recorded before
+executing the approved snapshot. Windows lifecycle evidence, the other G0 matrix items,
+manual accessibility and Phase 6B G1 remain open.
+
+### Preparation checks — no lifecycle execution
+
+Codex reviewed the actual new test file, marker exclusion and unchanged CI collection scope.
+The first lint check found two cleanup-style suggestions and a nested-context suggestion;
+these were repaired without broad suppressions. The final sequential static checks passed
+in the existing read-only/networkless wrapper, with a 30s host-side client deadline per check:
+
+```text
+python -m ruff format --check --diff --no-cache src tests
+python -m ruff check --no-cache src tests
+python -m mypy --cache-dir /tmp/mypy_cache
+```
+
+Ruff format: 64 files already formatted. Ruff lint: all checks passed. Strict MyPy: no issues
+in 64 source files. `git diff --check` passed. These tools did not execute or collect pytest,
+launch the dashboard, open a test socket or deliver a lifecycle signal. No full regression,
+browser, build, audit, external model call, CI dispatch, commit, push or merge occurred.
+Initial WSL access was denied under normal tool permissions; scoped escalation was used
+only for these static checks in the unchanged sandbox, not to bypass the execution gate.
+
+SHA-256 of the prepared working-tree bytes for review (not execution approval):
+
+- `tests/test_dashboard_cli_lifecycle.py`:
+  `3e6070fecc784a213a14f7794001bfad417f7e37a0f6f5cb859041560189fefc`
+- `pyproject.toml`:
+  `937cb3d05e0aa2eba6231cfa93debf4dce51cb1c4f46b4f6dcdfc1f9ca671460`
+
+The real startup/bind/signal assertions remain **not run**. All four working-tree files
+(the new test, test configuration and Phase 5/6 records) remain uncommitted. The separate
+primary-workspace planning/workflow edits are preserved and excluded from this batch.
+
+## A2 approved sandbox verification — 2026-10-11
+
+The owner responded **"approve"** to the concrete A2 test/config review and the request for
+networkless Linux lifecycle testing plus nonbrowser regression. This sign-off covers the
+three-case draft and reviewed command above, not host/Windows execution, runtime repairs,
+external model sharing, CI dispatch, publication or merge. Codex used the AgentSec workflow
+to verify the exact reviewed snapshot and keep local, human-approval and CI evidence distinct.
+
+Before execution, HEAD remained `bc430a512f911c1c9f229d4cfbf78f6f47dd284b` on the PR #10
+worktree. Both reviewed SHA-256 values matched, and they matched again after all checks:
+
+- `tests/test_dashboard_cli_lifecycle.py`:
+  `3e6070fecc784a213a14f7794001bfad417f7e37a0f6f5cb859041560189fefc`
+- `pyproject.toml`:
+  `937cb3d05e0aa2eba6231cfa93debf4dce51cb1c4f46b4f6dcdfc1f9ca671460`
+
+No executable file was repaired or changed in this step. Product runtime and CI are unchanged.
+The dashboard adapter still has SHA-256
+`35e2e151f969764f15bbbf8a437c0aa2f5482acd95cf3ff6f36f6158b1aed86e`.
+
+### Commands and results
+
+The focused command was exactly the reviewed wrapper and selection above, with its opt-in
+environment token set only inside bwrap. The subsequent commands used the same existing
+networkless/read-only wrapper from `/work`, without that opt-in token:
+
+```text
+python -m pytest -p no:cacheprovider -p pytest_cov.plugin --cov=agentsec --cov-report=term --cov-fail-under=90 -q --tb=short
+python -m ruff format --check --no-cache src tests
+python -m ruff check --no-cache src tests
+python -m mypy --cache-dir /tmp/mypy_cache
+```
+
+| Check | Observed result |
+|---|---|
+| Focused A2 lifecycle | 3 passed, 1 existing upstream warning; 7.34s |
+| Full nonbrowser regression | 535 passed, 3 Windows-only skips, 7 deselected, 1 existing upstream warning; 92.13% coverage; 69.59s |
+| Final Ruff format | Pass; 64 files already formatted |
+| Final Ruff lint | Pass |
+| Final strict MyPy | Pass; 64 source files |
+| Final diff whitespace | `git diff --check` passed |
+
+The focused platform reports Linux, Python 3.13.15, pytest 9.1.1 and pluggy 1.6.0. No focused
+case was skipped or retried. Normal-return configuration/catalog assertions passed. The real
+occupied-port CLI exited 3 with the address-in-use diagnostic while the owned blocker remained
+a listener. The real serving CLI then exited 0 after SIGINT; connection refusal/rebind, child
+reaping, private PID inventory, bounded capture and unchanged input assertions all passed.
+Successful exits were checked before fallback cleanup; forced termination was not used to
+turn an unsuccessful lifecycle result into a pass. This is delivered Linux SIGINT evidence,
+not an interactive terminal or Windows Ctrl+C/SIGBREAK walkthrough.
+
+The full suite's three skips are the existing Windows NTFS cases at
+`test_dashboard_g0_boundaries.py:373`, `:387` and `:412`. Its seven deselections are the four
+browser cases plus the three separately executed A2 cases. Do not report the A2 tests as
+part of the 535 regression count or label these exclusions as passing Windows evidence.
+Both pytest runs retained the existing Starlette/httpx deprecation warning; no dependency,
+assertion, skip rule, warning filter or coverage threshold was changed to obtain green results.
+
+All invocations were sequential. The existing 240s wall, 120s CPU, 1 GiB address-space,
+128-process, 256-descriptor and 64 MiB file-size limits were unchanged. The Windows WSL
+client had a 270s outer deadline for each test run and 30s for each static check; none expired.
+Private loopback was not shared with the host, and no network capability, credential mount,
+host listener, VM restart or broader process termination was introduced.
+
+This supersedes the A2 draft's pending-review/not-run status for these exact Linux cases
+only. Windows console evidence, A3–A8, Host-port wording, B/C/D/E, manual accessibility and
+Phase 6B G1 remain open. The earlier four-job Actions success applies to published A1 head
+`bc430a5`, not this uncommitted A2 draft. No host test, browser, build, dependency audit/install,
+external model call, CI dispatch, commit, push, PR mutation or merge occurred. The four PR
+worktree files and separate primary-workspace planning/workflow edits remain uncommitted.
+
+### A2 publication approval — 2026-10-11
+
+The owner explicitly requested **"okay let's commit and push"** after the successful A2
+verification handoff. The publication scope is only `tests/test_dashboard_cli_lifecycle.py`,
+`pyproject.toml`, and the Phase 5/6 verification records, including the preceding A1 CI
+confirmation. The separate primary-workspace planning/workflow edits are excluded.
+
+Immediately before publication, the remote `codex/g0-dashboard-evidence` head still matched
+local base `bc430a512f911c1c9f229d4cfbf78f6f47dd284b`; no staged files or active Git hooks
+were present, and the reviewed test/config hashes were unchanged. The planned commit is
+`Test dashboard CLI lifecycle`, followed by a normal push to that branch, without force.
+This entry supersedes the preceding uncommitted status when publication succeeds; it does
+not preclaim a successful push or new-head CI result.
+
+Actions remains owner-dispatched only. New-head CI can verify static checks, the nonbrowser
+regression and existing browser cases; it does not run the separately gated A2 lifecycle
+cases. Their Linux evidence remains the approved local sandbox run. No Windows console
+test, workflow expansion, CI dispatch, merge, G0 closure or Phase 6B approval is authorized
+by this publication request. Final owner review remains required.
