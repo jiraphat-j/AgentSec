@@ -1,22 +1,21 @@
 # Phase 5 verification record
 
-Current A2 status (2026-10-11): the owner reported a Windows MyPy failure after publishing
-`5d7372f`. The owner approved sandbox retesting and publication of the platform-guard repair.
-All three revised lifecycle cases, 535 nonbrowser tests, both MyPy platform targets and Ruff
-now pass locally; coverage is 92.13%. Publication is authorized, with new-head CI pending.
-Earlier A1 green CI and the original A2 Linux results do not prove the revised fixture passed CI.
+Current A2 status (2026-10-11): published repair `7890129` now has successful four-job CI,
+including native Windows MyPy. Linux lifecycle evidence remains the separate approved local
+sandbox run; Windows console behavior is untested. A3 was implemented directly by Codex at
+the owner's request and passed local sandbox verification on 2026-10-12. Publication is
+owner-approved; new-head CI remains pending.
 
-Status: Actions run 38038369964 passed all four Windows/Ubuntu verification and browser jobs on
-full SHA `bc430a512f911c1c9f229d4cfbf78f6f47dd284b` (PR #10, open) on 2026-10-10.
-Job/step conclusions are verified; anonymous logs were unavailable for exact remote counts.
+Status: Actions run 38112225282 passed all four Windows/Ubuntu verification and browser jobs on
+full SHA `789012914b74f7db5b06fe963a080014b27d8343` (PR #10, open) on 2026-10-11.
+Job/step conclusions are verified; exact remote counts were not inspected from logs.
 Itemized G0 disposition, remaining boundary evidence, manual accessibility and final owner
 acceptance remain open.
 
-Latest local update (2026-10-11): the owner-approved A2 Linux CLI lifecycle tests passed all
-three cases in the networkless sandbox. Nonbrowser regression passed 535 tests with 92.13%
-coverage; Ruff and strict MyPy passed. The published A1 HEAD repair retains successful
-four-job CI, which is not new-head A2 CI evidence. The owner approved publishing this verified
-batch; new-head CI and remaining G0 gates stay open.
+Latest local update (2026-10-12): all nine A3 genuine-artifact parity cases passed in the
+networkless sandbox. Full nonbrowser regression passed 544 tests with 92.13% coverage;
+Ruff and both strict MyPy platform targets passed. Published CI above predates the new A3
+file; new-head CI and remaining G0 gates stay open.
 
 ## Verification completion plan
 
@@ -622,3 +621,36 @@ repair beyond the reviewed six lines was made. See the
 This supersedes the preceding repair's pending-review/execution status for the reviewed
 Linux sandbox snapshot. Both type-check targets are static, not native Windows runtime
 evidence. New-head Actions dispatch and final merge review remain separate; G0 stays open.
+
+## A2 CI confirmation and next A3 packet — 2026-10-11
+
+Codex confirmed owner-dispatched [run 38112225282](https://github.com/jiraphat-j/AgentSec/actions/runs/38112225282),
+attempt 1, succeeded on full head `789012914b74f7db5b06fe963a080014b27d8343`.
+All four jobs and their required check/browser steps passed, including native Windows MyPy.
+PR #10 remains open and unmerged at that head. Exact remote counts/coverage were not read
+from logs; local lifecycle and regression numbers remain local evidence. The lifecycle marker
+was not executed by CI, so this does not close Windows console behavior or all of G0.
+See the [job IDs and evidence limits](PHASE_6_VERIFICATION.md#a2-typing-repair-ci-confirmation--2026-10-11).
+
+The next finite task is A3: four genuine comparison/evaluation/rule/rule-test loader-to-API
+parity cases plus five evaluation nested-collection pagination cases. The
+[scoped agy packet and verification checklist](PHASE_6_VERIFICATION.md#a3-genuine-artifact-api-parity-task--2026-10-11)
+reuse existing genuine fixtures, independently compare canonical model data and preserve
+source/catalog snapshots. The proposed new staged test file needs its exact-file access and
+Gemini prompt confirmed before dispatch; no old A1 permission grant remains active.
+No implementation, model call, tests, listener, publication or dispatch occurred in preparation.
+
+## A3 Codex implementation and local evidence — 2026-10-12
+
+The owner selected direct Codex implementation after the scoped agy preflight pause.
+Only `tests/test_dashboard_artifact_parity.py` was added: four genuine public-loader/API
+parity cases and five evaluation pagination cases, reusing the existing genuine artifact
+fixture with canonical model data as the independent oracle. Manifest/artifact bytes, input
+inventory and deep-copied catalog records remain unchanged after requests.
+
+The existing networkless, resource-bounded read-only sandbox passed all 9 focused cases and
+544 full nonbrowser tests (3 Windows-only skips, 7 browser/lifecycle deselections, 1 existing
+upstream warning), with 92.13% coverage. Ruff format/lint and Windows/Linux-target strict
+MyPy passed for 65 files. See the [snapshot, commands and evidence limits](PHASE_6_VERIFICATION.md#a3-codex-implementation-and-sandbox-verification--2026-10-12).
+No existing source/test/configuration changes, agy model call, permission settings change,
+listener, commit/push, CI dispatch or G0 acceptance occurred in this batch.

@@ -1,26 +1,24 @@
 # Phase 6A verification record
 
-Current A2 status (2026-10-11): the owner reported seven Windows MyPy errors after publication
-of `5d7372f`. The owner approved the six-line platform-guard repair for sandbox retesting and
-publication if checks passed. All three revised lifecycle cases and 535 nonbrowser tests now
-pass locally, with 92.13% coverage; Windows-target/Linux-target MyPy and Ruff also pass.
-Publication is authorized; new-head CI remains pending. See the repair re-verification below.
-The successful CI record that follows belongs to the earlier A1 head, not the failing A2 head.
+Current A2 status (2026-10-11): the Windows typing repair was published as `7890129` and its
+owner-dispatched CI passed all four jobs, including native Windows MyPy. The three Linux
+lifecycle cases remain separate local sandbox evidence, not Windows console coverage.
+A3's nine genuine-artifact parity cases were implemented directly by Codex at the owner's
+request and passed local sandbox verification on 2026-10-12. Publication is owner-approved;
+new-head CI remains pending.
 
-Status: **Actions run 38038369964 passed all four Windows/Ubuntu verification and browser jobs on
-full SHA `bc430a512f911c1c9f229d4cfbf78f6f47dd284b` (PR #10, open) on 2026-10-10.
-Job and step conclusions are verified; exact remote test counts/coverage were not independently
-read because the anonymous log endpoint returned HTTP 403. Earlier CI-pending statements are
-historical for this commit. Itemized G0 disposition, unusual cmd metacharacter temp-root residual,
+Status: **Actions run 38112225282 passed all four Windows/Ubuntu verification and browser jobs on
+full SHA `789012914b74f7db5b06fe963a080014b27d8343` (PR #10, open) on 2026-10-11.
+Job and step conclusions are verified; logs were not inspected for exact remote counts/coverage.
+Earlier CI-pending/failing statements are historical for their snapshots. Itemized G0 disposition,
+unusual cmd metacharacter temp-root residual,
 remaining boundary evidence, manual accessibility, Phase 6B G1 and final owner review remain open.**
 
-Latest local update (2026-10-11): after the owner's concrete A2 execution approval, all three
-Linux CLI lifecycle cases passed in the networkless sandbox. The full nonbrowser suite passed
-535 tests with 92.13% coverage; final formatting, lint and strict MyPy passed. The test/config
-hashes remained identical to the reviewed draft. A2 is local Linux evidence only, not new-head
-CI or Windows console coverage. The published A1 HEAD repair retains its earlier successful
-four-job CI. The owner approved publishing the verified A2 batch; new-head CI and remaining
-G0 gates remain open. See the publication approval below.
+Latest local update (2026-10-12): A3 passed all nine focused cases and 544 full nonbrowser
+tests in the existing networkless sandbox, with 92.13% coverage. Ruff and both MyPy platform
+targets passed. Published head `7890129` has the four-job CI evidence above, which predates
+this new test file. Earlier A2 Linux signal evidence does not establish Windows console
+behavior. New-head CI and remaining G0 gates stay open; see the A3 evidence below.
 
 G0 Phase 5 deferral and G1 Phase 6A design approval were provided by the owner on 2026-09-22.
 On 2026-09-24 the owner authorized G2 test execution only inside a sandbox. On 2026-09-27 the owner
@@ -1976,3 +1974,195 @@ preclaimed successful push. The separate primary-workspace planning/workflow edi
 Owner-dispatched new-head CI and final merge review remain required. No host/Windows lifecycle
 execution, external model call, workflow expansion, CI dispatch, G0 closure or Phase 6B
 implementation is included in this approval.
+
+## A2 typing repair CI confirmation — 2026-10-11
+
+After the owner reported success and asked to move on, Codex verified public Actions run,
+attempt-specific job and step metadata for owner-dispatched
+[run 38112225282](https://github.com/jiraphat-j/AgentSec/actions/runs/38112225282), attempt 1.
+The event is `workflow_dispatch`, full head SHA `789012914b74f7db5b06fe963a080014b27d8343`,
+conclusion `success`; created 04:38:30 UTC and last updated 04:42:54 UTC on 2026-10-11.
+PR #10 remains open, unmerged, on `codex/g0-dashboard-evidence` with that exact head.
+The PR worktree was clean before this record update.
+
+| Job | Job ID | Verified conclusion |
+|---|---|---|
+| `verify (windows-latest)` | 114389979463 | Success |
+| `verify (ubuntu-latest)` | 114389979462 | Success |
+| `dashboard-browser (windows-latest)` | 114389979466 | Success |
+| `dashboard-browser (ubuntu-latest)` | 114389979332 | Success |
+
+Both verify jobs passed formatting, lint, type check, tests, build and dependency audit.
+In particular, the native Windows MyPy step passed, superseding the owner's earlier reported
+seven-error failure on `5d7372f`. Both existing approved browser test steps passed; each
+opposite-OS Chromium installation step is intentionally skipped, not a pytest result.
+Logs were not requested/inspected in this confirmation. Do not infer remote test counts,
+coverage or warnings from job conclusions or relabel the local 3/535 results as CI counts.
+The new lifecycle marker remains excluded from these CI jobs: no Windows Ctrl+C/SIGBREAK
+or CI lifecycle pass is claimed. No test execution, CI dispatch, external model call,
+commit/push, merge, G0 closure or Phase 6B approval occurred while recording this metadata.
+
+## A3 genuine-artifact API parity task — 2026-10-11
+
+Status: **Bounded delegation packet prepared, not implemented or tested.** Continue PR #10
+at base `789012914b74f7db5b06fe963a080014b27d8343`. This is the next original G0 assertion
+group from the consolidated audit, not Phase 6B runtime work or a new acceptance phase.
+
+Use `Codex plan -> agy implement + self-review -> Codex verify` for this non-sensitive task.
+Reuse the real `genuine_artifacts` fixture in `test_dashboard_artifact_redaction.py`; do not
+copy its scenario/evaluation implementation or move existing fixtures/tests. Its current
+seven-kind loading/redaction evidence remains credited. A3 adds only real-file loader to
+in-process API parity for the four originally named non-run kinds.
+
+Proposed editable implementation file: one isolated staged
+`tests/test_dashboard_artifact_parity.py`. Codex applies the accepted patch to that same new
+path in the PR worktree after reviewing the saved file, not merely agy's self-review.
+Existing test/source/configuration/CI files are not editable by agy. Codex maintains the
+Phase 5/6 records separately. This new exact-file grant is not the old, removed A1 grant;
+confirm the new scoped file access and Gemini prompt before dispatch. No broad repository
+trust, global settings change or permission bypass is authorized by this packet.
+
+### Exact acceptance matrix: nine cases
+
+| Cases | Independent expected facts |
+|---|---|
+| Four artifact-kind cases: comparison, evaluation, rule, rule-test | Write the corresponding genuine model JSON and one-entry manifest under pytest temporary storage; load via public `DashboardCatalog.load`; assert full canonical record data, exact catalog/list pages and complete detail envelope, including ID, kind, title, status and `report_only` provenance |
+| Five evaluation collection cases: children, metrics, pairs, confusion-counts, timing | Use the validated evaluation model's JSON lists as the oracle; assert all bounded two-item pages and their concatenation, exact `total`/`offset`/`limit`, and empty end/beyond-end pages; detail replaces those five lists with their exact named nested counts |
+
+The canonical oracle is `BaseModel.model_dump(mode="json")` from the genuine fixture,
+not `DashboardService`, a private product encoder, returned API data or an alternative-shape
+fallback. Derive identity/title/status from the model contract and explicit kind mapping;
+use `Rule Test artifact` and `available` for the rule's missing report status as specified.
+Only evaluation detail removes `children`, `metrics`, `pairs`, `confusion_counts`, `timing`;
+all other model data remains exact. The wire names are `confusion-counts` and `timing`, with
+the detail count map using `confusion-counts`; do not invent an extra endpoint.
+
+Every case snapshots manifest/artifact bytes, selected file inventory and a deep copy of
+catalog records. Assert they remain unchanged after requests. Use `TestClient` with the
+fixed loopback base URL in-process, never `uvicorn.run`, a server thread, browser, socket,
+subprocess, host path, live credential or new attack scenario. Do not import replay/private
+catalog helpers as an expected-value shortcut. Setup failures must remain visible. No skip,
+xfail, weakened assertion, warning filter or changed resource bound is allowed to obtain green.
+
+### Delegation and verification boundary
+
+Proposed agy invocation shape: Gemini high (`gemini-3.8-flash-high`, `--effort high`),
+`--mode accept-edits`, `--output-format json`, initially `--print-timeout 180s`, with only
+the isolated staged file and a prompt containing the approved public interfaces/synthetic
+specification above. File editing and self-review only; no commands, tests, install, web/MCP
+actions, repository access, commit, push or merge. A file allowlist in the prompt alone is
+not enforcement: establish exact-file permissions or stop before editing and offer a patch
+proposal. An empty response or unchanged stub is not success; no silent model downgrade,
+automatic broad grant or indefinite timeout retry is permitted.
+
+Codex verifies the actual patch's imports, oracle independence, fixture reuse, case count,
+immutability and sensitive-surface exclusions, then applies only the accepted new test file.
+Proposed local checks use the existing networkless/read-only wrapper:
+
+```text
+python -m pytest -p no:cacheprovider -q --tb=short tests/test_dashboard_artifact_parity.py
+python -m pytest -p no:cacheprovider -p pytest_cov.plugin --cov=agentsec --cov-report=term --cov-fail-under=90 -q --tb=short
+python -m mypy --platform win32 --cache-dir /tmp/mypy_win32
+python -m mypy --platform linux --cache-dir /tmp/mypy_linux
+python -m ruff format --check --no-cache src tests
+python -m ruff check --no-cache src tests
+```
+
+These are a prepared checklist, not executed results or permission to execute a newly sensitive
+patch. If agy finds a product mismatch, sensitive edit or required access/scope expansion,
+it stops; Codex records the concrete discrepancy without changing the oracle or production
+code to manufacture a pass. A4/A5/A8, browser A6/A7, A2 Windows console evidence, Host-port
+wording, B/C/D/E and Phase 6B G1 stay outside this small delegation. Commit, push, CI dispatch
+and merge need their applicable separate authorization. No agy call, fixture generation,
+pytest, listener or runtime edit has occurred while preparing this packet.
+
+### Approved A3 dispatch preflight — 2026-10-11
+
+The owner approved this packet, including the bounded Google/Gemini sharing and independent
+sandbox verification. Implementation dispatch remains paused: the installed CLI help exposes
+no per-invocation settings option, and the official CLI permissions guide documents exact-file
+grants in global `antigravity-cli/settings.json`. Inspection of local project configuration did
+not establish a supported project-only equivalent. This is a configuration constraint, not a
+withdrawal of the owner's A3 approval or evidence that project-scoped permissions are impossible.
+
+The packet explicitly excludes global settings changes. No temporary grant, broad trust,
+permission bypass, staged implementation file or model implementation request was made.
+A read-only `/permissions` print-mode probe under normal Codex restrictions could not access
+Antigravity's app data and requested authentication; it was stopped without signing in.
+That restricted probe does not prove the owner's normal Antigravity account is logged out.
+No fixture generation, project test, runtime edit, commit, push or CI dispatch occurred.
+
+Following `antigravity-subagent`, Codex stopped before direct edits rather than treating the
+prompt's allowlist as enforcement. Continuation needs either authorization for temporary
+exact-file permission settings with restoration verified, or an explicitly selected patch-proposal
+alternative. A3 and the remaining G0/G1 gates remain open. Reference:
+[official CLI permissions](https://antigravity.google/docs/permissions?tab=cli).
+
+## A3 Codex implementation and sandbox verification — 2026-10-12
+
+The owner selected Codex rather than agy after the dispatch preflight pause. That selection
+supersedes the pending delegation path without changing A3's nine-case acceptance matrix or
+its sandbox-only execution approval. No Antigravity model implementation request, temporary
+grant, global settings change, broad trust or permission bypass was used for this batch.
+
+Codex added only `tests/test_dashboard_artifact_parity.py`, reusing the existing module-scoped
+`genuine_artifacts` fixture by import rather than copying its scenario/evaluation logic.
+Four cases load real comparison, evaluation, rule and rule-test files via public
+`DashboardCatalog.load`, assert full canonical record data and independently derived summaries,
+and compare exact catalog/list pages and detail envelopes. Five evaluation cases compare
+each named collection's two-item pages, concatenation, total/offset/limit and empty end/beyond-end
+pages against the genuine model's JSON lists. Evaluation detail removes exactly the five
+collections and reports their exact named counts. Every case snapshots selected input bytes
+and inventory before loading and deep-copies catalog records before in-process requests.
+Fixture model data is also asserted unchanged. No private product encoder/service is an oracle.
+
+### Tested snapshot and isolation
+
+- Base full SHA: `789012914b74f7db5b06fe963a080014b27d8343`, PR #10 worktree branch
+  `codex/g0-dashboard-evidence`, plus the uncommitted new test file.
+- Test file SHA-256 before and after all checks:
+  `0036fe9aa6ee3768cd727d0c8120e35845ca103bda702b0f3e4cbbf6e2ab951c`.
+- Existing tracked source, tests, `pyproject.toml` and CI configuration have no diff from
+  that base. Verification documents are maintained separately, not executable inputs.
+- Existing WSL Ubuntu environment, Python 3.13.15, with `bwrap --unshare-all --clearenv`:
+  `/work` repository and `/sandbox` dependency environment read-only; private `/tmp`,
+  no host home/credentials or external network access. Bytecode/cache writes disabled or
+  directed into private temporary storage; pytest plugin autoload disabled.
+- Unchanged bounds: `timeout -k 5 240`, `prlimit --cpu=120 --as=1073741824 --nproc=128
+  --nofile=256 --fsize=67108864`. Checks ran sequentially through the existing hidden WSL
+  launcher, with a 270-second host-side test deadline and 30-second static-check deadline.
+  No new package, listener, browser, host scenario execution or sensitive runtime change.
+
+### Actual commands and results
+
+Each command below used `/sandbox/venv/bin/python` inside that wrapper:
+
+| Command | Observed result |
+|---|---|
+| `python -m pytest -p no:cacheprovider -q --tb=short tests/test_dashboard_artifact_parity.py` | 9 passed, 1 existing upstream warning, 3.93s |
+| `python -m pytest -p no:cacheprovider -p pytest_cov.plugin --cov=agentsec --cov-report=term --cov-fail-under=90 -q --tb=short` | 544 passed, 3 skipped, 7 deselected, 1 existing upstream warning, 63.31s; 92.13% coverage |
+| `python -m mypy --platform win32 --cache-dir /tmp/mypy_win32` | Success, 65 files |
+| `python -m mypy --platform linux --cache-dir /tmp/mypy_linux` | Success, 65 files |
+| `python -m ruff format --check --no-cache src tests` | 65 files already formatted |
+| `python -m ruff check --no-cache src tests` | All checks passed |
+
+The skips are the three existing Windows/NTFS reparse cases on Linux. The seven deselections
+are the four browser and three separately gated lifecycle cases. The warning is the existing
+Starlette/httpx TestClient deprecation; it was not suppressed and no dependency was changed.
+No product discrepancy, weakened oracle, new skip/xfail or resource-bound change was needed.
+
+A3's finite API acceptance matrix is now locally verified, not Windows runtime/browser or
+new-head CI evidence. Commit/push, owner-dispatched new-head CI and final review remain separate.
+A4/A5/A8, browser A6/A7, A2 Windows console behavior, Host-port wording, B/C/D/E and Phase 6B G1
+remain open. This batch does not close G0 or authorize Phase 6B runtime implementation.
+
+### A3 publication approval — 2026-10-12
+
+The owner explicitly approved committing and pushing the verified A3 batch. Final review
+confirmed the test hash matches the sandbox-verified snapshot and the remote branch still
+points to base `789012914b74f7db5b06fe963a080014b27d8343`. Only the new parity test and
+the two Phase 5/6 verification records are included; separate primary-workspace planning
+and workflow edits are excluded. No executable inputs changed after verification, so the
+unchanged passing checks are reused rather than rerun. Commit/push authorization does not
+include Actions dispatch, merge, G0 closure or Phase 6B runtime implementation. Publication
+success is reported only after Git confirms it; new-head CI remains pending.
