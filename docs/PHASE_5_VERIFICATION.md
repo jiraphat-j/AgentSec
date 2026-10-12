@@ -1,9 +1,19 @@
 # Phase 5 verification record
 
-Status: the owner-approved C07 follow-up passed 429 non-browser tests at 92.04% coverage and
-four Chromium checks on 2026-10-03, repairing the twelve later parity failures;
-complete C01–C13 acceptance evidence, a final
-reviewed revision, Windows/Linux CI, and project-owner acceptance remain pending.
+Current status (2026-10-12): A3 was published as `9093a63` and passed all four CI jobs.
+A4's six invalid-input tests now pass locally in the networkless sandbox; publication is
+owner-approved, with new-head CI pending. Windows console lifecycle remains untested.
+
+Status: Actions run 38216311835 passed all four Windows/Ubuntu verification and browser jobs on
+full SHA `9093a63094e5bb44c5a7b999056c21213a63eadf` (PR #10, open) on 2026-10-12.
+Job/step conclusions are verified; exact remote counts were not inspected from logs.
+Itemized G0 disposition, remaining boundary evidence, manual accessibility and final owner
+acceptance remain open.
+
+Latest local update (2026-10-12): all six A4 public-loader rejection cases passed in the
+networkless sandbox. Full regression passed 550 tests with 92.19% coverage; Ruff and both
+strict MyPy platform targets passed. Published CI above predates the new A4 test file;
+new-head CI and remaining G0 gates stay open.
 
 ## Verification completion plan
 
@@ -324,3 +334,339 @@ All twelve reproduced discrepancies now pass; final full suite has 429 passed at
 four Chromium checks and clean quality/build/installed checks. The prior failed snapshot is
 historical. See [Phase 6 verification](PHASE_6_VERIFICATION.md#approved-c07-liveoffline-repair--2026-10-03)
 for the exact 86-path snapshot and remaining G0/manual/platform/CI/owner-acceptance gates.
+
+### Capture-boundary continuation after PR #9 — 2026-10-03
+
+PR #9 is verified merged at `c165b3d203998585193711e67895e64bf4321258`; continuation uses the
+existing clean managed worktree on `codex/g0-dashboard-evidence`. Public GitHub Actions queries
+for reviewed head `507e1fd585bc11040ab7df1af41795eb4e63d555` and merge returned zero runs.
+No CI dispatch or cross-platform acceptance is inferred from the merge.
+
+`tests/test_dashboard_capture_boundaries.py` is test-only; product, packaged resources, browser
+tests, dependencies and CI are unchanged. It supplements P5 C04/P5-03 with public-loader
+positive controls and precise synthetic mutation checkpoints:
+
+- Ten JSON cases: manifest/report post-read append, mtime change, same-byte inode replacement,
+  deletion and mismatched opened descriptor. Replacement fixtures preserve bytes, size and
+  nanosecond mtime while differing in inode. Wrong descriptors are rejected before any read;
+  opened handles close on every tested failure. Open-descriptor replacement/deletion is Unix
+  evidence; its four variants explicitly skip on Windows rather than claim sharing-mode parity.
+- Four SQLite cases: post-read mtime change, same-byte inode replacement, deletion and Linux
+  symlink substitution. The real reader finishes and closes before injection; tracked queries
+  use read-only URI/query-only mode and contain only SELECT/PRAGMA/BEGIN. Linux symlink evidence
+  explicitly skips on Windows. Windows junction/reparse checks remain separate.
+- Three post-capture cases: replace/delete/append selected SQLite/JSON inputs, then compare
+  service catalog/events/detail/exact-event results with captured positives while forbidding
+  file reopening. Queries do not alter the injected files. This demonstrates snapshot reuse,
+  not continued authentication of selected files after startup.
+
+These deterministic hooks do not prove arbitrary scheduling races, same-inode size/mtime-
+preserving edits, SQLite WAL/concurrent-writer behavior, parent-directory races, every artifact
+kind/query or the complete resource/concurrency matrix. Hostile browser matrices, manual
+accessibility, Windows paths, human-dispatched exact-commit CI and final owner review stay open.
+The independent reviewer requested timestamp-isolated inode negatives and Unix annotations;
+both test-only improvements were applied before final verification. No new product fix needed.
+
+Final local results: **17 focused passed in 2.78 s; 446 non-browser passed, four browser tests
+deselected in 60.98 s; 92.13% coverage** (3,356 statements/264 missed). Ruff format/lint and
+strict MyPy (60 files) passed. One upstream Starlette/httpx warning remains. Final read-only
+independent review found no blockers. Runtime used the existing bounded networkless WSL2
+sandbox; no host tests or new listener/browser/build/installed-package/audit run. The latter
+checks remain historical evidence for the unchanged merged product, not this new test module.
+Exact manifest/commands/limits are in the
+[Phase 6 record](PHASE_6_VERIFICATION.md#post-merge-g0-capture-boundary-batch--2026-10-03).
+
+### Windows CI follow-up — 2026-10-03
+
+Actions run 37096511551 passed Ubuntu verification and both Chromium jobs but failed Windows
+verification on oversized pytest IDs and a clock-coupled linkage fixture. The owner-approved
+test-only fixes preserve payload/assertion coverage and production deadlines. Local sandbox
+verification passed all 446 non-browser tests at 92.13% coverage, with clean quality checks.
+See [the CI fix record](PHASE_6_VERIFICATION.md#windows-ci-test-fixes--2026-10-03) for commands,
+snapshot and failed-run evidence. Fresh Windows CI and other G0 gates remain outstanding.
+
+### PR #10 CI and Windows reparse checks — 2026-10-06
+
+The owner dispatched [Actions run 37431200546](https://github.com/jiraphat-j/AgentSec/actions/runs/37431200546)
+on `ba9b9f1307affb88c617fc36e1a6cf4a4fd2c160`: Windows/Ubuntu verification and both Chromium
+jobs passed. PR #10 remains open. This closes the cross-platform CI check for that branch revision,
+but does not supply the skipped Windows junction/reparse evidence or manual accessibility review.
+
+Three Windows-only public-catalog cases are now added on the same branch: a regular selected
+file, a selected file symlink, and a parent directory junction. The targets and manifest live
+inside one synthetic pytest temporary directory; link rejection, unchanged target bytes and
+link-node cleanup are explicit. Junction setup invokes `cmd /d /c mklink /J` from a test, so its
+concrete diff received human review authorization before sandbox execution. The focused Linux
+sandbox suite passed (20 passed, 3 Windows-only skips); the full nonbrowser suite passed (446
+passed, 3 skips, 4 browser deselections, 92.13% coverage). The Windows cases have **not** run
+and are not credited to P5 C04/P5-03 until the new PR head passes Windows Actions. See the
+[Phase 6 review](PHASE_6_SECURITY_REVIEW.md#windows-reparse-test-proposal--2026-10-06).
+Other hostile-content/resource matrices, manual accessibility and final owner acceptance remain
+open. New edits will require a fresh reviewed-commit Actions run.
+
+## Human accessibility walkthrough — prepared 2026-10-06
+
+### Evaluation Record
+- **Tested Commit SHA:** [Full SHA of reviewed checkout]
+- **Environment:** [OS/version, browser/version, desktop viewport and zoom]
+- **Screen Reader:** [Name/version; record unperformed screen-reader checks as PENDING]
+- **Tester / Date:** [Human tester] / [Actual review date]
+- **Synthetic Fixture Manifest:** [Path to reviewed multi-page fixture manifest]
+
+### Prerequisites and fixtures
+Use existing approved sandbox loopback viewer and reviewed synthetic manifests. Fixtures must provide more than one page for catalog, timeline, and nested collections within the fixed resource limits, plus empty, loading, error, unavailable, and report-only states. If any synthetic fixture is absent, record status as **BLOCKED**; never pass missing test data. For error and loading states, use approved local browser fixture tooling without changing host network settings. For every check record PASS/FAIL/BLOCKED, the observed behavior, and a screenshot or other evidence reference; all checks below are PENDING.
+
+### Inspection Checklist
+
+#### C12-01: Narrow width and real 200% zoom (PENDING)
+At 100% browser zoom, record a 320–390 CSS-pixel viewport. Separately repeat the desktop flow at real browser 200% zoom; record the resulting CSS-pixel viewport. Do not substitute CSS zoom or device scaling. Verify layout responds without unintended content clipping or horizontal page scroll. Intentional horizontal scrolling within `<nav>` and data tables is allowed provided controls and cell data remain operable.
+*Result / Measured Width:* PENDING
+
+#### C12-02: Contrast and status presentation (PENDING)
+Sample foreground/background pairs with a color contrast analyzer. Measure `#e8f4ef` body text, `#65e6ae` accent, `#9db8ad` muted labels, and `#dc7b7b` failure borders against background `#08110f` and panel `#10201c`. Record the accessibility threshold used for each measured pair. Confirm provenance/status tags, "Reported only" rows, and failure states convey meaning through text as well as color.
+*Result / Measured Ratios:* PENDING
+
+#### C11-01: Keyboard navigation and restored state (PENDING)
+Use `Tab`, `Shift+Tab`, and `Enter`/`Space`. Verify visible, unobscured focus on links, buttons, and filter inputs across all seven views: "Overview", "Runs", "Investigations", "Comparisons", "Evaluations", "Rules", and "Rule tests". Confirm "Skip to content" jumps to `<main id="content">`. On multi-page catalog, advance with "Next" / "Previous", select an item, and verify "Back" preserves catalog pagination. In "Runs", apply "Exact trace ID" and "Exact event type" filters, paginate timeline, activate "Open evidence", and verify "Back" restores focus to originating `data-evidence-id` button, filters, and timeline offset. Verify nested investigation pagination and evidence back-navigation. Activate different views rapidly by keyboard; confirm asynchronous updates settle on the latest selected view.
+*Result / Evidence:* PENDING
+
+#### C12-03: Labels, tables, and screen-reader meaning (PENDING)
+Execute with a named screen reader. Verify landmarks (`<nav aria-label="Artifact views">`, `<main>`, `<footer>`) and live polite updates (`#status`). Inspect persistent filter-input labels and their accessible names; placeholders alone must not be assumed sufficient. Confirm the empty paragraph text is read within normal DOM flow rather than an asserted live announcement. Verify semantic tables contain explicit headers and captions ("Recorded fields", "Recorded attack-chain stages and evidence", "Exact metric values: <fraction>"). Ensure the attack chain image (`role="img"`) announces stages via its `aria-label`, buttons read "Event <sequence>: <event_id>", incident outcome and remediation lists are announced, and `<progress>` elements convey fractional values or "Unavailable". Confirm `report_only` provenance stays visibly unverified and "Reported only" timeline rows offer no verified evidence drill-down. Read comparison outcomes/divergence and evaluation progress alongside exact-value tables; zero denominators must remain unavailable, not become zero.
+*Result / Evidence:* PENDING
+
+#### C12-04: Empty, loading, error, and unavailable states (PENDING)
+Use each prepared fixture and the approved local browser fixture controls. Inspect the empty explanation and selected-count announcement; loading status; "Unable to load view" and "The requested view is unavailable." after a failed request; and disabled or unavailable evidence references. Check focus and readable explanations at narrow width and 200% zoom, including report-only timelines. Record missing fixtures as BLOCKED.
+*Result / Fixture / Evidence:* PENDING
+
+### Handoff and G0 boundary
+All failures remain open findings under G0. Final G0 completion requires successful full-SHA Windows and Ubuntu CI runs alongside formal human owner acceptance, which remain independent of this manual walkthrough.
+
+## Windows reparse CI confirmation — 2026-10-06
+
+Public evidence from GitHub Actions [run 37439310170](https://github.com/jiraphat-j/AgentSec/actions/runs/37439310170) (`workflow_dispatch`, attempt 1, success) confirmed full SHA `7ab1b1c556e3a00649b826018cffa98f6935d961` on open PR #10 (source and tests unchanged since `4db44b7`). The Windows run passed all non-skipped tests in `tests/test_dashboard_g0_boundaries.py` (`.............ss........`), with the only two skips being Linux-only cases. All three Windows boundary cases passed: regular selected file acceptance, file symlink rejection, parent junction rejection, unchanged synthetic target bytes, and link cleanup. Credit is strictly limited to named NTFS cases P5 C04 / P5-03, not all reparse tags, filesystem races, or resource limits. For the full four-job CI matrix and exact evidence limitations, see [PHASE_6_VERIFICATION.md#windows-reparse-ci-confirmation--2026-10-06](PHASE_6_VERIFICATION.md#windows-reparse-ci-confirmation--2026-10-06).
+
+Remaining human, accessibility, and governance gates are kept open; neither Phase 5 nor G0 is complete. Itemized G0 disposition, complete C01–C13 acceptance evidence, final project-owner full-diff acceptance, Phase 6B G1, the unresolved unusual `cmd` metacharacter temp-root residual, the broader hostile/field/error/resource/mutation matrix, and manual accessibility verification (keyboard, narrow width, real 200% zoom, focus, contrast, screen-reader) remain open. Recorded CI results apply strictly to tested SHA `7ab1b1c556e3a00649b826018cffa98f6935d961` and do not apply to future documentation commits or merge; no new host tests or CI dispatch were performed. Historical pending statements are superseded, not erased.
+
+## Nested response projection evidence — 2026-10-07
+
+agy implemented and self-reviewed the approved 22-case nested API matrix; Codex reviewed the
+saved code, corrected import ordering and independently verified it in the existing networkless
+resource-bounded sandbox. Nine paginated routes and two child routes reject the synthetic
+packaged canary or forged closed prompt metadata while preserving exact safe responses,
+neighboring pages/children, request availability after repeated rejection, security headers,
+captured-output/log redaction and unchanged catalog data. Evidence is limited to in-memory
+response guards (P5 C08/P5-02), not loader/schema/provenance validation, DOM or accessibility.
+
+The tested local snapshot is base full SHA `7ab1b1c556e3a00649b826018cffa98f6935d961` plus
+the then-uncommitted `tests/test_dashboard_nested_projection.py`; tracked runtime/dependency/CI
+files are unchanged. Focused tests: 53 passed. Full nonbrowser suite: 468 passed, 3 Windows-only
+skips, 4 browser deselected, 1 upstream warning, 92.13% coverage. Ruff format/lint and strict
+MyPy passed. See the [Phase 6 verification record](PHASE_6_VERIFICATION.md#implementation-and-independent-sandbox-verification--2026-10-07)
+for the test-file identity, commands, isolation, delegation usage and limitations.
+
+Fresh full-SHA Windows/Ubuntu CI and owner acceptance remain pending for this new batch.
+The prepared human walkthrough remains PENDING; no Phase 5, G0 or Phase 6B completion is claimed.
+
+## Nested response CI confirmation — 2026-10-07
+
+Owner-dispatched [Actions run 37566851220](https://github.com/jiraphat-j/AgentSec/actions/runs/37566851220)
+(attempt 1) passed all four jobs on full SHA `453bc1c91c3e33a53ba946d1ae0f9ea763b2bd68`.
+Windows verification: 464 passed, 7 platform skips, 4 browser deselected; Ubuntu: 468 passed,
+3 platform skips, 4 deselected. Each had 92.13% coverage and one upstream deprecation warning.
+Both logs show all 22 new nested-response cases passed; each browser job passed four tests.
+Ruff, strict MyPy, package build and dependency audit also passed on both verification jobs.
+See the [full Phase 6 CI matrix](PHASE_6_VERIFICATION.md#nested-response-ci-confirmation--2026-10-07).
+
+This supersedes the preceding batch's CI-pending status for the tested SHA only. PR #10 is
+open, not merged; final owner review, remaining G0 evidence and the prepared human accessibility
+walkthrough remain open. No new test execution or CI dispatch was performed during recording.
+
+## Public response-byte limit evidence — 2026-10-07
+
+agy implemented and repaired the approved test-only batch; Codex reviewed the saved code and
+independently verified 22 ASCII/UTF-8 cases across nine paginated routes and two child routes.
+Exact 1 MiB responses preserve complete content; one byte over returns the fixed bounded error.
+Neighbors, headers, request recovery, error/log omission and unchanged catalog data passed.
+This adds partial P5 C10/P5-03 response-boundary evidence, not complete large-artifact
+retrievability, schema-valid loading, concurrency or accessibility acceptance.
+
+Final local snapshot: `453bc1c91c3e33a53ba946d1ae0f9ea763b2bd68` plus uncommitted
+`tests/test_dashboard_response_limits.py`, with no tracked runtime/dependency/CI changes.
+Networkless sandbox checks: 74 focused tests and 490 full nonbrowser tests passed; 92.13%
+coverage; final Ruff format/lint and strict MyPy passed. Platform skips and the upstream warning
+remain explicit in the [detailed record](PHASE_6_VERIFICATION.md#public-response-byte-verification--2026-10-07).
+New-head CI, final owner review, remaining G0 cases and the human walkthrough remain open.
+
+## Public response-byte CI confirmation — 2026-10-07
+
+Owner-dispatched [Actions run 37628097651](https://github.com/jiraphat-j/AgentSec/actions/runs/37628097651)
+(attempt 1) passed all four jobs on full SHA `6aa9735ad273d9c2b93ee6943df8bdb814a1a7f2`.
+Windows verification: 486 passed, 7 platform skips, 4 browser deselected; Ubuntu: 490 passed,
+3 platform skips, 4 deselected. Both had 92.13% coverage and one existing upstream warning.
+All 22 public response-byte cases passed on each platform; both browser jobs passed four tests.
+Formatting, lint, strict MyPy, package build and dependency audit passed on both platforms.
+See the [detailed CI matrix](PHASE_6_VERIFICATION.md#public-response-byte-ci-confirmation--2026-10-07).
+
+This supersedes the preceding CI-pending statement for this exact commit only. PR #10 remains
+open and not merged. Remaining G0 evidence, manual accessibility and final owner acceptance
+remain open; no tests, dispatch or merge were performed while recording the results.
+
+## A1 request-boundary continuation — 2026-10-10
+
+agy implemented the new A1-only test file under scoped file permissions; Codex reviewed its
+saved code, returned test-harness repairs and independently verified the result in the existing
+networkless sandbox. Focused: 16 passed, 1 failed. Full nonbrowser: 506 passed, 1 failed,
+3 NTFS skips, 4 browser deselected, 1 upstream warning; 92.13% coverage. Final Ruff and strict
+MyPy passed. Existing product code, dependencies and CI remain unchanged.
+
+The new failure is `HEAD /api/v1/catalog`: expected 200 under the prepared GET/HEAD acceptance
+case, observed 405. Positive GET, security-header and source/catalog immutability controls
+passed. The failure is retained without skip/xfail; a reviewed HTTP-routing repair or explicit
+owner contract disposition is required. This batch is not ready for publication and does not
+close A1 or G0. See the [snapshot, commands and open disposition](PHASE_6_VERIFICATION.md#a1-request-boundary-verification--2026-10-10).
+
+## A1 HEAD repair preparation — 2026-10-10
+
+Codex prepared a decorator-only GET/HEAD registration repair for all twelve dashboard routes
+and 28 additional synthetic GET/HEAD comparison cases. Existing handlers, request guards,
+resource limits, paths and dependencies are unchanged. Formatting, lint, strict MyPy and
+diff whitespace checks pass; no runtime tests were executed against this repair.
+
+The concrete HTTP-adapter diff still requires human sign-off before sandbox execution under
+ADR-008. See the [exact registrations, snapshot and planned checks](PHASE_6_VERIFICATION.md#a1-head-repair-prepared--2026-10-10).
+This preparation does not close A1/G0 or authorize commit, push, CI dispatch or Phase 6B runtime work.
+
+## A1 HEAD repair verification — 2026-10-10
+
+The owner approved the concrete routing diff for networkless execution. The approved adapter
+and test fingerprints stayed unchanged. Focused: 45 passed. Full nonbrowser: 535 passed,
+3 Windows-only skips, 4 browser deselected, 1 existing upstream warning; 92.13% coverage.
+Final formatting, lint and strict MyPy pass. The original HEAD 405 failure is fixed without
+relaxing request guards or hiding assertions. Six route-pattern cases test genuine 404 errors,
+not successful run/investigation HEAD retrieval.
+
+See the [snapshot, commands, exclusions and static-check retry record](PHASE_6_VERIFICATION.md#a1-head-repair-verification--2026-10-10).
+Ready for the owner's commit/push decision; no publication occurred. New-head CI, Host-port
+wording, manual accessibility, remaining G0 evidence and Phase 6B G1 remain open.
+
+The owner subsequently approved publishing these four scoped files to PR #10; see the
+[publication approval](PHASE_6_VERIFICATION.md#publication-approval--2026-10-10).
+New-head Actions dispatch and merge are not included in that approval.
+
+## A1 HEAD repair CI confirmation — 2026-10-10
+
+Public metadata confirms owner-dispatched [Actions run 38038369964](https://github.com/jiraphat-j/AgentSec/actions/runs/38038369964),
+attempt 1, passed all four Windows/Ubuntu verification and browser jobs on full SHA
+`bc430a512f911c1c9f229d4cfbf78f6f47dd284b`. Both verification jobs have successful
+formatting, lint, type, test, build and audit steps; both approved loopback browser steps pass.
+
+Anonymous job-log requests returned HTTP 403, so exact remote test counts, skips and coverage
+were not independently read or inferred from local results. See the [job IDs and evidence limits](PHASE_6_VERIFICATION.md#a1-head-repair-ci-confirmation--2026-10-10).
+PR #10 remains open and unmerged. This supersedes new-head CI-pending statements for this
+commit only, not the remaining G0 matrix, manual accessibility or Phase 6B G1. No tests,
+dispatch, publication or merge occurred while recording; these edits remain uncommitted.
+
+## A2 CLI lifecycle review draft — 2026-10-10
+
+The next G0 batch is prepared, not executed: three Linux networkless checks for CLI normal
+return, occupied-port failure and foreground SIGINT cleanup. The separate marker is excluded
+from ordinary pytest and is outside browser CI collection. See the
+[concrete A2 diff/command review boundary](PHASE_6_VERIFICATION.md#a2-cli-lifecycle-draft--2026-10-10).
+Mandatory human review is pending; Windows console behavior and G0 closure are not claimed.
+
+## A2 Linux lifecycle verification — 2026-10-11
+
+The owner approved the concrete draft and networkless sandbox execution. All three cases
+passed: normal-return/configuration control, real occupied-port failure and real SIGINT
+shutdown. Listener closure/rebind, child reaping/private PID inventory, bounded captures and
+unchanged input bytes passed. The reviewed test/config hashes were unchanged after execution.
+The full nonbrowser regression passed 535 tests, with 3 existing Windows-only skips,
+7 browser/lifecycle deselections, 1 existing upstream warning and 92.13% coverage in 69.59s.
+Focused A2 passed in 7.34s with the same warning. Final Ruff formatting/lint and strict MyPy
+passed for 64 files; diff whitespace passed. See the
+[exact snapshot, approval, commands and limits](PHASE_6_VERIFICATION.md#a2-approved-sandbox-verification--2026-10-11).
+
+This supersedes the preceding A2 draft's pending-review/not-run status for Linux only.
+Windows console interruption remains open; no host listener or interactive terminal was used.
+No product/dependency/CI change, external model call, publication, dispatch or merge occurred.
+This batch is locally verified and remains uncommitted; existing A1 CI is not new A2 CI.
+Remaining G0 items and Phase 6B G1 are not approved or closed by these results.
+
+The owner subsequently approved committing and pushing these four scoped files; see the
+[A2 publication approval](PHASE_6_VERIFICATION.md#a2-publication-approval--2026-10-11).
+New-head Actions dispatch and final merge review remain separate. The gated Linux lifecycle
+cases are local sandbox evidence, not cases added to the existing CI workflow.
+
+## A2 Windows typing repair review — 2026-10-11
+
+The reported seven `os.killpg`/`signal.SIGKILL` typing errors were reproduced with strict
+MyPy's Windows target. The runtime pytest skip does not prevent static inspection of bodies.
+Six added lines guard the three POSIX-only call sites/functions explicitly with `sys.platform`.
+Both full MyPy platform targets now pass for 64 files; Ruff format/lint and diff whitespace
+pass. No revised lifecycle test or native Windows check has run, and nothing is committed/pushed.
+See the [concrete repair, hash and renewed execution/publication gate](PHASE_6_VERIFICATION.md#a2-windows-typing-repair--2026-10-11).
+The earlier successful Linux snapshot stays credited; remaining G0 gates are not closed.
+
+## A2 typing repair re-verified — 2026-10-11
+
+After reviewing the six-line guard repair, the owner approved renewed sandbox execution and
+commit/push if checks passed. Focused A2: 3 passed in 7.79s. Full nonbrowser: 535 passed,
+3 existing Windows-only skips, 7 deselections, 92.13% coverage in 78.47s. Both pytest runs
+retained the existing upstream warning. Strict MyPy with both `--platform win32` and
+`--platform linux` passed for 64 source files; Ruff formatting/lint passed. No executable
+repair beyond the reviewed six lines was made. See the
+[snapshot, results and conditional publication approval](PHASE_6_VERIFICATION.md#a2-typing-repair-re-verification-and-publication--2026-10-11).
+This supersedes the preceding repair's pending-review/execution status for the reviewed
+Linux sandbox snapshot. Both type-check targets are static, not native Windows runtime
+evidence. New-head Actions dispatch and final merge review remain separate; G0 stays open.
+
+## A2 CI confirmation and next A3 packet — 2026-10-11
+
+Codex confirmed owner-dispatched [run 38112225282](https://github.com/jiraphat-j/AgentSec/actions/runs/38112225282),
+attempt 1, succeeded on full head `789012914b74f7db5b06fe963a080014b27d8343`.
+All four jobs and their required check/browser steps passed, including native Windows MyPy.
+PR #10 remains open and unmerged at that head. Exact remote counts/coverage were not read
+from logs; local lifecycle and regression numbers remain local evidence. The lifecycle marker
+was not executed by CI, so this does not close Windows console behavior or all of G0.
+See the [job IDs and evidence limits](PHASE_6_VERIFICATION.md#a2-typing-repair-ci-confirmation--2026-10-11).
+
+The next finite task is A3: four genuine comparison/evaluation/rule/rule-test loader-to-API
+parity cases plus five evaluation nested-collection pagination cases. The
+[scoped agy packet and verification checklist](PHASE_6_VERIFICATION.md#a3-genuine-artifact-api-parity-task--2026-10-11)
+reuse existing genuine fixtures, independently compare canonical model data and preserve
+source/catalog snapshots. The proposed new staged test file needs its exact-file access and
+Gemini prompt confirmed before dispatch; no old A1 permission grant remains active.
+No implementation, model call, tests, listener, publication or dispatch occurred in preparation.
+
+## A3 Codex implementation and local evidence — 2026-10-12
+
+The owner selected direct Codex implementation after the scoped agy preflight pause.
+Only `tests/test_dashboard_artifact_parity.py` was added: four genuine public-loader/API
+parity cases and five evaluation pagination cases, reusing the existing genuine artifact
+fixture with canonical model data as the independent oracle. Manifest/artifact bytes, input
+inventory and deep-copied catalog records remain unchanged after requests.
+
+The existing networkless, resource-bounded read-only sandbox passed all 9 focused cases and
+544 full nonbrowser tests (3 Windows-only skips, 7 browser/lifecycle deselections, 1 existing
+upstream warning), with 92.13% coverage. Ruff format/lint and Windows/Linux-target strict
+MyPy passed for 65 files. See the [snapshot, commands and evidence limits](PHASE_6_VERIFICATION.md#a3-codex-implementation-and-sandbox-verification--2026-10-12).
+No existing source/test/configuration changes, agy model call, permission settings change,
+listener, commit/push, CI dispatch or G0 acceptance occurred in this batch.
+
+## A3 CI and A4 local verification — 2026-10-12
+
+Owner-dispatched [run 38216311835](https://github.com/jiraphat-j/AgentSec/actions/runs/38216311835),
+attempt 1, passed all four jobs on full A3 head `9093a63094e5bb44c5a7b999056c21213a63eadf`.
+Job/step metadata was verified, not exact remote counts from logs. PR #10 remained open and
+unmerged. See the [A3 job IDs](PHASE_6_VERIFICATION.md#a3-ci-confirmation--2026-10-12).
+
+The owner then approved Codex implementation and sandbox verification of A4's six finite
+invalid-input cases. Only `tests/test_dashboard_artifact_validation.py` was added. Each case
+first loads a genuine rule-test report, then corrupts one selected file and asserts the exact
+public error, unchanged bytes/inventory and unchanged previously loaded catalog/fixture.
+All 6 focused tests and 550 nonbrowser tests passed locally (3 existing Windows skips,
+7 browser/lifecycle deselections, 1 existing upstream warning), with 92.19% coverage.
+Ruff and both strict MyPy targets passed for 66 files. See the
+[A4 snapshot and commands](PHASE_6_VERIFICATION.md#a4-public-loader-rejection-verification--2026-10-12).
+No existing runtime/test/configuration change, agy call, dependency change, listener,
+commit/push, CI dispatch, merge or G0 closure occurred in this A4 batch.

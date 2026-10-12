@@ -111,7 +111,7 @@ def test_runner_refuses_run_directory_overwrite(tmp_path: Path) -> None:
     def fixed_run_id(prefix: str) -> str:
         return "run_fixed" if prefix == "run" else ids(prefix)
 
-    runner = ScenarioRunner(id_factory=fixed_run_id)
+    runner = ScenarioRunner(id_factory=fixed_run_id, monotonic_clock=lambda: 0.0)
     runner.run(SCENARIO_ID, tmp_path)
 
     with pytest.raises(FileExistsError):
