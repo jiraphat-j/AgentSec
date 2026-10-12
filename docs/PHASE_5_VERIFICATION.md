@@ -1,21 +1,19 @@
 # Phase 5 verification record
 
-Current A2 status (2026-10-11): published repair `7890129` now has successful four-job CI,
-including native Windows MyPy. Linux lifecycle evidence remains the separate approved local
-sandbox run; Windows console behavior is untested. A3 was implemented directly by Codex at
-the owner's request and passed local sandbox verification on 2026-10-12. Publication is
-owner-approved; new-head CI remains pending.
+Current status (2026-10-12): A3 was published as `9093a63` and passed all four CI jobs.
+A4's six invalid-input tests now pass locally in the networkless sandbox; publication is
+owner-approved, with new-head CI pending. Windows console lifecycle remains untested.
 
-Status: Actions run 38112225282 passed all four Windows/Ubuntu verification and browser jobs on
-full SHA `789012914b74f7db5b06fe963a080014b27d8343` (PR #10, open) on 2026-10-11.
+Status: Actions run 38216311835 passed all four Windows/Ubuntu verification and browser jobs on
+full SHA `9093a63094e5bb44c5a7b999056c21213a63eadf` (PR #10, open) on 2026-10-12.
 Job/step conclusions are verified; exact remote counts were not inspected from logs.
 Itemized G0 disposition, remaining boundary evidence, manual accessibility and final owner
 acceptance remain open.
 
-Latest local update (2026-10-12): all nine A3 genuine-artifact parity cases passed in the
-networkless sandbox. Full nonbrowser regression passed 544 tests with 92.13% coverage;
-Ruff and both strict MyPy platform targets passed. Published CI above predates the new A3
-file; new-head CI and remaining G0 gates stay open.
+Latest local update (2026-10-12): all six A4 public-loader rejection cases passed in the
+networkless sandbox. Full regression passed 550 tests with 92.19% coverage; Ruff and both
+strict MyPy platform targets passed. Published CI above predates the new A4 test file;
+new-head CI and remaining G0 gates stay open.
 
 ## Verification completion plan
 
@@ -654,3 +652,21 @@ upstream warning), with 92.13% coverage. Ruff format/lint and Windows/Linux-targ
 MyPy passed for 65 files. See the [snapshot, commands and evidence limits](PHASE_6_VERIFICATION.md#a3-codex-implementation-and-sandbox-verification--2026-10-12).
 No existing source/test/configuration changes, agy model call, permission settings change,
 listener, commit/push, CI dispatch or G0 acceptance occurred in this batch.
+
+## A3 CI and A4 local verification — 2026-10-12
+
+Owner-dispatched [run 38216311835](https://github.com/jiraphat-j/AgentSec/actions/runs/38216311835),
+attempt 1, passed all four jobs on full A3 head `9093a63094e5bb44c5a7b999056c21213a63eadf`.
+Job/step metadata was verified, not exact remote counts from logs. PR #10 remained open and
+unmerged. See the [A3 job IDs](PHASE_6_VERIFICATION.md#a3-ci-confirmation--2026-10-12).
+
+The owner then approved Codex implementation and sandbox verification of A4's six finite
+invalid-input cases. Only `tests/test_dashboard_artifact_validation.py` was added. Each case
+first loads a genuine rule-test report, then corrupts one selected file and asserts the exact
+public error, unchanged bytes/inventory and unchanged previously loaded catalog/fixture.
+All 6 focused tests and 550 nonbrowser tests passed locally (3 existing Windows skips,
+7 browser/lifecycle deselections, 1 existing upstream warning), with 92.19% coverage.
+Ruff and both strict MyPy targets passed for 66 files. See the
+[A4 snapshot and commands](PHASE_6_VERIFICATION.md#a4-public-loader-rejection-verification--2026-10-12).
+No existing runtime/test/configuration change, agy call, dependency change, listener,
+commit/push, CI dispatch, merge or G0 closure occurred in this A4 batch.

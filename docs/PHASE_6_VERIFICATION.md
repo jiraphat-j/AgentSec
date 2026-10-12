@@ -1,24 +1,21 @@
 # Phase 6A verification record
 
-Current A2 status (2026-10-11): the Windows typing repair was published as `7890129` and its
-owner-dispatched CI passed all four jobs, including native Windows MyPy. The three Linux
-lifecycle cases remain separate local sandbox evidence, not Windows console coverage.
-A3's nine genuine-artifact parity cases were implemented directly by Codex at the owner's
-request and passed local sandbox verification on 2026-10-12. Publication is owner-approved;
-new-head CI remains pending.
+Current status (2026-10-12): A3 was published as `9093a63` and passed all four CI jobs.
+A4's six public-loader rejection tests now pass locally in the networkless sandbox;
+publication is owner-approved, with new-head CI pending. Earlier A2 Linux lifecycle results
+remain separate from native Windows type-check evidence and untested Windows console behavior.
 
-Status: **Actions run 38112225282 passed all four Windows/Ubuntu verification and browser jobs on
-full SHA `789012914b74f7db5b06fe963a080014b27d8343` (PR #10, open) on 2026-10-11.
+Status: **Actions run 38216311835 passed all four Windows/Ubuntu verification and browser jobs on
+full SHA `9093a63094e5bb44c5a7b999056c21213a63eadf` (PR #10, open) on 2026-10-12.
 Job and step conclusions are verified; logs were not inspected for exact remote counts/coverage.
 Earlier CI-pending/failing statements are historical for their snapshots. Itemized G0 disposition,
 unusual cmd metacharacter temp-root residual,
 remaining boundary evidence, manual accessibility, Phase 6B G1 and final owner review remain open.**
 
-Latest local update (2026-10-12): A3 passed all nine focused cases and 544 full nonbrowser
-tests in the existing networkless sandbox, with 92.13% coverage. Ruff and both MyPy platform
-targets passed. Published head `7890129` has the four-job CI evidence above, which predates
-this new test file. Earlier A2 Linux signal evidence does not establish Windows console
-behavior. New-head CI and remaining G0 gates stay open; see the A3 evidence below.
+Latest local update (2026-10-12): A4 passed all six focused cases and 550 full nonbrowser
+tests in the existing networkless sandbox, with 92.19% coverage. Ruff and both MyPy platform
+targets passed. Published head `9093a63` has the four-job CI evidence above, which predates
+this new A4 test file. New-head CI and remaining G0 gates stay open; see the evidence below.
 
 G0 Phase 5 deferral and G1 Phase 6A design approval were provided by the owner on 2026-09-22.
 On 2026-09-24 the owner authorized G2 test execution only inside a sandbox. On 2026-09-27 the owner
@@ -2166,3 +2163,84 @@ and workflow edits are excluded. No executable inputs changed after verification
 unchanged passing checks are reused rather than rerun. Commit/push authorization does not
 include Actions dispatch, merge, G0 closure or Phase 6B runtime implementation. Publication
 success is reported only after Git confirms it; new-head CI remains pending.
+
+## A3 CI confirmation — 2026-10-12
+
+The owner-approved A3 commit/push completed as
+`9093a63094e5bb44c5a7b999056c21213a63eadf` (`Test dashboard artifact API parity`).
+After the owner reported CI success, Codex verified public run and attempt-specific job/step
+metadata for [run 38216311835](https://github.com/jiraphat-j/AgentSec/actions/runs/38216311835),
+attempt 1, `workflow_dispatch`, exact head above, conclusion `success`. Created 07:10:47 UTC
+and last updated 07:15:49 UTC on 2026-10-12. PR #10 was open and unmerged on that exact head.
+
+| Job | Job ID | Verified conclusion |
+|---|---|---|
+| `verify (windows-latest)` | 114701768809 | Success |
+| `verify (ubuntu-latest)` | 114701768622 | Success |
+| `dashboard-browser (windows-latest)` | 114701768767 | Success |
+| `dashboard-browser (ubuntu-latest)` | 114701768829 | Success |
+
+Both verify jobs passed formatting, lint, types, tests, build and dependency audit; both
+approved browser-test steps passed. Opposite-OS Chromium installation steps were intentionally
+skipped. Logs were not inspected: do not infer exact remote counts/coverage or relabel the
+local 9/544 results as CI counts. This supersedes A3's pending publication/CI status, not
+Windows console lifecycle, remaining G0 acceptance or Phase 6B G1. No CI dispatch or merge
+was performed by Codex in this confirmation.
+
+## A4 public-loader rejection verification — 2026-10-12
+
+The owner approved continuing with the proposed six-case A4 plan using Codex and the existing
+networkless sandbox, stopping before commit/push. Codex added only
+`tests/test_dashboard_artifact_validation.py`; no existing source, tests, configuration,
+dependencies or CI changed. The reused `genuine_artifacts` fixture supplies a real rule-test
+model. Each case proves valid public loading and canonical data equality before corruption:
+
+| Case | Single selected-file mutation | Exact public `DashboardInputError` |
+|---|---|---|
+| Malformed JSON | Remove report's closing brace | `artifact is not valid UTF-8 JSON` |
+| Invalid UTF-8 | Put invalid byte `0xff` inside a report string | `artifact is not valid UTF-8 JSON` |
+| Unknown schema | Change report schema to `999.0` | `selected report failed schema validation` |
+| Unknown kind | Change manifest entry kind to `unknown_artifact` | `dashboard manifest failed validation` |
+| Wrong scalar type | Replace integer `total_rules` with its numeric string | `selected report failed schema validation` |
+| Non-finite number | Replace `total_rules` with JSON `NaN` | `JSON contains a non-finite number` |
+
+Before and after valid loading, selected bytes and inventory are unchanged. After intentional
+mutation and rejected loading, the corrupt file retains exactly the submitted bytes, the other
+file is untouched, inventory is unchanged, and the prior deep-copied catalog and fixture model
+remain equal. No private parser, skip/xfail, warning suppression or weakened assertion is used.
+Existing duplicate-key and unknown-field tests remain credited, not duplicated.
+
+Tested base: `9093a63094e5bb44c5a7b999056c21213a63eadf` on `codex/g0-dashboard-evidence`,
+plus this uncommitted test. Final test SHA-256 before/after regression and quality checks:
+`ae611d26b52bd87df59babd535156912db859b4bfa7439ac10b89154d6b6bdcd`.
+The existing A3 wrapper/environment and bounds were reused unchanged: WSL Ubuntu/Python
+3.13.15; `bwrap --unshare-all --clearenv`, read-only repository/dependencies, private `/tmp`,
+no host home/credentials or external network; 240-second timeout and existing resource limits.
+Checks ran sequentially through the hidden bounded launcher. No listener or browser started.
+
+Each command used `/sandbox/venv/bin/python` inside that wrapper:
+
+| Command | Observed final result |
+|---|---|
+| `python -m pytest -p no:cacheprovider -q --tb=short tests/test_dashboard_artifact_validation.py` | 6 passed, 1 existing warning, 3.47s |
+| `python -m pytest -p no:cacheprovider -p pytest_cov.plugin --cov=agentsec --cov-report=term --cov-fail-under=90 -q --tb=short` | 550 passed, 3 skipped, 7 deselected, 1 existing warning, 64.79s; 92.19% coverage |
+| `python -m mypy --platform win32 --cache-dir /tmp/mypy_win32` | Success, 66 files |
+| `python -m mypy --platform linux --cache-dir /tmp/mypy_linux` | Success, 66 files |
+| `python -m ruff format --check --no-cache src tests` | 66 files already formatted |
+| `python -m ruff check --no-cache src tests` | All checks passed |
+
+An initial focused pass (6 tests, 3.34s) preceded a small typed-manifest cleanup; the final
+focused run and all results above cover the final hash. Three skips are existing Windows/NTFS
+cases on Linux; seven deselections are four browser/three lifecycle cases. The existing
+Starlette/httpx warning was not suppressed. No product discrepancy or runtime repair arose.
+A4 is locally verified only; its publication/new-head CI remain pending. A5–A8, Windows console,
+Host-port wording, B/C/D/E and Phase 6B G1 remain open. No G0 closure or Phase 6B runtime work.
+
+### A4 publication approval — 2026-10-12
+
+The owner explicitly approved committing and pushing A4. Final review confirmed the new test
+hash matches the verified snapshot and the remote branch remains at the tested base `9093a63`.
+Only the new validation test and two Phase 5/6 records are included; separate primary-workspace
+planning/workflow edits are excluded. Unchanged sandbox checks are reused, not rerun. This
+approval does not include CI dispatch, merge, G0 closure or Phase 6B implementation. Git must
+confirm publication before success is reported; new-head CI remains pending.
