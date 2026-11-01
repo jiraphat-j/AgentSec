@@ -6,6 +6,7 @@ import asyncio
 import hashlib
 import json
 import os
+import re
 import sqlite3
 import subprocess
 from contextlib import closing
@@ -409,6 +410,18 @@ def test_windows_selected_file_symlink_is_rejected(tmp_path: Path) -> None:
     assert artifact.read_bytes() == original
 
 
+def _windows_junction_args(junction: str, target: str) -> list[str]:
+    # Deliberately exclude whitespace, Unicode, expansion syntax and cmd metacharacters.
+    # This test supports only plain drive-absolute paths, not every Windows path spelling.
+    for value in (junction, target):
+        if re.fullmatch(r"[A-Za-z]:\\[A-Za-z0-9_.\\-]+", value) is None:
+            raise ValueError(
+                "junction test requires absolute ASCII drive paths "
+                "without whitespace or shell syntax"
+            )
+    return ["cmd", "/d", "/c", "mklink", "/J", junction, target]
+
+
 @pytest.mark.skipif(os.name != "nt", reason="Windows reparse evidence requires NTFS")
 def test_windows_selected_parent_junction_is_rejected(tmp_path: Path) -> None:
     outside = tmp_path / "outside"
@@ -424,7 +437,7 @@ def test_windows_selected_parent_junction_is_rejected(tmp_path: Path) -> None:
 
     try:
         subprocess.run(
-            ["cmd", "/d", "/c", "mklink", "/J", str(junction), str(outside)],
+            _windows_junction_args(str(junction), str(outside)),
             check=True,
             capture_output=True,
             text=True,

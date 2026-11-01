@@ -1,19 +1,20 @@
 # Phase 5 verification record
 
-Current status (2026-10-12): A3 was published as `9093a63` and passed all four CI jobs.
-A4's six invalid-input tests now pass locally in the networkless sandbox; publication is
-owner-approved, with new-head CI pending. Windows console lifecycle remains untested.
+Current status (2026-11-01): published A4 head `7730aaf` passed all four CI jobs. The owner-reviewed
+test-only junction guard now passes local networkless sandbox verification. Publication is
+owner-approved; new-head Windows CI and other remaining G0 items are still open.
 
-Status: Actions run 38216311835 passed all four Windows/Ubuntu verification and browser jobs on
-full SHA `9093a63094e5bb44c5a7b999056c21213a63eadf` (PR #10, open) on 2026-10-12.
+Status: Actions run 41173422339 passed all four Windows/Ubuntu verification and browser jobs on
+full SHA `7730aaf7b3e8d5862551bca92b00db41ba0b8988` (PR #10, open) on 2026-10-31.
 Job/step conclusions are verified; exact remote counts were not inspected from logs.
 Itemized G0 disposition, remaining boundary evidence, manual accessibility and final owner
 acceptance remain open.
 
-Latest local update (2026-10-12): all six A4 public-loader rejection cases passed in the
-networkless sandbox. Full regression passed 550 tests with 92.19% coverage; Ruff and both
-strict MyPy platform targets passed. Published CI above predates the new A4 test file;
-new-head CI and remaining G0 gates stay open.
+Latest local update (2026-11-01): all 33 new junction guard string cases and 20 existing
+boundary cases passed in the networkless sandbox. Full regression passed 583 tests with
+92.19% coverage; Ruff and both strict MyPy targets passed on the final snapshot. The three
+existing Windows skips and seven browser/lifecycle deselections are not passing runtime
+evidence. See the [review approval and results](PHASE_6_VERIFICATION.md#junction-guard-sandbox-results--2026-11-01).
 
 ## Verification completion plan
 

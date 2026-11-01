@@ -1,21 +1,21 @@
 # Phase 6A verification record
 
-Current status (2026-10-12): A3 was published as `9093a63` and passed all four CI jobs.
-A4's six public-loader rejection tests now pass locally in the networkless sandbox;
-publication is owner-approved, with new-head CI pending. Earlier A2 Linux lifecycle results
-remain separate from native Windows type-check evidence and untested Windows console behavior.
+Current status (2026-11-01): A4 was published as `7730aaf` and has successful four-job CI.
+The owner-reviewed test-only junction path guard now passes local networkless sandbox checks;
+publication is owner-approved. Published CI does not cover the guard; native Windows junction
+verification is pending. Earlier A2 Linux evidence does not establish Windows console behavior.
 
-Status: **Actions run 38216311835 passed all four Windows/Ubuntu verification and browser jobs on
-full SHA `9093a63094e5bb44c5a7b999056c21213a63eadf` (PR #10, open) on 2026-10-12.
+Status: **Actions run 41173422339 passed all four Windows/Ubuntu verification and browser jobs on
+full SHA `7730aaf7b3e8d5862551bca92b00db41ba0b8988` (PR #10, open) on 2026-10-31.
 Job and step conclusions are verified; logs were not inspected for exact remote counts/coverage.
 Earlier CI-pending/failing statements are historical for their snapshots. Itemized G0 disposition,
-unusual cmd metacharacter temp-root residual,
+junction command-path repair awaiting Windows CI,
 remaining boundary evidence, manual accessibility, Phase 6B G1 and final owner review remain open.**
 
-Latest local update (2026-10-12): A4 passed all six focused cases and 550 full nonbrowser
-tests in the existing networkless sandbox, with 92.19% coverage. Ruff and both MyPy platform
-targets passed. Published head `9093a63` has the four-job CI evidence above, which predates
-this new A4 test file. New-head CI and remaining G0 gates stay open; see the evidence below.
+Latest local update (2026-11-01): the junction guard and existing boundary selection passed
+53 focused tests; full nonbrowser regression passed 583 tests with 92.19% coverage. Ruff and
+both MyPy platform targets passed on the final snapshot. Three Windows integration skips and
+seven browser/lifecycle deselections remain explicit. Remaining G0 gates stay open.
 
 G0 Phase 5 deferral and G1 Phase 6A design approval were provided by the owner on 2026-09-22.
 On 2026-09-24 the owner authorized G2 test execution only inside a sandbox. On 2026-09-27 the owner
@@ -2244,3 +2244,133 @@ Only the new validation test and two Phase 5/6 records are included; separate pr
 planning/workflow edits are excluded. Unchanged sandbox checks are reused, not rerun. This
 approval does not include CI dispatch, merge, G0 closure or Phase 6B implementation. Git must
 confirm publication before success is reported; new-head CI remains pending.
+
+## A4 CI confirmation — 2026-10-31
+
+Codex verified owner-dispatched [run 41173422339](https://github.com/jiraphat-j/AgentSec/actions/runs/41173422339),
+attempt 1, `workflow_dispatch`, success on exact head
+`7730aaf7b3e8d5862551bca92b00db41ba0b8988`. All four jobs passed: Ubuntu verify
+124455964894, Windows verify 124455965043, Windows browser 124455965044 and Ubuntu browser
+124455965177. Exact remote test counts/coverage were not read from logs. PR #10 remained
+open, unmerged and conflict-free at this head when checked again on 2026-11-01. This closes
+A4's published-head CI evidence gap, not G0 or final human security acceptance.
+
+## Junction path guard review packet — 2026-11-01
+
+**⚠️ Security Sensitive: concrete human approval required before execution or merge.**
+The owner approved preparation after the guided review, not execution of this new draft.
+Base: `7730aaf7b3e8d5862551bca92b00db41ba0b8988` on PR #10's existing branch.
+
+The changed fixture uses this guard before returning its command arguments:
+
+```python
+for value in (junction, target):
+    if re.fullmatch(r"[A-Za-z]:\\[A-Za-z0-9_.\\-]+", value) is None:
+        raise ValueError(
+            "junction test requires absolute ASCII drive paths without whitespace or shell syntax"
+        )
+return ["cmd", "/d", "/c", "mklink", "/J", junction, target]
+```
+
+The sole invocation change replaces the argument literal with
+`_windows_junction_args(str(junction), str(outside))`. Both paths are validated before
+`subprocess.run` can execute. The fixed command, `check=True`, capture, ten-second timeout
+and link-only cleanup are unchanged. Unsupported paths fail rather than skip. Spaces and
+Unicode are deliberately unsupported in this test's temporary root; the product loader is
+unchanged. This closes only the proposed command-metacharacter path, not every shell risk.
+
+Proposed data-only tests cover 3 allowed pairs and 15 rejected spellings in each argument
+position (33 cases). They call only the argument builder, not subprocess/filesystem APIs.
+No code was executed to validate them; formatting/types and behavior remain unverified.
+
+Draft file SHA-256 values for review:
+
+- `tests/test_dashboard_g0_boundaries.py`:
+  `75bdc2dd986125da96a47aa2956e5aba8b7f25b620419b41ae3acbeed3b9fb38`
+- `tests/test_dashboard_junction_guard.py`:
+  `25bd954256b66dee60e07e77a89f4d9f8901e6d6a71a4c87226a0a404017d6b1`
+
+After concrete human approval, proposed checks reuse the existing networkless/read-only
+Linux wrapper and its bounds, with `/sandbox/venv/bin/python`:
+
+```text
+python -m pytest -p no:cacheprovider -q --tb=short tests/test_dashboard_junction_guard.py tests/test_dashboard_g0_boundaries.py
+python -m pytest -p no:cacheprovider -p pytest_cov.plugin --cov=agentsec --cov-report=term --cov-fail-under=90 -q --tb=short
+python -m mypy --platform win32 --cache-dir /tmp/mypy_win32
+python -m mypy --platform linux --cache-dir /tmp/mypy_linux
+python -m ruff format --check --no-cache src tests
+python -m ruff check --no-cache src tests
+```
+
+Linux skips the existing three Windows-only integration cases; a Linux pass cannot establish
+actual Windows junction behavior. Owner-dispatched Windows CI is still needed on the repaired
+published head. No Windows command with hostile paths will be executed: rejected spellings
+stay data-only. No host scenarios, agy call, dependency installation, CI dispatch, commit/push
+or merge is authorized by this preparation; other G0 items and Phase 6B G1 remain open.
+
+### Junction guard execution approval — 2026-11-01
+
+After reviewing the concrete guard, its conservative path restrictions and proposed sandbox
+checks, the owner replied, "Okay approve this". This explicitly authorizes the named focused,
+nonbrowser regression and quality checks only in the existing networkless sandbox. Both code
+hashes above were confirmed unchanged before execution. It is not approval for host/Windows
+command execution, publication, CI dispatch, merge, G0 closure or Phase 6B implementation.
+
+### Junction guard sandbox results — 2026-11-01
+
+The approved checks ran in the existing WSL Ubuntu/Python 3.13.15 environment. The wrapper
+was unchanged: `bwrap --unshare-all --clearenv`, read-only `/work` and `/sandbox`, private
+`/tmp`, no host home/credential mounts or external network, plugin autoload and bytecode
+writes disabled. Bounds remained `timeout -k 5 240`, `prlimit --cpu=120 --as=1073741824
+--nproc=128 --nofile=256 --fsize=67108864`; the hidden WSL client had a 270-second test or
+30-second static-check deadline. Checks ran sequentially; no deadline expired.
+
+The reviewed draft passed focused checks (53 passed, 3 Windows skips, 9.88s), full regression
+(583 passed, 92.19%, 63.26s), both MyPy targets and formatting. Ruff lint then found one E501:
+the error-message source line was 102 characters against the existing 100-character limit.
+Codex split that string into adjacent literals without changing its resulting text, the
+regex, arguments, timeout, cleanup or rejection behavior. No suppression or broader repair
+was introduced. All six checks were then rerun on the final snapshot below.
+
+Base full SHA remains `7730aaf7b3e8d5862551bca92b00db41ba0b8988`. Final file SHA-256:
+
+- `tests/test_dashboard_g0_boundaries.py`:
+  `cd7a879bbb388f6ca6987aab8717ef432446da9fb7ad990fd93ac668e34fbd8b`
+- `tests/test_dashboard_junction_guard.py` (unchanged from human-reviewed draft):
+  `25bd954256b66dee60e07e77a89f4d9f8901e6d6a71a4c87226a0a404017d6b1`
+
+Each command below used `/sandbox/venv/bin/python` inside that wrapper:
+
+| Command | Final observed result |
+|---|---|
+| `python -m pytest -p no:cacheprovider -q --tb=short tests/test_dashboard_junction_guard.py tests/test_dashboard_g0_boundaries.py` | 53 passed, 3 skipped, 9.67s |
+| `python -m pytest -p no:cacheprovider -p pytest_cov.plugin --cov=agentsec --cov-report=term --cov-fail-under=90 -q --tb=short` | 583 passed, 3 skipped, 7 deselected, 1 existing warning, 63.77s; 92.19% coverage |
+| `python -m mypy --platform win32 --cache-dir /tmp/mypy_win32` | Success, 67 files |
+| `python -m mypy --platform linux --cache-dir /tmp/mypy_linux` | Success, 67 files |
+| `python -m ruff format --check --no-cache src tests` | 67 files already formatted |
+| `python -m ruff check --no-cache src tests` | All checks passed |
+
+The focused count contains all 33 new pure-string cases plus 20 existing boundary cases.
+The skips are the existing three Windows/NTFS integration cases; rejected path spellings
+were never passed to an OS command. The full-suite deselections are four browser/three
+lifecycle cases; the existing Starlette/httpx warning was not suppressed. No Windows junction
+command, host scenario, listener, dependency installation or sensitive product change occurred.
+No production, dependency or CI diff exists relative to the base.
+
+This supersedes the draft's unexecuted status for the exact local checks above. It does not
+claim native Windows integration, a universal Windows path contract or G0 completion. Spaces,
+Unicode and other unsupported test-root spellings still fail visibly before `cmd`; no automatic
+deferral was made. Commit/push, owner-dispatched new-head Windows/Ubuntu CI and final merge
+review remain separate. A5–A8, Windows console evidence, Host-port wording, manual/installed
+evidence disposition, final G0 acceptance and Phase 6B G1 remain open.
+
+### Junction guard publication approval — 2026-11-01
+
+The owner explicitly authorized committing and pushing the verified guard. Final review
+confirmed both final code hashes above are unchanged and the remote branch still matches
+tested base `7730aaf7b3e8d5862551bca92b00db41ba0b8988`. Only the two test files and three
+Phase 5/6 verification/security records are included; primary-workspace planning/workflow
+edits remain separate. The unchanged passing sandbox checks are reused, not rerun.
+Publication success must be confirmed by Git; this authorization does not include CI
+dispatch, host execution, merge, G0 closure or Phase 6B runtime implementation. New-head
+Windows/Ubuntu CI and final merge review remain pending.

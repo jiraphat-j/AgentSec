@@ -278,3 +278,45 @@ The separate unresolved-root finding was rejected: `DashboardCatalog.load` resol
 before taking its parent and passing that root to `_resolve_artifact`. No product path change is
 warranted by that finding. The batch only prepares the human accessibility walkthrough and records
 the review; it does not alter or expand the approved command invocation.
+
+### Junction path guard prepared for human review — 2026-11-01
+
+⚠️ Security Sensitive: Requires Mandatory Human Review before execution or merge.
+The owner requested a guided review, then approved preparing the recommended fix. This is
+preparation approval, not execution approval for the new command-path guard.
+
+In `tests/test_dashboard_g0_boundaries.py`, `_windows_junction_args` now constructs the
+existing fixed `cmd /d /c mklink /J` argument list only after both full path strings match
+`[A-Za-z]:\\[A-Za-z0-9_.\\-]+` using `re.fullmatch`. Everything else raises a visible
+`ValueError`, not a skip. The subprocess call evaluates this helper before invocation;
+timeout, captured output, exit checking and link-only cleanup are unchanged.
+
+This deliberately narrow test-only spelling accepts drive-absolute paths made of ASCII
+letters, digits, underscores, periods, hyphens and backslashes. It rejects spaces, Unicode,
+shell metacharacters, expansion syntax, relative/UNC/device paths. Legitimate custom test
+roots with those spellings will fail before invoking `cmd`; they are not silently supported.
+There is no change to the product loader's accepted path contract or an attempt at generic
+Windows shell quoting. It does not claim to harden all command lookup or filesystem risks.
+
+`tests/test_dashboard_junction_guard.py` proposes 33 pure string tests: three allowed path
+pairs and fifteen rejected spellings in each argument position. Strings are inert data;
+the tests do not launch a shell, create paths or invoke junction commands. Neither these
+tests nor the revised integration fixture have been executed. Only read-only diff/hash and
+whitespace checks were performed; no production/dependency/CI change, publication or merge.
+See the [concrete draft and verification gate](PHASE_6_VERIFICATION.md#junction-path-guard-review-packet--2026-11-01).
+
+### Junction guard approved and locally verified — 2026-11-01
+
+After the concrete review packet, the owner explicitly approved the named networkless sandbox
+checks. All 33 new pure-string cases and 20 existing boundary cases passed; full nonbrowser
+regression passed 583 tests with 92.19% coverage. Both MyPy targets and Ruff passed. A single
+lint-only adjacent-string split preserved the reviewed error text and command semantics;
+all checks were repeated on the final snapshot. The
+[dated verification record](PHASE_6_VERIFICATION.md#junction-guard-sandbox-results--2026-11-01)
+contains final hashes, commands, exclusions and the initial E501 finding.
+
+This is scoped human execution approval and local guard evidence, not native Windows
+junction verification or final full-PR merge sign-off. The three Windows integration cases
+were skipped on Linux; rejected spellings remained inert data. The deliberately narrow
+test-root restriction remains visible. New-head Windows CI is required after separately
+authorized publication. No host execution, product/dependency/CI change, commit/push or merge.
