@@ -6,7 +6,9 @@ import asyncio
 import hashlib
 import json
 import os
+import re
 import sqlite3
+import subprocess
 from contextlib import closing
 from pathlib import Path
 from typing import IO, Any
@@ -366,6 +368,89 @@ def test_selected_file_and_parent_symlinks_are_rejected(tmp_path: Path, link_par
     original = artifact.read_bytes()
     with pytest.raises(DashboardInputError, match="link or reparse"):
         DashboardCatalog.load(manifest)
+    assert artifact.read_bytes() == original
+
+
+@pytest.mark.skipif(os.name != "nt", reason="Windows reparse evidence requires NTFS")
+def test_windows_regular_selected_file_is_accepted(tmp_path: Path) -> None:
+    root = tmp_path / "dashboard"
+    root.mkdir()
+    artifact = root / "report.json"
+    write_rule_test(artifact)
+    original = artifact.read_bytes()
+    manifest = root / "manifest.json"
+    write_manifest(manifest, [{"id": "report", "kind": "rule_test", "path": artifact.name}])
+
+    assert DashboardCatalog.load(manifest).get("report") is not None
+    assert artifact.read_bytes() == original
+
+
+@pytest.mark.skipif(os.name != "nt", reason="Windows reparse evidence requires NTFS")
+def test_windows_selected_file_symlink_is_rejected(tmp_path: Path) -> None:
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    artifact = outside / "report.json"
+    write_rule_test(artifact)
+    original = artifact.read_bytes()
+    root = tmp_path / "dashboard"
+    root.mkdir()
+    selected = root / "linked.json"
+    manifest = root / "manifest.json"
+    write_manifest(manifest, [{"id": "report", "kind": "rule_test", "path": selected.name}])
+
+    selected.symlink_to(artifact)
+    try:
+        assert selected.is_symlink()
+        assert getattr(selected.stat(follow_symlinks=False), "st_file_attributes", 0) & 0x400
+        with pytest.raises(DashboardInputError, match="link or reparse"):
+            DashboardCatalog.load(manifest)
+    finally:
+        selected.unlink()
+    assert not selected.exists()
+    assert artifact.read_bytes() == original
+
+
+def _windows_junction_args(junction: str, target: str) -> list[str]:
+    # Deliberately exclude whitespace, Unicode, expansion syntax and cmd metacharacters.
+    # This test supports only plain drive-absolute paths, not every Windows path spelling.
+    for value in (junction, target):
+        if re.fullmatch(r"[A-Za-z]:\\[A-Za-z0-9_.\\-]+", value) is None:
+            raise ValueError(
+                "junction test requires absolute ASCII drive paths "
+                "without whitespace or shell syntax"
+            )
+    return ["cmd", "/d", "/c", "mklink", "/J", junction, target]
+
+
+@pytest.mark.skipif(os.name != "nt", reason="Windows reparse evidence requires NTFS")
+def test_windows_selected_parent_junction_is_rejected(tmp_path: Path) -> None:
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    artifact = outside / "report.json"
+    write_rule_test(artifact)
+    original = artifact.read_bytes()
+    root = tmp_path / "dashboard"
+    root.mkdir()
+    junction = root / "linked"
+    manifest = root / "manifest.json"
+    write_manifest(manifest, [{"id": "report", "kind": "rule_test", "path": "linked/report.json"}])
+
+    try:
+        subprocess.run(
+            _windows_junction_args(str(junction), str(outside)),
+            check=True,
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+        assert junction.is_junction()
+        assert getattr(junction.stat(follow_symlinks=False), "st_file_attributes", 0) & 0x400
+        with pytest.raises(DashboardInputError, match="link or reparse"):
+            DashboardCatalog.load(manifest)
+    finally:
+        if junction.is_junction():
+            junction.rmdir()
+    assert not junction.exists()
     assert artifact.read_bytes() == original
 
 
