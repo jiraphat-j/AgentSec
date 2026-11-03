@@ -1,21 +1,22 @@
 # Phase 6A verification record
 
-Current status (2026-11-01): A4 was published as `7730aaf` and has successful four-job CI.
-The owner-reviewed test-only junction path guard now passes local networkless sandbox checks;
-publication is owner-approved. Published CI does not cover the guard; native Windows junction
-verification is pending. Earlier A2 Linux evidence does not establish Windows console behavior.
+Current status (2026-11-03): PR #10, including the junction guard, is merged into main at
+`c48eb2e`. All four CI jobs passed on its reviewed head `560c219`. The new A5 source-identity
+tests pass locally on separate branch `codex/g0-source-identity`; the owner approved a local
+commit. Publication and new-head CI remain pending. Earlier A2 Linux evidence does not establish
+Windows console behavior.
 
-Status: **Actions run 41173422339 passed all four Windows/Ubuntu verification and browser jobs on
-full SHA `7730aaf7b3e8d5862551bca92b00db41ba0b8988` (PR #10, open) on 2026-10-31.
+Status: **Actions run 41567536354 passed all four Windows/Ubuntu verification and browser jobs on
+full SHA `560c219a7084a7a74a0ea4244e07199871f3244d` (PR #10, merged) on 2026-11-03.
 Job and step conclusions are verified; logs were not inspected for exact remote counts/coverage.
 Earlier CI-pending/failing statements are historical for their snapshots. Itemized G0 disposition,
-junction command-path repair awaiting Windows CI,
+remaining source/display/resource evidence,
 remaining boundary evidence, manual accessibility, Phase 6B G1 and final owner review remain open.**
 
-Latest local update (2026-11-01): the junction guard and existing boundary selection passed
-53 focused tests; full nonbrowser regression passed 583 tests with 92.19% coverage. Ruff and
-both MyPy platform targets passed on the final snapshot. Three Windows integration skips and
-seven browser/lifecycle deselections remain explicit. Remaining G0 gates stay open.
+Latest local update (2026-11-03): A5 passed all 3 focused tests; full nonbrowser regression
+passed 586 tests with 92.19% coverage. Ruff and both MyPy targets passed for 68 files.
+Three Windows integration skips and seven browser/lifecycle deselections remain explicit.
+G0 disposition and Phase 6B G1 stay open; this is prerequisite evidence, not Phase 6B runtime.
 
 G0 Phase 5 deferral and G1 Phase 6A design approval were provided by the owner on 2026-09-22.
 On 2026-09-24 the owner authorized G2 test execution only inside a sandbox. On 2026-09-27 the owner
@@ -2374,3 +2375,76 @@ edits remain separate. The unchanged passing sandbox checks are reused, not reru
 Publication success must be confirmed by Git; this authorization does not include CI
 dispatch, host execution, merge, G0 closure or Phase 6B runtime implementation. New-head
 Windows/Ubuntu CI and final merge review remain pending.
+
+## Guard CI, merge and A5 continuation — 2026-11-03
+
+Owner-dispatched [run 41567536354](https://github.com/jiraphat-j/AgentSec/actions/runs/41567536354),
+attempt 1, succeeded on exact reviewed guard head
+`560c219a7084a7a74a0ea4244e07199871f3244d`. Job/step metadata confirmed Windows verify
+125692574755, Ubuntu verify 125692574783, Windows browser 125692574528 and Ubuntu browser
+125692574840 passed. Logs were not inspected for exact counts/coverage. PR #10 merged at
+`c48eb2e1d23e51aa0600c0c9d2d107c034e87809`; this is not post-merge CI or G0 completion.
+The named guard repair is credited; Windows console lifecycle remains a separate open item.
+
+After the owner requested continuation of the finite G0 plan, Codex fetched main and created
+a clean `codex/g0-source-identity` worktree at that merge, preserving the dirty primary
+checkout and completed PR #10 worktree. No Phase 6B implementation branch was created;
+the separate ADR-010/G1 draft and all deferral choices remain unapproved.
+
+Only `tests/test_dashboard_source_identity.py` was added to executable inputs. Its three
+cases use public `EventCollector`/`EventStore` to write synthetic canonical SQLite files,
+then public `DashboardCatalog.load` and in-process `TestClient`:
+
+- Two files deliberately share event IDs but have different run/trace/tool facts. Repeated
+  alternating source-specific detail/list requests must equal the independently captured
+  event-model JSON. Exclusive IDs from the other source return fixed 404; run IDs cannot
+  substitute for opaque catalog IDs.
+- A schema 0.1 source retains its exact event schema/identity/metadata in lists, detail and
+  event-type filtering; it is not silently upgraded to a new schema.
+- One run with interleaved controller/A/B traces retains original sequence gaps and exact
+  identity under trace, event-type and combined filters, empty filters and bounded pages.
+  Later unfiltered requests remain unchanged.
+
+Every case snapshots file bytes/inventory before loading and deep-copies catalog records
+before requests. The oracle is the emitted canonical event models, not a private projection
+encoder, service query or returned API data. No scenario or detector is invoked by the new
+fixtures. These are loader/API facts, not DOM navigation or arbitrary hostile-host isolation.
+
+### A5 tested snapshot and checks
+
+- Base full SHA: `c48eb2e1d23e51aa0600c0c9d2d107c034e87809` plus the uncommitted test.
+- Test SHA-256 before/after all checks:
+  `3c0a6cf9800037a5982bdb43e50ceaa3c24f932f51c4aea0d0cb15c256b18dbe`.
+- Existing source, tests, dependencies and CI have no diff from the base. Formatting was
+  inspected with a read-only Ruff diff and applied before behavior/type/regression checks.
+- Existing WSL Ubuntu/Python 3.13.15 networkless wrapper and dependency environment were
+  reused; only the read-only repository bind points to the new worktree. `bwrap --unshare-all
+  --clearenv`, private `/tmp`, no host home/credentials, disabled bytecode/plugin autoload,
+  `timeout -k 5 240` and `prlimit --cpu=120 --as=1073741824 --nproc=128 --nofile=256
+  --fsize=67108864` remain. Checks ran sequentially with the existing hidden host-side
+  270-second test/30-second static-check deadlines; no deadline expired.
+
+Each command used `/sandbox/venv/bin/python` inside that wrapper:
+
+| Command | Actual result |
+|---|---|
+| `python -m pytest -p no:cacheprovider -q --tb=short tests/test_dashboard_source_identity.py` | 3 passed, 1 existing warning, 2.40s |
+| `python -m pytest -p no:cacheprovider -p pytest_cov.plugin --cov=agentsec --cov-report=term --cov-fail-under=90 -q --tb=short` | 586 passed, 3 skipped, 7 deselected, 1 existing warning, 49.06s; 92.19% coverage |
+| `python -m mypy --platform win32 --cache-dir /tmp/mypy_win32` | Success, 68 files |
+| `python -m mypy --platform linux --cache-dir /tmp/mypy_linux` | Success, 68 files |
+| `python -m ruff format --check --no-cache src tests` | 68 files already formatted |
+| `python -m ruff check --no-cache src tests` | All checks passed |
+
+Skips are the existing three Windows/NTFS cases on Linux; deselections are four browser and
+three separately gated lifecycle cases. The existing Starlette/httpx warning was not suppressed.
+No new listener, host scenario, OS command fixture, agy call, dependency install, product
+repair, publication, CI dispatch or merge occurred in this continuation. A5 is locally
+verified only. A6–A8, Windows console, Host/port wording, accessibility/package disposition,
+final G0 acceptance and Phase 6B G1 remain open. New-branch publication requires separate approval.
+
+### A5 commit approval — 2026-11-03
+
+The owner approved a local commit of the A5 test and these two verification records.
+The test SHA-256 still matches the tested snapshot above; its passing checks are reused.
+Only this approval/status documentation changed after verification. This approval does not
+include push, PR creation, CI dispatch, merge, G0 acceptance or Phase 6B implementation.
