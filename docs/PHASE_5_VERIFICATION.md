@@ -1,20 +1,21 @@
 # Phase 5 verification record
 
-Current status (2026-11-01): published A4 head `7730aaf` passed all four CI jobs. The owner-reviewed
-test-only junction guard now passes local networkless sandbox verification. Publication is
-owner-approved; new-head Windows CI and other remaining G0 items are still open.
+Current status (2026-11-03): PR #10, including the reviewed junction guard, is merged at
+`c48eb2e` with four-job CI on head `560c219`. A5 source-identity tests now pass locally on
+`codex/g0-source-identity`; the owner approved a local commit. Publication, new-head CI and
+remaining G0 acceptance stay open.
 
-Status: Actions run 41173422339 passed all four Windows/Ubuntu verification and browser jobs on
-full SHA `7730aaf7b3e8d5862551bca92b00db41ba0b8988` (PR #10, open) on 2026-10-31.
+Status: Actions run 41567536354 passed all four Windows/Ubuntu verification and browser jobs on
+full SHA `560c219a7084a7a74a0ea4244e07199871f3244d` (PR #10, merged) on 2026-11-03.
 Job/step conclusions are verified; exact remote counts were not inspected from logs.
 Itemized G0 disposition, remaining boundary evidence, manual accessibility and final owner
 acceptance remain open.
 
-Latest local update (2026-11-01): all 33 new junction guard string cases and 20 existing
-boundary cases passed in the networkless sandbox. Full regression passed 583 tests with
-92.19% coverage; Ruff and both strict MyPy targets passed on the final snapshot. The three
-existing Windows skips and seven browser/lifecycle deselections are not passing runtime
-evidence. See the [review approval and results](PHASE_6_VERIFICATION.md#junction-guard-sandbox-results--2026-11-01).
+Latest local update (2026-11-03): all three A5 loader/API source-identity cases passed in
+the networkless sandbox. Full regression passed 586 tests with 92.19% coverage; Ruff and both
+strict MyPy targets passed for 68 files. The three Windows skips and seven browser/lifecycle
+deselections are not passing runtime evidence. See the
+[A5 snapshot and results](PHASE_6_VERIFICATION.md#a5-tested-snapshot-and-checks).
 
 ## Verification completion plan
 
