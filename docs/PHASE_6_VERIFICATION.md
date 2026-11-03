@@ -1,21 +1,22 @@
 # Phase 6A verification record
 
-Current status (2026-11-03): PR #10, including the junction guard, is merged into main at
-`c48eb2e`. All four CI jobs passed on its reviewed head `560c219`. The new A5 source-identity
-tests pass locally on separate branch `codex/g0-source-identity`; the owner approved a local
-commit. Publication and new-head CI remain pending. Earlier A2 Linux evidence does not establish
-Windows console behavior.
+Current status (2026-11-03): PR #11 is merged into main at `8e1e00d`. All four CI jobs passed
+on reviewed A5 head `525ecd9`. The single A6–A7 browser matrix now passes owner-approved local
+sandbox checks on `codex/g0-dashboard-display`; publication is owner-approved and new-head CI
+remains pending.
+Earlier A2 Linux evidence does not establish Windows console behavior.
 
-Status: **Actions run 41567536354 passed all four Windows/Ubuntu verification and browser jobs on
-full SHA `560c219a7084a7a74a0ea4244e07199871f3244d` (PR #10, merged) on 2026-11-03.
-Job and step conclusions are verified; logs were not inspected for exact remote counts/coverage.
-Earlier CI-pending/failing statements are historical for their snapshots. Itemized G0 disposition,
-remaining source/display/resource evidence,
-remaining boundary evidence, manual accessibility, Phase 6B G1 and final owner review remain open.**
+Status: **Actions run 41594079403 passed all four Windows/Ubuntu verification and browser jobs on
+full SHA `525ecd9ed0703424f1e6c3bb51846ea0261dbb2f` (PR #11, merged) on 2026-11-03.
+Verify-job logs confirm Ubuntu 586 passed/3 skipped and Windows 582 passed/7 skipped,
+each with 7 deselections, 1 warning and 92.19% coverage. All three A5 tests ran and passed on both.
+Earlier CI-pending/failing statements are historical for their snapshots. Remaining G0 resource,
+platform, manual and package dispositions, Phase 6B G1 and final owner review remain open.**
 
-Latest local update (2026-11-03): A5 passed all 3 focused tests; full nonbrowser regression
-passed 586 tests with 92.19% coverage. Ruff and both MyPy targets passed for 68 files.
-Three Windows integration skips and seven browser/lifecycle deselections remain explicit.
+Latest local update (2026-11-03): A6–A7 passed all 3 focused browser cases and the full 7-case
+Chromium suite. Full nonbrowser regression passed 586 tests with 92.19% coverage. Ruff and both
+MyPy targets passed for 69 files. Three Windows integration skips and ten browser/lifecycle
+deselections remain explicit; the seven browser cases passed separately in the same sandbox.
 G0 disposition and Phase 6B G1 stay open; this is prerequisite evidence, not Phase 6B runtime.
 
 G0 Phase 5 deferral and G1 Phase 6A design approval were provided by the owner on 2026-09-22.
@@ -2448,3 +2449,225 @@ The owner approved a local commit of the A5 test and these two verification reco
 The test SHA-256 still matches the tested snapshot above; its passing checks are reused.
 Only this approval/status documentation changed after verification. This approval does not
 include push, PR creation, CI dispatch, merge, G0 acceptance or Phase 6B implementation.
+
+## A5 CI, merge and A6–A7 review packet — 2026-11-03
+
+The owner published `525ecd9ed0703424f1e6c3bb51846ea0261dbb2f` and dispatched
+[run 41594079403](https://github.com/jiraphat-j/AgentSec/actions/runs/41594079403), attempt 1,
+event `workflow_dispatch`, created 07:06:08 UTC and completed by 07:11:06 UTC on 2026-11-03.
+All four jobs and their applicable steps passed:
+
+| Job | ID | Observed result |
+|---|---|---|
+| Windows verify | 125777227781 | 582 passed, 7 skipped, 7 deselected, 1 warning; 92.19% coverage |
+| Ubuntu verify | 125777227962 | 586 passed, 3 skipped, 7 deselected, 1 warning; 92.19% coverage |
+| Windows browser | 125777227560 | Job and approved browser-test step succeeded; exact pytest count not read |
+| Ubuntu browser | 125777228072 | Job and approved browser-test step succeeded; exact pytest count not read |
+
+Verify logs explicitly contain three passing A5 cases. Platform skips are the existing Unix
+capture/symlink cases on Windows and three NTFS cases on Linux; no A5 case skipped. Formatting,
+lint, strict MyPy (68 files), build and dependency audit passed. Both audit logs report no known
+vulnerabilities. These results belong to the PR head, not a post-merge run or the A6–A7 draft.
+
+Codex reviewed all three changed files against the event/dashboard contracts and unchanged
+producer/loader/query code; no blocking finding was identified. The owner then merged
+[PR #11](https://github.com/jiraphat-j/AgentSec/pull/11) at 07:38:24 UTC on 2026-11-03,
+merge SHA `8e1e00d8535fafc0c81809afde62847981bae2b1`. Fetched `origin/main` matches that merge.
+The completed PR worktrees and dirty primary planning/workflow changes were preserved.
+
+### Prepared scope and acceptance
+
+New branch `codex/g0-dashboard-display` starts at that merge. Only
+`tests/e2e/test_dashboard_display_matrix.py` adds executable input; the Phase 5/6 verification
+and security records document this preparation. Product source/resources, dependencies, CI,
+old tests and the existing server helper are unchanged. The primary G0 disposition draft is
+updated separately and is not part of this branch.
+
+| Prepared test | Original finite A6/A7 facts |
+|---|---|
+| Saved artifact views | Genuine comparison, rule and saved passed/failed rule-test DOM fields equal independent validated model JSON. A report-only run retains exact timeline sequence/time/type/component, the report-only label and no verified evidence button. |
+| Source and zero-match states | Failed/incomplete source badges and timeline events stay exact. Public investigations of completed/failed/incomplete synthetic sources all finish as offline investigations while preserving the separate source status; empty alerts/incidents and exact zero-match rule evaluations remain visible. |
+| Evaluation and recorded timing | All five metric names for both profiles retain table fields, fractions, eligibility/exclusions, null/unavailable semantics and progress values. Canonical, invalid-clock and explicitly synthetic all-failed evaluation variants retain restricted paired fractions, complete/incomplete pairs, confusion counts, timing basis/counts/null means and child assertion/exclusion wording. A public investigation producer given a reversed alert clock supplies the visible `clock_order_invalid` reason, separate from local processing time. |
+
+Fixtures reuse `genuine_artifacts`; the deliberately wrong saved-rule expectation is passed
+through public `run_rule_tests`. Synthetic lifecycle inputs use public collectors/stores and
+`InvestigationService`. Invalid-clock events preserve their envelope except the alert timestamp;
+public `build_investigation` must actually return `clock_order_invalid`. Derived evaluation
+variants use the public aggregate builders and full `EvaluationReport.model_validate`, not
+unchecked report copies. Invalid-clock evaluation children retain their observations and only
+previously available intervals are excluded. The all-failed variant is a display fixture, not
+evidence of an executed runtime failure path. Original metric and clock-decision tests remain
+credited; this batch checks rendering, not a new metric algorithm.
+
+Expected values come from emitted events and validated models, never private projection helpers,
+API responses or DOM values. The canonical fixture must contain a nontrivial fraction and a
+restricted-pair denominator smaller than its pair count. Each case checks complete selected-file
+bytes/inventory, deep-copied catalog records and fixture-model JSON after server cleanup.
+No arbitrary-secret, hostile-host isolation, manual accessibility or installed-package claim is added.
+
+### Concrete execution boundary awaiting human review
+
+**Security Sensitive: Requires Mandatory Human Review.** Review the entire new test file,
+particularly `display_inputs` and `_serve`, before execution. The helper follows the existing
+loopback/thread lifecycle: reserve a `127.0.0.1:0` port with a probe socket, close the probe,
+construct `create_dashboard_app(catalog, port=port)`, and run `uvicorn.Server` on literal
+`127.0.0.1` in one daemon thread. It reuses the existing 10-second readiness wait. Cleanup always
+sets `should_exit`, joins for at most 10 seconds and asserts that the thread stopped. A bind-race
+failure remains visible; it does not broaden the bind or silently skip.
+
+Before navigation, a browser-context route guard permits only HTTP requests to the exact chosen
+`127.0.0.1:port`, aborts all other intercepted requests and fails on any blocked attempt. Browser
+actions/navigation each have 10-second deadlines. This interception supports assertions; the
+network namespace is the OS egress boundary. The test does not add a subprocess/shell call,
+browser-triggered scenario action, gateway change, credential access or dependency installation.
+Existing public fixture generation runs only inside the reviewed sandbox, before navigation.
+
+Prepared test SHA-256 (static-checked snapshot):
+`67370fd0942b68b4b66ad8f3c872f5c3c3b7e8391433e27a524dea2e53174540`.
+It has NOT been imported by pytest or executed. No fixture, listener or Chromium process has
+run for this new module, and no behavior pass or defect is claimed.
+
+After explicit approval of this concrete diff, proposed browser commands are:
+
+```text
+python -m pytest -p no:cacheprovider -p pytest_playwright.pytest_playwright -p pytest_base_url.plugin -o addopts= --strict-config --strict-markers -m dashboard_e2e --browser chromium -q --tb=short tests/e2e/test_dashboard_display_matrix.py
+python -m pytest -p no:cacheprovider -p pytest_playwright.pytest_playwright -p pytest_base_url.plugin -o addopts= --strict-config --strict-markers -m dashboard_e2e --browser chromium -q --tb=short tests/e2e
+```
+
+Both use the existing hidden WSL Ubuntu launcher, `/sandbox/venv/bin/python` and staged
+Chromium/dependencies from `/home/godji/agentsec-g0-env.045vOJ`. No downloads are proposed.
+The reviewed wrapper is the existing networkless/read-only one with the new repository bind
+and the prior browser-specific resource/environment settings:
+
+```text
+timeout -k 5 240 prlimit --cpu=180 --nproc=128 --nofile=512 --fsize=67108864
+bwrap --unshare-all --clearenv
+  --setenv HOME /tmp --setenv TMPDIR /tmp
+  --setenv PATH /sandbox/venv/bin:/usr/bin:/bin
+  --setenv PYTHONPATH /work/src:/work --setenv PYTHONDONTWRITEBYTECODE 1
+  --setenv PYTEST_DISABLE_PLUGIN_AUTOLOAD 1
+  --setenv PLAYWRIGHT_BROWSERS_PATH /sandbox/browsers
+  --setenv LD_LIBRARY_PATH /sandbox/browser-libs/usr/lib/x86_64-linux-gnu
+  --ro-bind /usr /usr --ro-bind /bin /bin --ro-bind /lib /lib --ro-bind /lib64 /lib64
+  --dir /etc --ro-bind /etc/passwd /etc/passwd --ro-bind /etc/group /etc/group
+  --dev /dev --proc /proc --tmpfs /tmp
+  --ro-bind /home/godji/agentsec-g0-env.045vOJ /sandbox
+  --ro-bind /mnt/c/Users/Feast/.codex/worktrees/g0-dashboard-display/AgentSec /work
+  --chdir /work
+```
+
+Lines above form one wrapper command; append each browser command sequentially. Only private
+temporary storage is writable. There is no host-home/credential mount or external network.
+Retain the existing 270-second host check deadline; stop rather than expand permissions/budgets
+or install missing dependencies. Chromium still requires omitting the per-process virtual-address
+cap. The WSL guest reported 7,770,764 KiB total memory and 4,194,304 KiB swap during preparation;
+`.wslconfig` explicitly sets swap to 4 GB but has no explicit memory cap. Those guest totals are
+not a dedicated browser memory quota or a guarantee against host memory pressure. No host/WSL
+configuration was changed in this batch.
+
+After the focused and full browser checks, run the existing full nonbrowser coverage command
+sequentially in the static/full wrapper (120s CPU, 240s wall, 1 GiB address space, 128 processes,
+256 descriptors, 64 MiB file ceiling; same isolation):
+
+```text
+python -m pytest -p no:cacheprovider -p pytest_cov.plugin --cov=agentsec --cov-report=term --cov-fail-under=90 -q --tb=short
+```
+
+Keep all skips/deselections/warnings visible. The new module has three cases and the complete
+browser selection has seven; import skips do not count as acceptance. A test/fixture failure
+requires an honest finding and in-scope repair; any sensitive product repair or execution-scope
+expansion returns for concrete review. Do not relax assertions/limits or waive an unresolved row.
+
+### Static preparation results
+
+The existing networkless read-only static wrapper was reused with only the repository bind
+changed. Read-only Ruff formatting diagnostics were applied as mechanical patches before final
+checks. No runtime fixture was invoked by these commands:
+
+| Command | Actual result |
+|---|---|
+| `python -m ruff format --check --no-cache src tests` | 69 files already formatted |
+| `python -m ruff check --no-cache src tests` | All checks passed |
+| `python -m mypy --platform linux --cache-dir /tmp/mypy_linux` | Success, 69 files |
+| `python -m mypy --platform win32 --cache-dir /tmp/mypy_win32` | Success, 69 files |
+
+Execution approval is pending. No agy call, host test, browser run, build/install/audit rerun,
+publication, CI dispatch or merge occurred for this draft. A8, Host/port wording, Windows console,
+manual accessibility, installed-package disposition, final G0 acceptance and proposed G1 remain open.
+
+### A6–A7 clock fixture lifecycle correction — 2026-11-03
+
+Codex review found that the shared clock fixture passed a report's captured timeline prefix
+to `build_investigation` with `SourceStatus.COMPLETED`. `ScenarioRunner` builds the report
+before emitting `report.created` and `run.completed`, so that prefix has no terminal event;
+snapshot validation would reject it before any of the three browser cases could run.
+This was a source-confirmed fixture defect, not a runtime test result or product defect.
+
+The owner requested the correction. The fixture now uses `SourceStatus.INCOMPLETE` and explains
+the report cutoff in a comment. It retains the original prefix, reversed alert timestamp,
+public investigation producer and exact `clock_order_invalid` assertion. No terminal event is
+fabricated and no lifecycle validator, browser/server helper or product behavior is changed.
+
+The old draft hash `cf90723eef7305cf2cc9dfa92a0ed3faed1895d2f8c92473d671f9d8cd7610cf` is superseded
+by `67370fd0942b68b4b66ad8f3c872f5c3c3b7e8391433e27a524dea2e53174540` in the concrete packet.
+On this corrected snapshot, the same networkless read-only static commands above passed again:
+Ruff format (69 files), Ruff lint and both Linux/Windows strict MyPy targets (69 files each).
+The source hash remained unchanged after checks. No fixture, pytest, listener or Chromium
+execution occurred; this correction does not claim a browser pass or security execution sign-off.
+The remaining execution, publication and phase gates stay open.
+
+### A6–A7 sandbox execution approval — 2026-11-03
+
+After Codex reviewed the corrected snapshot and recommended sandbox-only execution, the owner
+explicitly approved it. Approval covers test hash
+`67370fd0942b68b4b66ad8f3c872f5c3c3b7e8391433e27a524dea2e53174540` and the concrete packet's
+sequential focused browser, full browser and full nonbrowser coverage checks in the existing
+networkless read-only WSL sandbox. The loopback helper, deadlines, resource settings and disclosed
+Chromium memory limitation are unchanged. This is owner-authorized execution following Codex
+technical review, not a claim that automated tests or independent human code review have passed.
+No host execution, dependency installation, configuration expansion, publication, CI dispatch,
+merge, G0 acceptance or Phase 6B implementation is included. Actual results follow separately.
+
+### A6–A7 sandbox results — 2026-11-03
+
+Codex executed the three approved commands sequentially in the exact recorded networkless,
+read-only WSL wrappers. No setup download, dependency change, host test/listener, bound expansion
+or repair was needed. The corrected fixture passed its public-producer lifecycle and invalid-clock
+assertions; all three new cases reached and passed their browser assertions and teardown checks.
+
+| Approved command selection | Actual result |
+|---|---|
+| Focused `tests/e2e/test_dashboard_display_matrix.py` with the recorded Playwright plugins/marker/Chromium flags | 3 passed, 1 existing warning, 14.35s |
+| Complete `tests/e2e` with the same flags and browser wrapper | 7 passed, 1 existing warning, 17.28s |
+| Full nonbrowser coverage command in the static/full wrapper | 586 passed, 3 skipped, 10 deselected, 1 existing warning, 48.55s; 92.19% coverage |
+
+The full command texts, wrappers and limits are in the concrete packet above. Each command exited
+0; no readiness, action, cleanup, process, CPU, wall or host deadline expired. The three skips are
+the existing Windows/NTFS tests on Linux. Ten deselections are the seven browser cases executed
+separately plus three separately gated lifecycle cases; these are not ten additional passes.
+All three commands reported the existing Starlette/httpx deprecation warning, without suppression.
+
+Test SHA-256 remained `67370fd0942b68b4b66ad8f3c872f5c3c3b7e8391433e27a524dea2e53174540`
+before/after execution. There was no executable change after the corrected-snapshot Ruff format,
+lint and both strict MyPy successes (69 files), so those checks are reused. Every new browser case
+completed its selected-file byte/inventory, deep-copied catalog and fixture-model equality checks;
+server threads stopped and no intercepted off-origin request was attempted.
+
+This credits the finite A6/A7 model/state/rate/pair/timing display matrix locally on Linux only.
+It does not establish native Windows browser behavior for the new cases, real zoom/keyboard/
+contrast/screen-reader acceptance, arbitrary hostile-host safety, installed-wheel equivalence,
+G0 closure or Phase 6B approval. Chromium's disclosed memory limitation is unchanged. Earlier
+unrun/pending notes describe their preparation snapshots and are superseded only for this named
+execution. New-head Windows/Ubuntu CI, final integration review and publication remain pending.
+A8, Host/port wording, Windows console, manual accessibility, installed-package disposition,
+final G0 acceptance and G1 stay open. No commit, push, PR creation, CI dispatch or merge occurred.
+
+### A6–A7 commit and push approval — 2026-11-03
+
+The owner authorized committing and pushing the verified four-file A6–A7 batch on
+`codex/g0-dashboard-display` and will open the pull request personally. The test SHA-256 still
+matches `67370fd0942b68b4b66ad8f3c872f5c3c3b7e8391433e27a524dea2e53174540`; executable inputs
+are unchanged since the passing sandbox and static checks, which are reused. Only approval/status
+documentation changed after verification. Unrelated primary planning/workflow changes are excluded.
+Publication success must be confirmed by Git; it is not preclaimed here. This authorization does
+not dispatch CI, create/merge a PR, close G0, select deferrals or start Phase 6B runtime work.

@@ -1,21 +1,23 @@
 # Phase 5 verification record
 
-Current status (2026-11-03): PR #10, including the reviewed junction guard, is merged at
-`c48eb2e` with four-job CI on head `560c219`. A5 source-identity tests now pass locally on
-`codex/g0-source-identity`; the owner approved a local commit. Publication, new-head CI and
-remaining G0 acceptance stay open.
+Current status (2026-11-03): PR #11 is merged at `8e1e00d`, with four-job CI on reviewed A5
+head `525ecd9`. The owner-approved A6–A7 matrix now passes local sandbox verification on
+`codex/g0-dashboard-display`. Publication is owner-approved; new-head CI and remaining G0
+acceptance stay open.
 
-Status: Actions run 41567536354 passed all four Windows/Ubuntu verification and browser jobs on
-full SHA `560c219a7084a7a74a0ea4244e07199871f3244d` (PR #10, merged) on 2026-11-03.
-Job/step conclusions are verified; exact remote counts were not inspected from logs.
+Status: Actions run 41594079403 passed all four Windows/Ubuntu verification and browser jobs on
+full SHA `525ecd9ed0703424f1e6c3bb51846ea0261dbb2f` (PR #11, merged) on 2026-11-03.
+Verify-job logs confirm all three A5 tests passed on both systems: Ubuntu 586 passed/3 skipped,
+Windows 582 passed/7 skipped, each with 7 deselections and 92.19% coverage. These are head results,
+not post-merge CI. See the [A5 CI and A6–A7 review packet](PHASE_6_VERIFICATION.md#a5-ci-merge-and-a6a7-review-packet--2026-11-03).
 Itemized G0 disposition, remaining boundary evidence, manual accessibility and final owner
 acceptance remain open.
 
-Latest local update (2026-11-03): all three A5 loader/API source-identity cases passed in
-the networkless sandbox. Full regression passed 586 tests with 92.19% coverage; Ruff and both
-strict MyPy targets passed for 68 files. The three Windows skips and seven browser/lifecycle
-deselections are not passing runtime evidence. See the
-[A5 snapshot and results](PHASE_6_VERIFICATION.md#a5-tested-snapshot-and-checks).
+Latest local update (2026-11-03): all three A6–A7 focused browser cases and the full seven-case
+Chromium suite passed in the networkless sandbox. Full nonbrowser regression passed 586 tests
+with 92.19% coverage; Ruff and both strict MyPy targets passed for 69 files. Three Windows skips
+and ten browser/lifecycle deselections remain explicit; the seven browser cases passed separately.
+See the [A6–A7 results](PHASE_6_VERIFICATION.md#a6a7-sandbox-results--2026-11-03).
 
 ## Verification completion plan
 

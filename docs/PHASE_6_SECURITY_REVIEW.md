@@ -1,6 +1,12 @@
 # Phase 6A security review
 
-Latest state (2026-10-03): **The owner approved the concrete C07 follow-up and its named
+Latest state (2026-11-03): **The owner approved the corrected A6–A7 sandbox execution packet.
+All 3 focused browser cases, all 7 browser cases and 586 nonbrowser tests passed locally,
+with 92.19% nonbrowser coverage.** The approved source hash is unchanged; no runtime repair,
+host execution or dependency/configuration change occurred during those checks. Publication is
+owner-approved; new-head CI, remaining G0 dispositions and final owner integration review stay open.
+
+Historical C07 state (2026-10-03): **The owner approved the concrete C07 follow-up and its named
 sandbox execution. Applied source matches that proposal; 429 non-browser checks, four Chromium
 checks, quality/build and installed-package checks pass.** The twelve new parity failures are
 repaired. Final owner full-diff acceptance and remaining G0/CI gates stay open.
@@ -320,3 +326,67 @@ junction verification or final full-PR merge sign-off. The three Windows integra
 were skipped on Linux; rejected spellings remained inert data. The deliberately narrow
 test-root restriction remains visible. New-head Windows CI is required after separately
 authorized publication. No host execution, product/dependency/CI change, commit/push or merge.
+
+## A6–A7 browser matrix awaiting execution review — 2026-11-03
+
+PR #11 merged at `8e1e00d8535fafc0c81809afde62847981bae2b1` after all four CI jobs passed on
+reviewed A5 head `525ecd9ed0703424f1e6c3bb51846ea0261dbb2f`. This credits the A5 loader/API
+batch, not final G0 acceptance or execution of the new browser matrix.
+
+**Security Sensitive: Requires Mandatory Human Review.** The concrete new file is
+`tests/e2e/test_dashboard_display_matrix.py`, SHA-256
+`67370fd0942b68b4b66ad8f3c872f5c3c3b7e8391433e27a524dea2e53174540`.
+Review its fixture generation and `_serve` loopback probe/server/thread/cleanup invocation.
+The context request guard permits only the exact chosen loopback HTTP origin and rejects all
+other intercepted requests; egress containment still comes from the networkless OS namespace.
+No production listener, projection, gateway, hashing algorithm, dependency or CI change is proposed.
+
+Three prepared cases cover the finite A6/A7 artifact/state/metric/pair/timing matrix using
+public producers and validated synthetic models. All file bytes/inventory, catalog records and
+fixture models must remain unchanged. Only formatting, lint and both MyPy targets have passed
+(69 files); no new fixture, listener, scenario or Chromium run has executed.
+
+The [concrete commands, environment, bounds and acceptance packet](PHASE_6_VERIFICATION.md#a5-ci-merge-and-a6a7-review-packet--2026-11-03)
+requests sandbox-only execution, then a full browser/nonbrowser regression. Chromium retains
+the disclosed absence of a per-process address-space cap; current WSL guest totals and swap
+are recorded, not represented as a dedicated browser memory quota. No host configuration or
+dependency installation is proposed. Earlier fixture/CLI/browser approvals and the A5 merge do
+not sign off this new invocation. Commit/push, CI dispatch, merge, G0 deferrals/final acceptance
+and Phase 6B G1/runtime remain separate decisions.
+
+### Clock fixture correction after Codex review — 2026-11-03
+
+The owner requested application of the review finding: the report timeline is a prefix captured
+before `run.completed`, so the clock fixture now declares `SourceStatus.INCOMPLETE` instead of
+`COMPLETED`. No events were invented and snapshot validation remains unchanged. The corrected
+hash above replaces the initial draft hash. Ruff and both MyPy targets passed again for 69 files;
+pytest, fixture generation, listener and browser execution remain unrun. The network helper,
+sandbox proposal and remaining execution gate are unchanged; this is no claim of human sign-off.
+
+### Owner-approved A6–A7 sandbox execution — 2026-11-03
+
+Following the corrected-diff review, the owner explicitly approved the concrete sandbox-only
+execution packet for hash `67370fd0942b68b4b66ad8f3c872f5c3c3b7e8391433e27a524dea2e53174540`.
+Codex may run the focused and complete browser selections and full nonbrowser regression
+sequentially with the recorded isolation and bounds. Approval is recorded as the owner's
+execution decision after Codex technical review; it does not fabricate independent human
+code-review evidence or a test pass. Host execution, installs, configuration expansion,
+publication, CI dispatch, merge, remaining G0 dispositions and Phase 6B runtime are excluded.
+
+### A6–A7 local sandbox evidence — 2026-11-03
+
+On the approved corrected hash, focused Chromium passed 3 cases (14.35s), full Chromium passed
+7 cases (17.28s), and full nonbrowser regression passed 586 tests at 92.19% coverage (48.55s).
+Three Windows/NTFS skips and ten browser/lifecycle deselections remain explicit; the seven browser
+cases were executed separately. The existing Starlette/httpx warning was not suppressed.
+
+The exact recorded networkless/read-only wrappers and resource settings were retained. No helper,
+fixture, source, dependency, bound or host configuration changed during execution. All new
+immutability, exact-origin interception and stopped-server assertions passed. Static checks on
+the unchanged hash remain valid (Ruff and both MyPy targets, 69 files).
+
+The [actual result record](PHASE_6_VERIFICATION.md#a6a7-sandbox-results--2026-11-03) pins commands,
+counts, snapshot, exclusions and limitations. This is scoped owner-approved local execution
+evidence, not a whole-phase security certification or native Windows result for the new matrix.
+Publication/new-head CI/final integration, manual/platform/package decisions, A8 and G0/G1 remain
+open. No commit, push, CI dispatch, merge, host scenario or external model call occurred.
